@@ -1,0 +1,5 @@
+<root>
+    <setting name="language" value="ru"/>
+    <setting name="update_rate" value="11"/>
+    <setting name="watch_font" value="Hack-Regular.ttf"/>
+</root>
