@@ -11,7 +11,7 @@ Set of simple overlay widgets for usage in SteamVR environment.
 Editing 'settings.xml' allows to make own changes to widgets.  
 List of global settings:
 * **update_rate** - update rate in milliseconds. Default value is 11, that corresponds to 90 FPS.
-* **language** - language that will be applied to widgets. Availabe values: en, ru. Default value is 'en'.
+* **language** - applied language to widgets. Available values: en, ru. Default value is 'en'.
 
 # Watch overlay widget
 ![](./.github/img_01.png)
