@@ -5,7 +5,7 @@
 
 unsigned char Config::ms_language = CL_English;
 unsigned int Config::ms_updateRate = 11U; // 90 FPS by default
-std::string Config::ms_watchFont("%windir%/arial.ttf");
+std::string Config::ms_watchFont("Hack-Regular.ttf");
 
 const std::vector<std::string> g_ConfigSettings
 {
@@ -46,7 +46,7 @@ void Config::Load()
                         ms_updateRate = l_attribValue.as_uint(11U);
                         break;
                     case CSI_WatchFont:
-                        ms_watchFont.assign(l_attribValue.as_string("%windir%/arial.ttf"));
+                        ms_watchFont.assign(l_attribValue.as_string("Hack-Regular.ttf"));
                         break;
                 }
             }
