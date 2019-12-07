@@ -18,7 +18,7 @@ List of global settings:
 * **Activation:** Double press on grip button of right hand controller.
 * **Behaviour:** Follows right hand controller, transparency changes according to view angle on controller.
 * **Modifications:**
-  * **Font:** Custom font can be set by changing 'watch_font' setting. Default value is '%windir%/arial.ttf'.
+  * **Font:** Custom font can be set by changing 'watch_font' setting. Default value is 'Hack-Regular.ttf'. Refer to [Hack font repository](../../../../source-foundry/Hack).
   
 # More widgets
 Application is in development, more widgets will be added.
