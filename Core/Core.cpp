@@ -2,8 +2,9 @@
 
 #include "Core/Core.h"
 #include "Core/Config.h"
-#include "Core/TransformStorage.h"
-#include "Widgets/WidgetWatch.h"
+#include "Core/VRTransform.h"
+#include "Widgets/WidgetCapture.h"
+#include "Widgets/WidgetStats.h"
 #include "Utils/Utils.h"
 
 Core::Core()
@@ -56,7 +57,7 @@ bool Core::Init()
             m_leftHand = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);
             m_rightHand = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
 
-            sf::ContextSettings l_contextSettings(0U, 0U, 0U, 3U, 1U, sf::ContextSettings::Core, false);
+            sf::ContextSettings l_contextSettings(0U, 0U, 0U, 3U, 0U, sf::ContextSettings::Core, false);
             m_context = new sf::Context(l_contextSettings, 2U, 2U);
 
             if(m_context->setActive(true))
@@ -65,13 +66,12 @@ bool Core::Init()
 
                 // All good, create widgets
                 Widget::SetInterfaces(m_vrOverlay);
-
-                Widget *l_widget = new WidgetWatch();
-                if(l_widget->Create()) m_widgets.push_back(l_widget);
-                else
+                m_widgets.push_back(new WidgetStats());
+                m_widgets.push_back(new WidgetCapture());
+                
+                for(auto l_widget : m_widgets)
                 {
-                    delete l_widget;
-                    MessageBoxA(NULL, "Unable to create watch widget", NULL, MB_OK | MB_ICONEXCLAMATION);
+                    if(!l_widget->Create()) MessageBoxA(NULL, "Unable to create one of widgets", NULL, MB_OK | MB_ICONEXCLAMATION);
                 }
 
                 // Send hand states to widgets
@@ -83,10 +83,14 @@ bool Core::Init()
                 {
                     for(auto l_widget : m_widgets) l_widget->OnHandActivated(Widget::WH_Right);
                 }
+                if(m_vrOverlay->IsDashboardVisible())
+                {
+                    for(auto l_widget : m_widgets) l_widget->OnDashboardOpen();
+                }
 
                 l_result = true;
             }
-            else MessageBoxA(NULL, "Unable to create OpenGL 3.1 context", NULL, MB_OK | MB_ICONEXCLAMATION);
+            else MessageBoxA(NULL, "Unable to create OpenGL 3.0 (or higher) context", NULL, MB_OK | MB_ICONEXCLAMATION);
         }
         else
         {
@@ -100,6 +104,11 @@ bool Core::Init()
     return l_result;
 }
 
+void Core::Terminate()
+{
+    Cleanup();
+}
+
 bool Core::DoPulse()
 {
     if(m_active)
@@ -107,14 +116,14 @@ bool Core::DoPulse()
         // Save transformations
         vr::TrackedDevicePose_t l_hmdPose;
         m_vrSystem->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseRawAndUncalibrated, 0.f, &l_hmdPose, 1U);
-        TransformStorage::SetHmdTransformation(l_hmdPose.mDeviceToAbsoluteTracking);
+        VRTransform::SetHmdTransformation(l_hmdPose.mDeviceToAbsoluteTracking);
 
         if(m_leftHand != vr::k_unTrackedDeviceIndexInvalid)
         {
             vr::TrackedDevicePose_t l_handPose;
             vr::VRControllerState_t l_handState;
             m_vrSystem->GetControllerStateWithPose(vr::TrackingUniverseRawAndUncalibrated, m_leftHand, &l_handState, 1U, &l_handPose);
-            TransformStorage::SetLeftHandTransformation(l_handPose.mDeviceToAbsoluteTracking);
+            VRTransform::SetLeftHandTransformation(l_handPose.mDeviceToAbsoluteTracking);
         }
 
         if(m_rightHand != vr::k_unTrackedDeviceIndexInvalid)
@@ -122,7 +131,7 @@ bool Core::DoPulse()
             vr::TrackedDevicePose_t l_handPose;
             vr::VRControllerState_t l_handState;
             m_vrSystem->GetControllerStateWithPose(vr::TrackingUniverseRawAndUncalibrated, m_rightHand, &l_handState, 1U, &l_handPose);
-            TransformStorage::SetRightHandTransformation(l_handPose.mDeviceToAbsoluteTracking);
+            VRTransform::SetRightHandTransformation(l_handPose.mDeviceToAbsoluteTracking);
         }
 
         // Poll events
@@ -210,6 +219,14 @@ bool Core::DoPulse()
                         for(auto l_widget : m_widgets) l_widget->OnButtonRelease((m_event.trackedDeviceIndex == m_leftHand) ? Widget::WH_Left : Widget::WH_Right, m_event.data.controller.button);
                     }
                 } break;
+                case vr::VREvent_DashboardActivated:
+                {
+                    for(auto l_widget : m_widgets) l_widget->OnDashboardOpen();
+                } break;
+                case vr::VREvent_DashboardDeactivated:
+                {
+                    for(auto l_widget : m_widgets) l_widget->OnDashboardClose();
+                } break;
             }
         }
 
@@ -221,9 +238,4 @@ bool Core::DoPulse()
         }
     }
     return m_active;
-}
-
-void Core::Terminate()
-{
-    Cleanup();
 }

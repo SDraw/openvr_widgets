@@ -3,11 +3,18 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
+#include <pdh.h>
+#include <psapi.h>
 
+#ifdef _DEBUG
+#include <iostream>
+#endif
 #include <string>
 #include <vector>
 #include <chrono>
 #include <thread>
+#include <atomic>
+#include <mutex>
 
 #include "openvr.h"
 
@@ -19,3 +26,5 @@
 #include "glm/gtc/quaternion.hpp"
 
 #include "pugixml.hpp"
+
+#include "ScreenCapture.h"

@@ -1,4 +1,6 @@
 #pragma once
+
+class Transformation;
 class Widget
 {
 public:
@@ -13,6 +15,13 @@ public:
 protected:
     static vr::IVROverlay *ms_vrOverlay;
 
+    bool m_valid;
+
+    vr::VROverlayHandle_t m_overlayHandle;
+    vr::Texture_t m_vrTexture;
+    Transformation *m_transform;
+    bool m_visible;
+
     Widget();
     virtual ~Widget();
 
@@ -26,6 +35,8 @@ protected:
     virtual void OnHandDeactivated(WidgetHand f_hand) {}
     virtual void OnButtonPress(WidgetHand f_hand, uint32_t f_button) {}
     virtual void OnButtonRelease(WidgetHand f_hand, uint32_t f_button) {}
+    virtual void OnDashboardOpen() {}
+    virtual void OnDashboardClose() {}
 
     static void SetInterfaces(vr::IVROverlay *f_overlay);
 

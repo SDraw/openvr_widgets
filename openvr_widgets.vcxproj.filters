@@ -12,17 +12,26 @@
     <ClCompile Include="Widgets\Widget.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="Core\TransformStorage.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Widgets\WidgetWatch.cpp">
-      <Filter>Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="vendor\pugixml\src\pugixml.cpp">
       <Filter>vendor\pugixml</Filter>
     </ClCompile>
     <ClCompile Include="Core\Config.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\WidgetCapture.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Transformation.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\WindowGrabber.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\VRTransform.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\WidgetStats.cpp">
+      <Filter>Widgets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -36,16 +45,25 @@
     <ClInclude Include="Widgets\Widget.h">
       <Filter>Widgets</Filter>
     </ClInclude>
-    <ClInclude Include="Core\TransformStorage.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Widgets\WidgetWatch.h">
-      <Filter>Widgets</Filter>
-    </ClInclude>
     <ClInclude Include="Core\Config.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Widgets\WidgetCapture.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Transformation.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\WindowGrabber.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\VRTransform.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\WidgetStats.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Widgets">

@@ -2,4 +2,5 @@
     <setting name="language" value="en"/>
     <setting name="update_rate" value="11"/>
     <setting name="watch_font" value="Hack-Regular.ttf"/>
+    <setting name="capture_rate" value="66"/>
 </root>

@@ -1,5 +1,5 @@
 #pragma once
-class TransformStorage final
+class VRTransform final
 {
     static glm::vec3 ms_hmdPos;
     static glm::quat ms_hmdRot;

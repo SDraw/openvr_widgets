@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -21,33 +21,34 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ABE39968-9814-40D2-BA99-C6ECA4E3C8FA}</ProjectGuid>
     <RootNamespace>openvr_watches</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -85,12 +86,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;./vendor/screen_capture_lite/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>./vendor/openvr/lib/win32;./vendor/sfml/lib/win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>openvr_api.lib;sfml-system-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./vendor/openvr/lib/win32;./vendor/sfml/lib/win32;./vendor/screen_capture_lite/lib/win32</AdditionalLibraryDirectories>
+      <AdditionalDependencies>openvr_api.lib;opengl32.lib;pdh.lib;sfml-system-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;screen_capture_lite_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -100,12 +101,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;./vendor/screen_capture_lite/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>./vendor/openvr/lib/win64;./vendor/sfml/lib/win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>openvr_api.lib;sfml-system-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./vendor/openvr/lib/win64;./vendor/sfml/lib/win64;./vendor/screen_capture_lite/lib/win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>openvr_api.lib;opengl32.lib;pdh.lib;sfml-system-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;screen_capture_lite_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -117,14 +118,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;./vendor/screen_capture_lite/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>./vendor/openvr/lib/win32;./vendor/sfml/lib/win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>openvr_api.lib;sfml-system.lib;sfml-window.lib;sfml-graphics.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./vendor/openvr/lib/win32;./vendor/sfml/lib/win32;./vendor/screen_capture_lite/lib/win32</AdditionalLibraryDirectories>
+      <AdditionalDependencies>openvr_api.lib;opengl32.lib;pdh.lib;sfml-system.lib;sfml-window.lib;sfml-graphics.lib;screen_capture_lite.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,20 +136,21 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;./vendor/screen_capture_lite/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>./vendor/openvr/lib/win64;./vendor/sfml/lib/win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>openvr_api.lib;sfml-system.lib;sfml-window.lib;sfml-graphics.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./vendor/openvr/lib/win64;./vendor/sfml/lib/win64;./vendor/screen_capture_lite/lib/win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>openvr_api.lib;opengl32.lib;pdh.lib;sfml-system.lib;sfml-window.lib;sfml-graphics.lib;screen_capture_lite.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Core\Config.cpp" />
     <ClCompile Include="Core\Core.cpp" />
-    <ClCompile Include="Core\TransformStorage.cpp" />
+    <ClCompile Include="Core\VRTransform.cpp" />
+    <ClCompile Include="Core\WindowGrabber.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -156,6 +158,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Utils\Transformation.cpp" />
     <ClCompile Include="Utils\Utils.cpp" />
     <ClCompile Include="vendor\pugixml\src\pugixml.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -163,17 +166,21 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Widgets\WidgetWatch.cpp" />
+    <ClCompile Include="Widgets\WidgetCapture.cpp" />
+    <ClCompile Include="Widgets\WidgetStats.cpp" />
     <ClCompile Include="Widgets\Widget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Config.h" />
     <ClInclude Include="Core\Core.h" />
-    <ClInclude Include="Core\TransformStorage.h" />
+    <ClInclude Include="Core\VRTransform.h" />
+    <ClInclude Include="Core\WindowGrabber.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Utils\Transformation.h" />
     <ClInclude Include="Utils\Utils.h" />
-    <ClInclude Include="Widgets\WidgetWatch.h" />
+    <ClInclude Include="Widgets\WidgetCapture.h" />
+    <ClInclude Include="Widgets\WidgetStats.h" />
     <ClInclude Include="Widgets\Widget.h" />
   </ItemGroup>
   <ItemGroup>
