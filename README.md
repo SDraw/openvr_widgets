@@ -24,7 +24,7 @@ List of global settings:
 * **Modifications:**
   * **Font:** Custom font can be set by changing 'watch_font' setting. Default value is 'Hack-Regular.ttf'. Refer to [Hack font repository](../../../../source-foundry/Hack).
   
-# Windows capture overlay
+# Windows capture overlay widget
 ![](./.github/img_02.png)
 * **Activation:** Double press on grip button of left hand controller.
 * **Deactivation:** Double press on grip button of left hand controller.
@@ -36,7 +36,6 @@ List of global settings:
     * **Left:** Cycle window to left.
     * **Right:** Cycle window to right.
     * **Update:** Update stored list of windows. Helpful when new window has appeared or old has been destroyed.
-  * **Interaction:** You can interact with captured window by clicking on overlay with activated SteamVR dashboard. Only single click is available for the moment.
+  * **Interaction:** You can interact with captured window by clicking on overlay with activated SteamVR dashboard. Click and scroll are implemented. Note: Not all active and non-active windows accept click and scroll messages.
   * **Modifications:**
     * **Capture rate:** You can adjust capture rate by changing 'capture_rate' value. Default value is 66 milliseconds that corresponds to ~15 frames per second.
- *  **Notes:** Not all non-active windows accept click and scroll messages.
