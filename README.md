@@ -1,10 +1,10 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/ctb2t0bawyus9x90?svg=true)](https://ci.appveyor.com/project/SDraw/openvr-widgets)
 # OpenVR Widgets
 Set of simple overlay widgets for usage in SteamVR environment.  
-Supports Windows 7, 8, 8.1 and 10.
+Application supports Windows 7, 8, 8.1 and 10.
 
 # Installation
-* Grab latest [release](../../releases/latest).
+* Grab latest [release](../../releases/latest) for your platform.
 * Extract archive to your preferable folder.
 * Launch 'openvr_widgets' binary.
 * Optional: Enable auto-launch in SteamVR settings.
