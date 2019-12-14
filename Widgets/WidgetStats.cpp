@@ -15,12 +15,15 @@ const glm::vec3 g_OverlayOffset(0.f, 0.05f, 0.f);
 const glm::vec2 g_ViewAngleRange(g_Pi / 6.f, g_Pi / 12.f);
 const float g_ViewAngleRangeDif = g_ViewAngleRange.x - g_ViewAngleRange.y;
 
-const char* g_WeekDayEng[] = {
+const char* g_WeekDayEn[] = {
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
 };
-const wchar_t* g_WeekDayRus[] = {
+const wchar_t* g_WeekDayRu[] = {
     L"\u0412\u0441", L"\u041f\u043d", L"\u0412\u0442", L"\u0421\u0440", L"\u0427\u0442", L"\u041f\u0442", L"\u0421\u0431"
 };
+
+const char* g_MemorySizeEn = "MB";
+const wchar_t* g_MemorySizeRu = L"\u041C\u0411";
 
 WidgetStats::WidgetStats()
 {
@@ -52,6 +55,8 @@ void WidgetStats::Cleanup()
 {
     if(m_valid)
     {
+        PdhCloseQuery(m_winHandles.m_query);
+
         if(m_overlayHandle != vr::k_ulOverlayHandleInvalid)
         {
             ms_vrOverlay->HideOverlay(m_overlayHandle);
@@ -96,6 +101,9 @@ bool WidgetStats::Create()
 {
     if(!m_valid)
     {
+        PdhOpenQueryA(NULL, NULL, &m_winHandles.m_query);
+        PdhAddEnglishCounterA(m_winHandles.m_query, "\\Processor(_Total)\\% Processor Time", NULL, &m_winHandles.m_counter);
+
         if(ms_vrOverlay->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlayHandle) == vr::VROverlayError_None)
         {
             ms_vrOverlay->SetOverlayWidthInMeters(m_overlayHandle, 0.125f);
@@ -133,9 +141,6 @@ bool WidgetStats::Create()
                     m_vrTexture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
                     m_vrTexture.eType = vr::TextureType_OpenGL;
                     m_vrTexture.eColorSpace = vr::ColorSpace_Gamma;
-
-                    PdhOpenQueryA(NULL, NULL, &m_winHandles.m_query);
-                    PdhAddEnglishCounterA(m_winHandles.m_query, "\\Processor(_Total)\\% Processor Time", NULL, &m_winHandles.m_counter);
 
                     m_valid = (ms_vrOverlay->SetOverlayTexture(m_overlayHandle, &m_vrTexture) == vr::VROverlayError_None);
                 }
@@ -186,20 +191,20 @@ void WidgetStats::Update()
                     {
                         m_lastDay = l_tmTime.tm_yday;
 
-                        sf::String l_dayString;
+                        sf::String l_sfString;
                         l_string.assign(" ");
                         switch(Config::GetLanguage())
                         {
                             case Config::CL_English:
                             {
-                                l_dayString = g_WeekDayEng[l_tmTime.tm_wday];
+                                l_sfString = g_WeekDayEn[l_tmTime.tm_wday];
                                 l_string.append(std::to_string(l_tmTime.tm_mon + 1));
                                 l_string.push_back('/');
                                 l_string.append(std::to_string(l_tmTime.tm_mday));
                             } break;
                             case Config::CL_Russian:
                             {
-                                l_dayString = g_WeekDayRus[l_tmTime.tm_wday];
+                                l_sfString = g_WeekDayRu[l_tmTime.tm_wday];
                                 l_string.append(std::to_string(l_tmTime.tm_mday));
                                 l_string.push_back('/');
                                 l_string.append(std::to_string(l_tmTime.tm_mon + 1));
@@ -207,8 +212,8 @@ void WidgetStats::Update()
                         }
                         l_string.push_back('/');
                         l_string.append(std::to_string(1900 + l_tmTime.tm_year));
-                        l_dayString += l_string;
-                        m_fontTextDate->setString(l_dayString);
+                        l_sfString += l_string;
+                        m_fontTextDate->setString(l_sfString);
 
                         l_bounds = m_fontTextDate->getLocalBounds();
                         l_position.x = 56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f;
@@ -249,8 +254,19 @@ void WidgetStats::Update()
                     l_text.append(std::to_string((m_winHandles.m_memoryStatus.ullTotalPhys - m_winHandles.m_memoryStatus.ullAvailPhys) / 1048576));
                     l_text.push_back('/');
                     l_text.append(std::to_string(m_winHandles.m_memoryStatus.ullTotalPhys / 1048576));
-                    l_text.append(" MB");
-                    m_fontTextRam->setString(l_text);
+                    l_text.push_back(' ');
+
+                    sf::String l_sfString(l_text);
+                    switch(Config::GetLanguage())
+                    {
+                        case Config::CL_English:
+                            l_sfString += g_MemorySizeEn;
+                            break;
+                        case Config::CL_Russian:
+                            l_sfString += g_MemorySizeRu;
+                            break;
+                    }
+                    m_fontTextRam->setString(l_sfString);
 
                     sf::FloatRect l_bounds = m_fontTextRam->getLocalBounds();
                     sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
