@@ -289,7 +289,6 @@ void WidgetCapture::Update()
                                 {
                                     vr::HmdVector2_t l_scale = { static_cast<float>(l_window->Size.x), static_cast<float>(l_window->Size.y) };
                                     ms_vrOverlay->SetOverlayMouseScale(m_overlayHandle, &l_scale);
-                                    SetForegroundWindow(reinterpret_cast<HWND>(l_window->Handle));
                                 }
                             }
                             else m_vrTexture.handle = nullptr;
@@ -317,7 +316,6 @@ void WidgetCapture::Update()
                             {
                                 vr::HmdVector2_t l_scale = { static_cast<float>(l_window->Size.x), static_cast<float>(l_window->Size.y) };
                                 ms_vrOverlay->SetOverlayMouseScale(m_overlayHandle, &l_scale);
-                                SetForegroundWindow(reinterpret_cast<HWND>(l_window->Handle));
                             }
                         }
                         else m_vrTexture.handle = nullptr;
@@ -388,7 +386,6 @@ void WidgetCapture::OnButtonPress(WidgetHand f_hand, uint32_t f_button)
                                         {
                                             vr::HmdVector2_t l_scale = { static_cast<float>(l_window->Size.x), static_cast<float>(l_window->Size.y) };
                                             ms_vrOverlay->SetOverlayMouseScale(m_overlayHandle, &l_scale);
-                                            SetForegroundWindow(reinterpret_cast<HWND>(l_window->Handle));
                                         }
                                     }
                                     else m_vrTexture.handle = nullptr;
