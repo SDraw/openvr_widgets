@@ -37,3 +37,4 @@ List of global settings:
   * **Interaction:** You can interact with captured window by clicking on overlay with activated SteamVR dashboard. Only single click is available for the moment.
   * **Modifications:**
     * **Capture rate:** You can adjust capture rate by changing 'capture_rate' value. Default value is 66 milliseconds that corresponds to ~15 frames per second.
+ *  **Notes:** Not all non-active windows accept click and scroll messages.
