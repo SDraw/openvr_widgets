@@ -11,6 +11,7 @@ WindowGrabber::WindowGrabber()
     m_texture = nullptr;
     m_active = false;
     m_interfaces = nullptr;
+    m_windowsCount = 0U;
     m_activeWindow = std::numeric_limits<size_t>::max();
 }
 WindowGrabber::~WindowGrabber()
@@ -24,7 +25,7 @@ bool WindowGrabber::StartCapture(size_t f_window)
 {
     if(!m_active)
     {
-        if(f_window < m_windows.size())
+        if(f_window < m_windowsCount)
         {
             m_activeWindow = f_window;
 
@@ -93,6 +94,7 @@ void WindowGrabber::UpdateWindows()
     if(!m_active)
     {
         m_windows = SL::Screen_Capture::GetWindows();
+        m_windowsCount = m_windows.size();
         for(auto l_iter = m_windows.begin(); l_iter != m_windows.end();)
         {
             if((strlen(l_iter->Name) < 1U) || (l_iter->Size.x <= 10) || (l_iter->Size.y <= 10) || !IsWindowVisible(reinterpret_cast<HWND>(l_iter->Handle))) l_iter = m_windows.erase(l_iter);
@@ -103,12 +105,12 @@ void WindowGrabber::UpdateWindows()
 const SL::Screen_Capture::Window* WindowGrabber::GetWindowInfo(size_t f_window) const
 {
     SL::Screen_Capture::Window *l_result = nullptr;
-    if(f_window < m_windows.size()) l_result = const_cast<SL::Screen_Capture::Window*>(&m_windows[f_window]);
+    if(f_window < m_windowsCount) l_result = const_cast<SL::Screen_Capture::Window*>(&m_windows[f_window]);
     return l_result;
 }
 size_t WindowGrabber::GetWindowsCount() const
 {
-    return m_windows.size();
+    return m_windowsCount;
 }
 
 std::vector<SL::Screen_Capture::Window> WindowGrabber::GetCapturedWindow()

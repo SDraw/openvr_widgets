@@ -15,6 +15,7 @@ class WindowGrabber final
     };
     CaptureInterfaces *m_interfaces;
     std::vector<SL::Screen_Capture::Window> m_windows;
+    size_t m_windowsCount;
     size_t m_activeWindow;
 
     WindowGrabber(const WindowGrabber &that) = delete;

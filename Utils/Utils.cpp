@@ -93,3 +93,8 @@ void GetRotationToPoint(const glm::vec3 &f_pointA, const glm::vec3 &f_pointB, co
     glm::mat3 l_rotMat(l_crossX, l_crossY, l_dir);
     f_result = l_rotMat;
 }
+
+void SendWinAPIMessage(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+    if(SendMessage(hWnd, Msg, wParam, lParam)) PostMessage(hWnd, Msg, wParam, lParam);
+}

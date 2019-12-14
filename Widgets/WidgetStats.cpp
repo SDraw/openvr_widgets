@@ -96,7 +96,7 @@ bool WidgetStats::Create()
 {
     if(!m_valid)
     {
-        if(ms_vrOverlay->CreateOverlay("widget_watches", "Widget - Watches", &m_overlayHandle) == vr::VROverlayError_None)
+        if(ms_vrOverlay->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlayHandle) == vr::VROverlayError_None)
         {
             ms_vrOverlay->SetOverlayWidthInMeters(m_overlayHandle, 0.125f);
             ms_vrOverlay->SetOverlayFlag(m_overlayHandle, vr::VROverlayFlags_SortWithNonSceneOverlays, true);

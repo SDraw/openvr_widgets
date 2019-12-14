@@ -21,6 +21,7 @@ class WidgetCapture final : public Widget
     bool m_activeResize;
     float m_overlayWidth;
     glm::ivec2 m_windowSize;
+    glm::ivec2 m_mousePosition;
     Transformation *m_nextButtonTransform;
     Transformation *m_prevButtonTransform;
     Transformation *m_updButtonTransform;
