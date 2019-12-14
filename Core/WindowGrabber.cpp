@@ -94,12 +94,12 @@ void WindowGrabber::UpdateWindows()
     if(!m_active)
     {
         m_windows = SL::Screen_Capture::GetWindows();
-        m_windowsCount = m_windows.size();
         for(auto l_iter = m_windows.begin(); l_iter != m_windows.end();)
         {
             if((strlen(l_iter->Name) < 1U) || (l_iter->Size.x <= 10) || (l_iter->Size.y <= 10) || !IsWindowVisible(reinterpret_cast<HWND>(l_iter->Handle))) l_iter = m_windows.erase(l_iter);
             else ++l_iter;
         }
+        m_windowsCount = m_windows.size();
     }
 }
 const SL::Screen_Capture::Window* WindowGrabber::GetWindowInfo(size_t f_window) const
