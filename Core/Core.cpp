@@ -62,13 +62,11 @@ bool Core::Init()
 
             if(m_context->setActive(true))
             {
-                m_active = true;
-
                 // All good, create widgets
                 Widget::SetInterfaces(m_vrOverlay);
                 m_widgets.push_back(new WidgetStats());
                 m_widgets.push_back(new WidgetCapture());
-                
+
                 for(auto l_widget : m_widgets)
                 {
                     if(!l_widget->Create()) MessageBoxA(NULL, "Unable to create one of widgets", NULL, MB_OK | MB_ICONEXCLAMATION);
@@ -88,6 +86,7 @@ bool Core::Init()
                     for(auto l_widget : m_widgets) l_widget->OnDashboardOpen();
                 }
 
+                m_active = true;
                 l_result = true;
             }
             else MessageBoxA(NULL, "Unable to create OpenGL 3.0 (or higher) context", NULL, MB_OK | MB_ICONEXCLAMATION);

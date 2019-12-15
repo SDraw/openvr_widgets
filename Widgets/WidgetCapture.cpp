@@ -73,7 +73,7 @@ bool WidgetCapture::Create()
 {
     if(!m_valid)
     {
-        m_overlayWidth = 0.5;
+        m_overlayWidth = 0.5f;
         m_nextButtonTransform = new Transformation();
         m_prevButtonTransform = new Transformation();
         m_updButtonTransform = new Transformation();
@@ -366,76 +366,73 @@ void WidgetCapture::OnButtonPress(WidgetHand f_hand, uint32_t f_button)
         {
             case WH_Left:
             {
-                if(f_hand == WH_Left)
+                switch(f_button)
                 {
-                    switch(f_button)
+                    case vr::k_EButton_Grip:
                     {
-                        case vr::k_EButton_Grip:
+                        ULONGLONG l_tick = GetTickCount64();
+                        if((l_tick - m_lastLeftGripTick) < 300U)
+                        {
+                            m_visible = !m_visible;
+                            if(m_visible)
+                            {
+                                if(m_windowGrabber->StartCapture(m_windowIndex))
+                                {
+                                    m_vrTexture.handle = m_windowGrabber->GetTextureHandle();
+                                    const SL::Screen_Capture::Window *l_window = m_windowGrabber->GetWindowInfo(m_windowIndex);
+                                    if(l_window)
+                                    {
+                                        vr::HmdVector2_t l_scale = { static_cast<float>(l_window->Size.x), static_cast<float>(l_window->Size.y) };
+                                        ms_vrOverlay->SetOverlayMouseScale(m_overlayHandle, &l_scale);
+                                    }
+                                }
+                                else m_vrTexture.handle = nullptr;
+
+                                ms_vrOverlay->ShowOverlay(m_overlayHandle);
+                                if(m_activeDashboard)
+                                {
+                                    ms_vrOverlay->ShowOverlay(m_overlayNextHandle);
+                                    ms_vrOverlay->ShowOverlay(m_overlayPrevHandle);
+                                    ms_vrOverlay->ShowOverlay(m_overlayUpdateHandle);
+                                }
+                            }
+                            else
+                            {
+                                ms_vrOverlay->ClearOverlayTexture(m_overlayHandle);
+                                m_windowGrabber->StopCapture();
+                                m_vrTexture.handle = nullptr;
+
+                                m_activeMove = false;
+                                m_activeResize = false;
+
+                                ms_vrOverlay->HideOverlay(m_overlayHandle);
+                                if(m_activeDashboard)
+                                {
+                                    ms_vrOverlay->HideOverlay(m_overlayNextHandle);
+                                    ms_vrOverlay->HideOverlay(m_overlayPrevHandle);
+                                    ms_vrOverlay->HideOverlay(m_overlayUpdateHandle);
+                                }
+                            }
+                        }
+                        m_lastLeftGripTick = l_tick;
+                    } break;
+
+                    case vr::k_EButton_SteamVR_Trigger:
+                    {
+                        if(m_visible && !m_activeDashboard)
                         {
                             ULONGLONG l_tick = GetTickCount64();
-                            if((l_tick - m_lastLeftGripTick) < 300U)
+                            if((l_tick - m_lastLeftTriggerTick) < 300U)
                             {
-                                m_visible = !m_visible;
-                                if(m_visible)
+                                if(!m_activeMove)
                                 {
-                                    if(m_windowGrabber->StartCapture(m_windowIndex))
-                                    {
-                                        m_vrTexture.handle = m_windowGrabber->GetTextureHandle();
-                                        const SL::Screen_Capture::Window *l_window = m_windowGrabber->GetWindowInfo(m_windowIndex);
-                                        if(l_window)
-                                        {
-                                            vr::HmdVector2_t l_scale = { static_cast<float>(l_window->Size.x), static_cast<float>(l_window->Size.y) };
-                                            ms_vrOverlay->SetOverlayMouseScale(m_overlayHandle, &l_scale);
-                                        }
-                                    }
-                                    else m_vrTexture.handle = nullptr;
-
-                                    ms_vrOverlay->ShowOverlay(m_overlayHandle);
-                                    if(m_activeDashboard)
-                                    {
-                                        ms_vrOverlay->ShowOverlay(m_overlayNextHandle);
-                                        ms_vrOverlay->ShowOverlay(m_overlayPrevHandle);
-                                        ms_vrOverlay->ShowOverlay(m_overlayUpdateHandle);
-                                    }
+                                    m_activeMove = (glm::distance(VRTransform::GetLeftHandPosition(), m_transform->GetPosition()) < (m_overlayWidth * 0.2f));
                                 }
-                                else
-                                {
-                                    ms_vrOverlay->ClearOverlayTexture(m_overlayHandle);
-                                    m_windowGrabber->StopCapture();
-                                    m_vrTexture.handle = nullptr;
-
-                                    m_activeMove = false;
-                                    m_activeResize = false;
-
-                                    ms_vrOverlay->HideOverlay(m_overlayHandle);
-                                    if(m_activeDashboard)
-                                    {
-                                        ms_vrOverlay->HideOverlay(m_overlayNextHandle);
-                                        ms_vrOverlay->HideOverlay(m_overlayPrevHandle);
-                                        ms_vrOverlay->HideOverlay(m_overlayUpdateHandle);
-                                    }
-                                }
+                                else m_activeMove = false;
                             }
-                            m_lastLeftGripTick = l_tick;
-                        } break;
-
-                        case vr::k_EButton_SteamVR_Trigger:
-                        {
-                            if(m_visible && !m_activeDashboard)
-                            {
-                                ULONGLONG l_tick = GetTickCount64();
-                                if((l_tick - m_lastLeftTriggerTick) < 300U)
-                                {
-                                    if(!m_activeMove)
-                                    {
-                                        m_activeMove = (glm::distance(VRTransform::GetLeftHandPosition(), m_transform->GetPosition()) < (m_overlayWidth * 0.2f));
-                                    }
-                                    else m_activeMove = false;
-                                }
-                                m_lastLeftTriggerTick = l_tick;
-                            }
-                        } break;
-                    }
+                            m_lastLeftTriggerTick = l_tick;
+                        }
+                    } break;
                 }
             } break;
 
@@ -495,6 +492,3 @@ void WidgetCapture::OnDashboardClose()
         }
     }
 }
-
-//SendMessage(Window, WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(mouseX, mouseY));
-//SendMessage(Window, WM_LBUTTONUP, MK_LBUTTON, MAKELPARAM(mouseX, mouseY));
