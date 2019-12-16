@@ -1,6 +1,7 @@
+<?xml version="1.0"?>
 <root>
-    <setting name="language" value="en"/>
-    <setting name="update_rate" value="11"/>
-    <setting name="watch_font" value="fonts/Hack-Regular.ttf"/>
-    <setting name="capture_rate" value="66"/>
+	<setting name="language" value="en" />
+	<setting name="update_rate" value="11" />
+	<setting name="watch_font" value="fonts/Hack-Regular.ttf" />
+	<setting name="capture_rate" value="66" />
 </root>

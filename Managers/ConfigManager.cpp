@@ -1,13 +1,11 @@
 #include "stdafx.h"
+#include "Utils/GlobalStructures.h"
 
-#include "Core/Config.h"
+#include "Managers/ConfigManager.h"
+#include "Core/Core.h"
 #include "Utils/Utils.h"
 
-std::string Config::ms_directory;
-unsigned char Config::ms_language = CL_English;
-unsigned int Config::ms_updateRate = 11U; // ~90 FPS by default
-std::string Config::ms_watchFont("Hack-Regular.ttf");
-unsigned int Config::ms_captureRate = 66U; // ~15 FPS by default
+#include "Core/GlobalSettings.h"
 
 const std::vector<std::string> g_ConfigSettings
 {
@@ -26,16 +24,29 @@ const std::vector<std::string> g_ConfigLanguages
     "en", "ru"
 };
 
-void Config::Load()
+ConfigManager::ConfigManager(Core *f_core)
+{
+    m_core = f_core;
+    m_settingsFile = new pugi::xml_document();
+    m_language = ELanguage::ELanguage_English;
+    m_updateDelay = 11U; // ~90 FPS by default
+    m_statsFont.assign("Hack-Regular.ttf");
+    m_captureDelay = 66U; // ~15 FPS by default
+}
+ConfigManager::~ConfigManager()
+{
+    delete m_settingsFile;
+}
+
+void ConfigManager::Load()
 {
     char l_path[MAX_PATH];
     GetCurrentDirectoryA(MAX_PATH, l_path);
-    ms_directory.assign(l_path);
+    m_directory.assign(l_path);
 
-    pugi::xml_document *l_document = new pugi::xml_document();
-    if(l_document->load_file("settings.xml"))
+    if(m_settingsFile->load_file("settings.xml"))
     {
-        pugi::xml_node l_root = l_document->child("root");
+        pugi::xml_node l_root = m_settingsFile->child("root");
         for(pugi::xml_node l_node = l_root.child("setting"); l_node; l_node = l_node.next_sibling("setting"))
         {
             pugi::xml_attribute l_attribName = l_node.attribute("name");
@@ -47,20 +58,28 @@ void Config::Load()
                     case CSI_Language:
                     {
                         size_t l_langIndex = ReadEnumVector(l_attribValue.as_string("en"), g_ConfigLanguages);
-                        if(l_langIndex != std::numeric_limits<size_t>::max()) ms_language = static_cast<unsigned char>(l_langIndex);
+                        if(l_langIndex != std::numeric_limits<size_t>::max()) m_language = static_cast<unsigned char>(l_langIndex);
                     } break;
                     case CSI_UpdateRate:
-                        ms_updateRate = l_attribValue.as_uint(11U);
+                        m_updateDelay = l_attribValue.as_uint(11U);
                         break;
                     case CSI_WatchFont:
-                        ms_watchFont.assign(l_attribValue.as_string("Hack-Regular.ttf"));
+                        m_statsFont.assign(l_attribValue.as_string("Hack-Regular.ttf"));
                         break;
                     case CSI_CaptureRate:
-                        ms_captureRate = l_attribValue.as_uint(66U);
+                        m_captureDelay = l_attribValue.as_uint(66U);
                         break;
                 }
             }
         }
     }
-    delete l_document;
+
+    GlobalSettings::SetDirectory(m_directory);
+    GlobalSettings::SetStatsFont(m_statsFont);
+    GlobalSettings::SetCaptureDelay(m_captureDelay);
+}
+
+void ConfigManager::Save()
+{
+    m_settingsFile->save_file("settings.xml");
 }

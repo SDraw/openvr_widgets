@@ -15,23 +15,29 @@
     <ClCompile Include="vendor\pugixml\src\pugixml.cpp">
       <Filter>vendor\pugixml</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Config.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Widgets\WidgetCapture.cpp">
-      <Filter>Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\Transformation.cpp">
       <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\WindowGrabber.cpp">
-      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Core\VRTransform.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Widgets\WidgetStats.cpp">
       <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\WidgetManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\ConfigManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\WindowGrabber.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\WidgetWindowCapture.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GlobalSettings.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -45,24 +51,33 @@
     <ClInclude Include="Widgets\Widget.h">
       <Filter>Widgets</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Config.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="Widgets\WidgetCapture.h">
-      <Filter>Widgets</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\Transformation.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\WindowGrabber.h">
-      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\VRTransform.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Widgets\WidgetStats.h">
       <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\WidgetManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\GlobalStructures.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\ConfigManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\WindowGrabber.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\WidgetWindowCapture.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GlobalSettings.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -80,6 +95,9 @@
     </Filter>
     <Filter Include="vendor\pugixml">
       <UniqueIdentifier>{e8e952df-4222-4a1f-ad43-2942a319188e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Managers">
+      <UniqueIdentifier>{18462520-9e98-48a3-a963-114ff9f7b429}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

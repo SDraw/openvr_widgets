@@ -12,11 +12,9 @@ class WidgetStats final : public Widget
     sf::Text *m_fontTextRam;
 
     sf::Texture *m_textureWatch;
-    sf::Sprite *m_spriteWatch;
     sf::Texture *m_textureCpu;
-    sf::Sprite *m_spriteCpu;
     sf::Texture *m_textureRam;
-    sf::Sprite *m_spriteRam;
+    sf::Sprite *m_spriteIcon;
 
     std::time_t m_lastTime;
     int m_lastDay;
@@ -40,20 +38,21 @@ class WidgetStats final : public Widget
     };
     unsigned char m_statsMode;
 
-    void Cleanup();
+    WidgetStats(const WidgetStats &that) = delete;
+    WidgetStats& operator=(const WidgetStats &that) = delete;
 
+    // Widget
     bool Create();
     void Update();
     void Destroy();
-
-    void OnHandDeactivated(WidgetHand f_hand);
-    void OnButtonPress(WidgetHand f_hand, uint32_t f_button);
-    void OnButtonRelease(WidgetHand f_hand, uint32_t f_button);
-
-    WidgetStats(const WidgetStats &that) = delete;
-    WidgetStats& operator=(const WidgetStats &that) = delete;
-public:
+    void Cleanup();
+    void OnHandDeactivated(unsigned char f_hand);
+    void OnButtonPress(unsigned char f_hand, uint32_t f_button);
+    void OnButtonRelease(unsigned char f_hand, uint32_t f_button);
+protected:
     WidgetStats();
     ~WidgetStats();
+
+    friend class WidgetManager;
 };
 

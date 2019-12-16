@@ -1,6 +1,7 @@
 #pragma once
 
-class Widget;
+class ConfigManager;
+class WidgetManager;
 
 class Core final
 {
@@ -14,7 +15,9 @@ class Core final
 
     vr::TrackedDeviceIndex_t m_leftHand;
     vr::TrackedDeviceIndex_t m_rightHand;
-    std::vector<Widget*> m_widgets;
+    
+    ConfigManager *m_configManager;
+    WidgetManager *m_widgetManager;
 
     Core(const Core &that) = delete;
     Core& operator=(const Core &that) = delete;
@@ -27,5 +30,11 @@ public:
     bool Init();
     bool DoPulse();
     void Terminate();
+
+    inline vr::IVRSystem* GetVRSystem() const { return m_vrSystem; }
+    inline vr::IVROverlay* GetVROverlay() const { return m_vrOverlay; }
+
+    inline WidgetManager* GetWidgetManager() const { return m_widgetManager; }
+    inline ConfigManager* GetConfigManager() const { return m_configManager; }
 };
 

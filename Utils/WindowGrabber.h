@@ -7,6 +7,8 @@ class WindowGrabber final
     std::vector<SL::Screen_Capture::ImageBGRA> m_buffer;
     std::mutex m_bufferLock;
     std::atomic<bool> m_active;
+    ULONGLONG m_lastTick;
+    bool m_stale;
 
     struct CaptureInterfaces
     {
@@ -29,6 +31,7 @@ public:
     void Update();
 
     inline bool IsActive() const { return m_active; }
+    inline bool IsStale() const { return m_stale; }
 
     void UpdateWindows();
     const SL::Screen_Capture::Window* GetWindowInfo(size_t f_window) const;

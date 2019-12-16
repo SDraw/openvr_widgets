@@ -1,7 +1,8 @@
 #include "stdafx.h"
 
-#include "Core/WindowGrabber.h"
-#include "Core/Config.h"
+#include "Utils/WindowGrabber.h"
+
+#include "Core/GlobalSettings.h"
 #include "Utils/Utils.h"
 
 const SL::Screen_Capture::ImageBGRA g_FillColor = { 0U, 0U, 0U, 255U };
@@ -13,6 +14,8 @@ WindowGrabber::WindowGrabber()
     m_interfaces = nullptr;
     m_windowsCount = 0U;
     m_activeWindow = std::numeric_limits<size_t>::max();
+    m_lastTick = 0U;
+    m_stale = false;
 }
 WindowGrabber::~WindowGrabber()
 {
@@ -51,8 +54,10 @@ bool WindowGrabber::StartCapture(size_t f_window)
                 });
                 m_interfaces->m_captureConfiguration->onNewFrame(l_captureCallback);
                 m_interfaces->m_captureInterface = m_interfaces->m_captureConfiguration->start_capturing();
-                m_interfaces->m_captureInterface->setFrameChangeInterval(std::chrono::milliseconds(Config::GetCaptureRate()));
+                m_interfaces->m_captureInterface->setFrameChangeInterval(std::chrono::milliseconds(GlobalSettings::GetCaptureDelay()));
 
+                m_lastTick = GetTickCount64();
+                m_stale = false;
                 m_active = true;
             }
             else delete l_texture;
@@ -64,6 +69,7 @@ void WindowGrabber::StopCapture()
 {
     if(m_active)
     {
+        m_stale = false;
         m_active = false;
 
         delete m_interfaces;
@@ -76,7 +82,8 @@ void WindowGrabber::Update()
     {
         if(m_bufferLock.try_lock())
         {
-            m_texture->update(reinterpret_cast<unsigned char*>(m_buffer.data()), static_cast<unsigned int>(m_windows[m_activeWindow].Size.x), static_cast<unsigned int>(m_windows[m_activeWindow].Size.y), 0U, 0U);
+            m_stale = ((GetTickCount64() - m_lastTick) > 5000U);
+            if(!m_stale) m_texture->update(reinterpret_cast<unsigned char*>(m_buffer.data()), static_cast<unsigned int>(m_windows[m_activeWindow].Size.x), static_cast<unsigned int>(m_windows[m_activeWindow].Size.y), 0U, 0U);
             m_bufferLock.unlock();
         }
     }
@@ -125,6 +132,7 @@ void WindowGrabber::ProcessCapture(const SL::Screen_Capture::Image &f_img, const
     {
         m_bufferLock.lock();
         ExtractAndConvertToRGBA(f_img, reinterpret_cast<unsigned char*>(m_buffer.data()), m_buffer.size()*sizeof(SL::Screen_Capture::ImageBGRA));
+        m_lastTick = GetTickCount64();
         m_bufferLock.unlock();
     }
 }

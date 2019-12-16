@@ -86,7 +86,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;./vendor/screen_capture_lite/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;./vendor/screen_capture_lite/include;./vendor/glew/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -101,7 +101,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;./vendor/screen_capture_lite/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;./vendor/screen_capture_lite/include;./vendor/glew/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -118,7 +118,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;./vendor/screen_capture_lite/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;./vendor/screen_capture_lite/include;./vendor/glew/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -136,7 +136,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;./vendor/screen_capture_lite/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;./vendor/glm;./vendor/openvr/headers;./vendor/pugixml/src;./vendor/sfml/include;./vendor/screen_capture_lite/include;./vendor/glew/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -147,11 +147,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Core\Config.cpp" />
     <ClCompile Include="Core\Core.cpp" />
+    <ClCompile Include="Core\GlobalSettings.cpp" />
     <ClCompile Include="Core\VRTransform.cpp" />
-    <ClCompile Include="Core\WindowGrabber.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Managers\ConfigManager.cpp" />
+    <ClCompile Include="Managers\WidgetManager.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -160,26 +161,30 @@
     </ClCompile>
     <ClCompile Include="Utils\Transformation.cpp" />
     <ClCompile Include="Utils\Utils.cpp" />
+    <ClCompile Include="Utils\WindowGrabber.cpp" />
     <ClCompile Include="vendor\pugixml\src\pugixml.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Widgets\WidgetCapture.cpp" />
+    <ClCompile Include="Widgets\WidgetWindowCapture.cpp" />
     <ClCompile Include="Widgets\WidgetStats.cpp" />
     <ClCompile Include="Widgets\Widget.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Core\Config.h" />
     <ClInclude Include="Core\Core.h" />
+    <ClInclude Include="Core\GlobalSettings.h" />
     <ClInclude Include="Core\VRTransform.h" />
-    <ClInclude Include="Core\WindowGrabber.h" />
+    <ClInclude Include="Managers\ConfigManager.h" />
+    <ClInclude Include="Managers\WidgetManager.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Utils\GlobalStructures.h" />
     <ClInclude Include="Utils\Transformation.h" />
     <ClInclude Include="Utils\Utils.h" />
-    <ClInclude Include="Widgets\WidgetCapture.h" />
+    <ClInclude Include="Utils\WindowGrabber.h" />
+    <ClInclude Include="Widgets\WidgetWindowCapture.h" />
     <ClInclude Include="Widgets\WidgetStats.h" />
     <ClInclude Include="Widgets\Widget.h" />
   </ItemGroup>

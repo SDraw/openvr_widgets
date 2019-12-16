@@ -3,11 +3,13 @@
 
 class Transformation;
 class WindowGrabber;
-class WidgetCapture final : public Widget
+
+class WidgetWindowCapture final : public Widget
 {
     vr::VROverlayHandle_t m_overlayNextHandle;
     vr::VROverlayHandle_t m_overlayPrevHandle;
     vr::VROverlayHandle_t m_overlayUpdateHandle;
+    vr::VROverlayHandle_t m_overlayPinHandle;
     vr::VREvent_t m_overlayEvent;
 
     WindowGrabber *m_windowGrabber;
@@ -19,29 +21,33 @@ class WidgetCapture final : public Widget
     bool m_activeDashboard;
     bool m_activeMove;
     bool m_activeResize;
+    bool m_activePin;
     float m_overlayWidth;
     glm::ivec2 m_windowSize;
     glm::ivec2 m_mousePosition;
+    Transformation *m_pinButtonTransform;
     Transformation *m_nextButtonTransform;
     Transformation *m_prevButtonTransform;
     Transformation *m_updButtonTransform;
 
+    WidgetWindowCapture(const WidgetWindowCapture &that) = delete;
+    WidgetWindowCapture& operator=(const WidgetWindowCapture &that) = delete;
+
     void Cleanup();
+    void InternalStartCapture();
 
-    WidgetCapture(const WidgetCapture &that) = delete;
-    WidgetCapture& operator=(const WidgetCapture &that) = delete;
-public:
-    WidgetCapture();
-    ~WidgetCapture();
-
+    // Widget
     bool Create();
     void Destroy();
     void Update();
-
-protected:
-    void OnButtonPress(WidgetHand f_hand, uint32_t f_button);
-    void OnButtonRelease(WidgetHand f_hand, uint32_t f_button);
+    void OnButtonPress(unsigned char f_hand, uint32_t f_button);
+    void OnButtonRelease(unsigned char  f_hand, uint32_t f_button);
     void OnDashboardOpen();
     void OnDashboardClose();
+protected:
+    WidgetWindowCapture();
+    ~WidgetWindowCapture();
+
+    friend class WidgetManager;
 };
 
