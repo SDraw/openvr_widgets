@@ -10,6 +10,7 @@ protected:
     virtual ~Widget();
 
     static vr::IVROverlay *ms_vrOverlay;
+    static vr::IVRCompositor *ms_vrCompositor;
 
     bool m_valid;
     vr::VROverlayHandle_t m_overlayHandle;
@@ -32,7 +33,7 @@ protected:
     virtual void OnDashboardClose() {}
     virtual void OnLanguageChange(unsigned char f_lang);
 
-    static void SetInterfaces(vr::IVROverlay *f_overlay);
+    static void SetInterfaces(vr::IVROverlay *f_overlay, vr::IVRCompositor *f_compositor);
 
     friend class WidgetManager;
 };

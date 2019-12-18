@@ -1,6 +1,6 @@
 #pragma once
 
-class Transformation
+class Transformation final
 {
     glm::vec3 m_position;
     glm::quat m_rotation;

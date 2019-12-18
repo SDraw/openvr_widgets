@@ -6,9 +6,12 @@
 #include "Core/GlobalSettings.h"
 #include "Core/VRTransform.h"
 #include "Utils/GlobalStructures.h"
+#include "Utils/HmdRotator.h"
 #include "Utils/Utils.h"
 
 extern const float g_Pi;
+extern const glm::vec3 g_AxisX;
+extern const glm::vec3 g_AxisY;
 extern const glm::vec3 g_AxisZN;
 extern const sf::Color g_ClearColor;
 
@@ -35,9 +38,8 @@ WidgetStats::WidgetStats()
     m_fontTextDate = nullptr;
     m_fontTextCpu = nullptr;
     m_fontTextRam = nullptr;
-    m_textureWatch = nullptr;
-    m_textureCpu = nullptr;
-    m_textureRam = nullptr;
+    m_fontTextFrame = nullptr;
+    m_texture = nullptr;
     m_spriteIcon = nullptr;
     m_lastTime = 0U;
     m_lastDay = -1;
@@ -77,16 +79,13 @@ void WidgetStats::Cleanup()
     m_fontTextCpu = nullptr;
     delete m_fontTextRam;
     m_fontTextRam = nullptr;
+    delete m_fontTextFrame;
+    m_fontTextFrame = nullptr;
 
     delete m_spriteIcon;
     m_spriteIcon = nullptr;
-
-    delete m_textureWatch;
-    m_textureWatch = nullptr;
-    delete m_textureCpu;
-    m_textureCpu = nullptr;
-    delete m_textureRam;
-    m_textureRam = nullptr;
+    delete m_texture;
+    m_texture = nullptr;
 
     delete m_font;
     m_font = nullptr;
@@ -102,9 +101,9 @@ bool WidgetStats::Create()
 {
     if(!m_valid)
     {
-        if(PdhOpenQuery(NULL, NULL, &m_winHandles.m_query) == ERROR_SUCCESS)
+        if(PdhOpenQueryA(NULL, NULL, &m_winHandles.m_query) == ERROR_SUCCESS)
         {
-            PdhAddEnglishCounter(m_winHandles.m_query, L"\\Processor(_Total)\\% Processor Time", NULL, &m_winHandles.m_counter);
+            PdhAddEnglishCounterA(m_winHandles.m_query, "\\Processor(_Total)\\% Processor Time", NULL, &m_winHandles.m_counter);
 
             if(ms_vrOverlay->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlayHandle) == vr::VROverlayError_None)
             {
@@ -117,21 +116,24 @@ bool WidgetStats::Create()
                     m_font = new sf::Font();
                     if(m_font->loadFromFile(GlobalSettings::GetStatsFont()))
                     {
-                        m_fontTextTime = new sf::Text("", *m_font, 72U);
-                        m_fontTextDate = new sf::Text("", *m_font, 36U);
-                        m_fontTextCpu = new sf::Text("", *m_font, 64U);
-                        m_fontTextRam = new sf::Text("", *m_font, 40U);
+                        m_fontTextTime = new sf::Text("00:00:00", *m_font, 72U);
+                        m_fontTextDate = new sf::Text("Sun 0/0/0", *m_font, 36U);
+                        m_fontTextCpu = new sf::Text("0.00%", *m_font, 64U);
+                        m_fontTextRam = new sf::Text("0/0", *m_font, 40U);
+                        m_fontTextFrame = new sf::Text("0|0 FPS", *m_font, 42U);
 
-                        m_textureWatch = new sf::Texture();
-                        m_textureWatch->loadFromFile("icons/time.png");
-                        m_textureCpu = new sf::Texture();
-                        m_textureCpu->loadFromFile("icons/chip.png");
-                        m_textureRam = new sf::Texture();
-                        m_textureRam->loadFromFile("icons/ram.png");
+                        m_texture = new sf::Texture;
+                        m_texture->loadFromFile("icons/stats.png");
 
-                        m_spriteIcon = new sf::Sprite(*m_textureWatch);
+                        m_spriteIcon = new sf::Sprite(*m_texture);
                         m_spriteIcon->setScale(0.75f, 0.75f);
                         m_spriteIcon->setPosition(16.f, 16.f);
+
+                        m_spriteRanges[SM_Watch] = sf::IntRect(0, 0, 128, 128);
+                        m_spriteRanges[SM_Cpu] = sf::IntRect(128, 0, 128, 128);
+                        m_spriteRanges[SM_Ram] = sf::IntRect(0, 128, 128, 128);
+                        m_spriteRanges[SM_Frame] = sf::IntRect(128, 128, 128, 128);
+                        m_spriteIcon->setTextureRect(m_spriteRanges[SM_Watch]);
 
                         m_vrTexture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
                         m_vrTexture.eType = vr::TextureType_OpenGL;
@@ -153,7 +155,9 @@ void WidgetStats::Destroy()
 void WidgetStats::Update()
 {
     if(m_valid && m_visible)
+
     {
+
         std::time_t l_time = std::time(nullptr);
         if(m_lastTime != l_time || m_forceUpdate)
         {
@@ -269,6 +273,38 @@ void WidgetStats::Update()
 
                     m_renderTexture->draw(*m_fontTextRam);
                 } break;
+
+                case SM_Frame:
+                {
+                    std::string l_text;
+                    vr::Compositor_FrameTiming l_frameTiming;
+                    l_frameTiming.m_nSize = sizeof(vr::Compositor_FrameTiming);
+                    if(ms_vrCompositor->GetFrameTiming(&l_frameTiming))
+                    {
+                        if(l_frameTiming.m_flTotalRenderGpuMs > 0.f)
+                        {
+                            int l_sceneFrame = static_cast<int>(1000.f / (l_frameTiming.m_flTotalRenderGpuMs));
+                            l_text.append(std::to_string(l_sceneFrame));
+                        }
+                        else l_text.push_back('*');
+                        l_text.append(" | ");
+                        if(l_frameTiming.m_flCompositorUpdateEndMs > 0.f)
+                        {
+                            int l_compositorFrame = static_cast<int>(1000.f / l_frameTiming.m_flCompositorUpdateEndMs);
+                            l_text.append(std::to_string(l_compositorFrame));
+                        }
+                        else l_text.push_back('*');
+                        l_text.append(" FPS");
+                    }
+                    else l_text.assign("* | * FPS");
+                    m_fontTextFrame->setString(l_text);
+
+                    sf::FloatRect l_bounds = m_fontTextFrame->getLocalBounds();
+                    sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
+                    m_fontTextFrame->setPosition(l_position);
+
+                    m_renderTexture->draw(*m_fontTextFrame);
+                } break;
             }
 
             m_renderTexture->display();
@@ -302,7 +338,6 @@ void WidgetStats::Update()
 
         m_transform->Update();
         ms_vrOverlay->SetOverlayTransformAbsolute(m_overlayHandle, vr::TrackingUniverseRawAndUncalibrated, &m_transform->GetMatrixVR());
-
         ms_vrOverlay->SetOverlayTexture(m_overlayHandle, &m_vrTexture);
     }
 }
@@ -343,18 +378,7 @@ void  WidgetStats::OnButtonPress(unsigned char f_hand, uint32_t f_button)
                     {
                         m_statsMode += 1U;
                         m_statsMode %= SM_Max;
-                        switch(m_statsMode)
-                        {
-                            case SM_Watch:
-                                m_spriteIcon->setTexture(*m_textureWatch, true);
-                                break;
-                            case SM_Cpu:
-                                m_spriteIcon->setTexture(*m_textureCpu, true);
-                                break;
-                            case SM_Ram:
-                                m_spriteIcon->setTexture(*m_textureRam, true);
-                                break;
-                        }
+                        m_spriteIcon->setTextureRect(m_spriteRanges[m_statsMode]);
                         m_forceUpdate = true;
                     }
                 } break;

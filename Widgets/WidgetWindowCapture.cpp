@@ -12,6 +12,7 @@
 extern const float g_Pi;
 extern const glm::ivec2 g_EmptyIVector2;
 extern const glm::vec3 g_AxisX;
+extern const glm::vec3 g_AxisZN;
 extern const sf::Color g_ClearColor;
 
 WidgetWindowCapture::WidgetWindowCapture()
@@ -26,6 +27,7 @@ WidgetWindowCapture::WidgetWindowCapture()
     m_lastLeftGripTick = 0U;
     m_lastLeftTriggerTick = 0U;
     m_lastRightTriggerTick = 0U;
+    m_activeFirstTime = true;
     m_activeDashboard = false;
     m_activeMove = false;
     m_activeResize = false;
@@ -110,16 +112,13 @@ bool WidgetWindowCapture::Create()
             ms_vrOverlay->SetOverlayFlag(m_overlayHandle, vr::VROverlayFlags_ShowTouchPadScrollWheel, true);
             ms_vrOverlay->SetOverlayFlag(m_overlayHandle, vr::VROverlayFlags_SendVRDiscreteScrollEvents, true);
 
-            // Init position
-            m_transform->SetPosition(glm::vec3(0.f, -1.5f, -2.f));
+            // Change UV
+            vr::VRTextureBounds_t l_bounds = { 0.f, 1.f, 1.f, 0.f };
+            ms_vrOverlay->SetOverlayTextureBounds(m_overlayHandle, &l_bounds);
 
             m_vrTexture.eType = vr::TextureType_OpenGL;
             m_vrTexture.eColorSpace = vr::ColorSpace_Gamma;
             m_vrTexture.handle = nullptr;
-
-            // Change UV
-            vr::VRTextureBounds_t l_bounds = { 0.f, 1.f, 1.f, 0.f };
-            ms_vrOverlay->SetOverlayTextureBounds(m_overlayHandle, &l_bounds);
 
             std::string l_iconPath;
             if(ms_vrOverlay->CreateOverlay("ovrw.capture.pin", "OpenVR Widget - Capture - Pin", &m_overlayPinHandle) == vr::VROverlayError_None)
@@ -423,6 +422,20 @@ void WidgetWindowCapture::OnButtonPress(unsigned char f_hand, uint32_t f_button)
                                     ms_vrOverlay->ShowOverlay(m_overlayNextHandle);
                                     ms_vrOverlay->ShowOverlay(m_overlayPrevHandle);
                                     ms_vrOverlay->ShowOverlay(m_overlayUpdateHandle);
+                                }
+                                if(m_activeFirstTime)
+                                {
+                                    // Place in front of player 
+                                    glm::vec3 l_pos = (VRTransform::GetHmdRotation()*g_AxisZN)*0.5f;
+                                    l_pos += VRTransform::GetHmdPosition();
+                                    l_pos.y = VRTransform::GetHmdPosition().y;
+                                    m_transform->SetPosition(l_pos);
+
+                                    glm::quat l_rot;
+                                    GetRotationToPoint(VRTransform::GetHmdPosition(), m_transform->GetPosition(), VRTransform::GetHmdRotation(), l_rot);
+                                    m_transform->SetRotation(l_rot);
+
+                                    m_activeFirstTime = false;
                                 }
                             }
                             else

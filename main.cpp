@@ -2,7 +2,21 @@
 
 #include "Core/Core.h"
 
-SFML_DEFINE_DISCRETE_GPU_PREFERENCE
+float getAngle(const glm::vec3 & dir1, const glm::vec3 & dir2, const glm::vec3 & norm, bool signedAngle)
+{	
+	float dot = glm::dot(dir1,dir2);
+	dot = glm::clamp(dot, -1.0f, 1.0f);
+	float angle = acos(dot);
+
+	if (signedAngle)
+	{
+		glm::vec3 cross = glm::cross(dir1,dir2);
+		float sign = glm::dot(norm,cross);
+		if (sign < 0) angle *= -1.0f;
+	}
+
+	return angle;
+}
 
 #ifdef _DEBUG
 int main(void)

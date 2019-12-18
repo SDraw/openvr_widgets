@@ -84,13 +84,13 @@ void GetRotationToPoint(const glm::vec3 &f_pointA, const glm::vec3 &f_pointB, co
     l_dir = glm::normalize(l_dir);
 
     glm::vec3 l_up = f_rotationA*g_AxisY;
-    glm::vec3 l_crossX = glm::cross(l_up, l_dir);
-    l_crossX = glm::normalize(l_crossX);
+    glm::vec3 l_crossA = glm::cross(l_up, l_dir);
+    l_crossA = glm::normalize(l_crossA);
 
-    glm::vec3 l_crossY = glm::cross(l_dir, l_crossX);
-    l_crossY = glm::normalize(l_crossY);
+    glm::vec3 l_crossB = glm::cross(l_dir, l_crossA);
+    l_crossB = glm::normalize(l_crossB);
 
-    glm::mat3 l_rotMat(l_crossX, l_crossY, l_dir);
+    glm::mat3 l_rotMat(l_crossA, l_crossB, l_dir);
     f_result = l_rotMat;
 }
 

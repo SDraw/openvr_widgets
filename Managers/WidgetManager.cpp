@@ -21,7 +21,7 @@ WidgetManager::WidgetManager(Core *f_core)
     // Create settings overlays at right side of player
 
     // Init constant overlays
-    Widget::SetInterfaces(m_core->GetVROverlay());
+    Widget::SetInterfaces(m_core->GetVROverlay(), m_core->GetVRCompositor());
     m_constantWidgets.emplace(EConstantWidget::EConstantWidget_Stats, new WidgetStats());
     m_constantWidgets.emplace(EConstantWidget::EConstantWidget_WindowCapture, new WidgetWindowCapture());
     for(auto l_iter : m_constantWidgets)
@@ -51,7 +51,7 @@ WidgetManager::~WidgetManager()
     }
     m_widgets.clear();
 
-    Widget::SetInterfaces(nullptr);
+    Widget::SetInterfaces(nullptr, nullptr);
     // Destroy settings overlays
 
 }
@@ -83,16 +83,16 @@ void WidgetManager::OnButtonPress(unsigned char f_hand, uint32_t f_button)
     // Do own stuff
 
     // Update widgets
-    for(auto l_iter : m_constantWidgets) l_iter.second->OnButtonPress(f_hand,f_button);
-    for(auto l_widget : m_widgets) l_widget->OnButtonPress(f_hand,f_button);
+    for(auto l_iter : m_constantWidgets) l_iter.second->OnButtonPress(f_hand, f_button);
+    for(auto l_widget : m_widgets) l_widget->OnButtonPress(f_hand, f_button);
 }
 void WidgetManager::OnButtonRelease(unsigned char f_hand, uint32_t f_button)
 {
     // Do own stuff
 
     // Update widgets
-    for(auto l_iter : m_constantWidgets) l_iter.second->OnButtonRelease(f_hand,f_button);
-    for(auto l_widget : m_widgets) l_widget->OnButtonRelease(f_hand,f_button);
+    for(auto l_iter : m_constantWidgets) l_iter.second->OnButtonRelease(f_hand, f_button);
+    for(auto l_widget : m_widgets) l_widget->OnButtonRelease(f_hand, f_button);
 }
 void WidgetManager::OnDashboardOpen()
 {

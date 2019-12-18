@@ -2,41 +2,43 @@
 #include "Widgets/Widget.h"
 
 class Transformation;
+
 class WidgetStats final : public Widget
 {
+    enum StatsMode : unsigned char
+    {
+        SM_Watch = 0U,
+        SM_Cpu,
+        SM_Ram,
+        SM_Frame,
+
+        SM_Max
+    };
+    unsigned char m_statsMode;
+
     sf::RenderTexture *m_renderTexture;
     sf::Font *m_font;
     sf::Text *m_fontTextTime;
     sf::Text *m_fontTextDate;
     sf::Text *m_fontTextCpu;
     sf::Text *m_fontTextRam;
+    sf::Text *m_fontTextFrame;
 
-    sf::Texture *m_textureWatch;
-    sf::Texture *m_textureCpu;
-    sf::Texture *m_textureRam;
+    sf::Texture *m_texture;
     sf::Sprite *m_spriteIcon;
+    sf::IntRect m_spriteRanges[SM_Max];
 
+    ULONGLONG m_lastPressTick;
     std::time_t m_lastTime;
     int m_lastDay;
+    bool m_forceUpdate;
+
     struct WinHandles
     {
         PDH_HQUERY m_query;
         PDH_HCOUNTER m_counter;
         MEMORYSTATUSEX m_memoryStatus;
     } m_winHandles;
-    bool m_forceUpdate;
-
-    ULONGLONG m_lastPressTick;
-
-    enum StatsMode : unsigned char
-    {
-        SM_Watch = 0U,
-        SM_Cpu,
-        SM_Ram,
-
-        SM_Max
-    };
-    unsigned char m_statsMode;
 
     WidgetStats(const WidgetStats &that) = delete;
     WidgetStats& operator=(const WidgetStats &that) = delete;

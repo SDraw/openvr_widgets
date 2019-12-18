@@ -12,6 +12,9 @@ class ConfigManager final
     unsigned int m_updateDelay;
     std::string m_statsFont;
     unsigned int m_captureDelay;
+
+    ConfigManager(const ConfigManager &that) = delete;
+    ConfigManager& operator=(const ConfigManager &that) = delete;
 public:
     inline const std::string& GetDirectory() const { return m_directory; }
     inline unsigned char GetLanguage() { return m_language; }

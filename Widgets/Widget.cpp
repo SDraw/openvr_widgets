@@ -6,6 +6,7 @@
 #include "Utils/GlobalStructures.h"
 
 vr::IVROverlay *Widget::ms_vrOverlay = nullptr;
+vr::IVRCompositor *Widget::ms_vrCompositor = nullptr;
 
 Widget::Widget()
 {
@@ -26,7 +27,8 @@ void Widget::OnLanguageChange(unsigned char f_lang)
     if(m_valid) m_language = f_lang;
 }
 
-void Widget::SetInterfaces(vr::IVROverlay *f_overlay)
+void Widget::SetInterfaces(vr::IVROverlay *f_overlay, vr::IVRCompositor *f_compositor)
 {
     ms_vrOverlay = f_overlay;
+    ms_vrCompositor = f_compositor;
 }

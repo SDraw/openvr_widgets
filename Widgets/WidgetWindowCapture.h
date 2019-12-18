@@ -18,6 +18,7 @@ class WidgetWindowCapture final : public Widget
     ULONGLONG m_lastLeftGripTick;
     ULONGLONG m_lastLeftTriggerTick;
     ULONGLONG m_lastRightTriggerTick;
+    bool m_activeFirstTime;
     bool m_activeDashboard;
     bool m_activeMove;
     bool m_activeResize;

@@ -20,12 +20,11 @@
 
 #include "SFML/GpuPreference.hpp"
 #include "SFML/Graphics.hpp"
-#include "SFML/OpenGL.hpp"
+
+#include "ScreenCapture.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/quaternion.hpp"
 
 #include "pugixml.hpp"
-
-#include "ScreenCapture.h"

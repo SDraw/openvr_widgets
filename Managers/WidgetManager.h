@@ -8,7 +8,9 @@ class WidgetManager final
     Core *m_core;
     std::map<unsigned char, Widget*> m_constantWidgets;
     std::vector<Widget*> m_widgets;
-public:
+
+    WidgetManager(const WidgetManager &that) = delete;
+    WidgetManager& operator=(const WidgetManager &that) = delete;
 protected:
     explicit WidgetManager(Core *f_core);
     ~WidgetManager();

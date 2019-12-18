@@ -7,6 +7,7 @@ class Core final
 {
     vr::IVRSystem *m_vrSystem;
     vr::IVROverlay *m_vrOverlay;
+    vr::IVRCompositor *m_vrCompositor;
     vr::VREvent_t m_event;
 
     sf::Context *m_context;
@@ -33,6 +34,7 @@ public:
 
     inline vr::IVRSystem* GetVRSystem() const { return m_vrSystem; }
     inline vr::IVROverlay* GetVROverlay() const { return m_vrOverlay; }
+    inline vr::IVRCompositor* GetVRCompositor() const { return m_vrCompositor; }
 
     inline WidgetManager* GetWidgetManager() const { return m_widgetManager; }
     inline ConfigManager* GetConfigManager() const { return m_configManager; }

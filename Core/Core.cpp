@@ -3,14 +3,18 @@
 #include "Core/Core.h"
 #include "Managers/ConfigManager.h"
 #include "Managers/WidgetManager.h"
+
 #include "Core/VRTransform.h"
 #include "Utils/GlobalStructures.h"
 #include "Utils/Utils.h"
+
+SFML_DEFINE_DISCRETE_GPU_PREFERENCE
 
 Core::Core()
 {
     m_vrSystem = nullptr;
     m_vrOverlay = nullptr;
+    m_vrCompositor = nullptr;
     m_event = { 0 };
     m_context = nullptr;
     m_active = false;
@@ -54,6 +58,7 @@ bool Core::Init()
             if(l_initError == vr::VRInitError_None)
             {
                 m_vrOverlay = vr::VROverlay();
+                m_vrCompositor = vr::VRCompositor();
                 m_leftHand = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);
                 m_rightHand = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
 
