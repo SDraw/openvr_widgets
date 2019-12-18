@@ -6,7 +6,6 @@
 #include "Core/GlobalSettings.h"
 #include "Core/VRTransform.h"
 #include "Utils/GlobalStructures.h"
-#include "Utils/HmdRotator.h"
 #include "Utils/Utils.h"
 
 extern const float g_Pi;
