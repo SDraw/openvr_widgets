@@ -13,6 +13,7 @@ extern const glm::vec3 g_AxisX;
 extern const glm::vec3 g_AxisY;
 extern const glm::vec3 g_AxisZN;
 extern const sf::Color g_ClearColor;
+extern const unsigned char g_DummyTextureData[];
 
 const sf::Vector2f g_RenderTargetSize(512.f, 128.f);
 const glm::vec3 g_OverlayOffset(0.f, 0.05f, 0.f);
@@ -47,9 +48,67 @@ WidgetStats::WidgetStats()
     m_winHandles.m_counter = NULL;
     m_winHandles.m_memoryStatus.dwLength = sizeof(MEMORYSTATUSEX);
     m_forceUpdate = false;
-    m_statsMode = SM_Watch;
+    m_statsMode = StatsMode_Watch;
 }
 WidgetStats::~WidgetStats()
+{
+    Cleanup();
+}
+
+bool WidgetStats::Create()
+{
+    if(!m_valid)
+    {
+        if(PdhOpenQueryA(NULL, NULL, &m_winHandles.m_query) == ERROR_SUCCESS)
+        {
+            PdhAddEnglishCounterA(m_winHandles.m_query, "\\Processor(_Total)\\% Processor Time", NULL, &m_winHandles.m_counter);
+
+            if(ms_vrOverlay->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlayHandle) == vr::VROverlayError_None)
+            {
+                ms_vrOverlay->SetOverlayWidthInMeters(m_overlayHandle, 0.125f);
+                ms_vrOverlay->SetOverlayFlag(m_overlayHandle, vr::VROverlayFlags_SortWithNonSceneOverlays, true);
+
+                m_renderTexture = new sf::RenderTexture();
+                if(m_renderTexture->create(static_cast<unsigned int>(g_RenderTargetSize.x), static_cast<unsigned int>(g_RenderTargetSize.y)))
+                {
+                    m_font = new sf::Font();
+                    if(m_font->loadFromFile(GlobalSettings::GetGuiFont()))
+                    {
+                        m_fontTextTime = new sf::Text("00:00:00", *m_font, 72U);
+                        m_fontTextDate = new sf::Text("Sun 0/0/0", *m_font, 36U);
+                        m_fontTextCpu = new sf::Text("0.00%", *m_font, 64U);
+                        m_fontTextRam = new sf::Text("0/0", *m_font, 40U);
+                        m_fontTextFrame = new sf::Text("0|0 FPS", *m_font, 42U);
+
+                        m_texture = new sf::Texture;
+                        if(!m_texture->loadFromFile("icons/atlas_stats.png")) m_texture->loadFromMemory(g_DummyTextureData,16U);
+
+                        m_spriteIcon = new sf::Sprite(*m_texture);
+                        m_spriteIcon->setScale(0.75f, 0.75f);
+                        m_spriteIcon->setPosition(16.f, 16.f);
+
+                        m_spriteRanges[StatsMode_Watch] = sf::IntRect(0, 0, 128, 128);
+                        m_spriteRanges[StatsMode_Cpu] = sf::IntRect(128, 0, 128, 128);
+                        m_spriteRanges[StatsMode_Ram] = sf::IntRect(0, 128, 128, 128);
+                        m_spriteRanges[StatsMode_Frame] = sf::IntRect(128, 128, 128, 128);
+                        m_spriteIcon->setTextureRect(m_spriteRanges[StatsMode_Watch]);
+
+                        m_vrTexture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
+                        m_vrTexture.eType = vr::TextureType_OpenGL;
+                        m_vrTexture.eColorSpace = vr::ColorSpace_Gamma;
+
+                        m_valid = (ms_vrOverlay->SetOverlayTexture(m_overlayHandle, &m_vrTexture) == vr::VROverlayError_None);
+                    }
+                }
+            }
+        }
+    }
+    if(!m_valid) Cleanup();
+
+    return m_valid;
+}
+
+void WidgetStats::Destroy()
 {
     Cleanup();
 }
@@ -92,71 +151,14 @@ void WidgetStats::Cleanup()
     delete m_renderTexture;
     m_renderTexture = nullptr;
 
-    m_statsMode = SM_Watch;
+    m_statsMode = StatsMode_Watch;
     m_valid = false;
-}
-
-bool WidgetStats::Create()
-{
-    if(!m_valid)
-    {
-        if(PdhOpenQueryA(NULL, NULL, &m_winHandles.m_query) == ERROR_SUCCESS)
-        {
-            PdhAddEnglishCounterA(m_winHandles.m_query, "\\Processor(_Total)\\% Processor Time", NULL, &m_winHandles.m_counter);
-
-            if(ms_vrOverlay->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlayHandle) == vr::VROverlayError_None)
-            {
-                ms_vrOverlay->SetOverlayWidthInMeters(m_overlayHandle, 0.125f);
-                ms_vrOverlay->SetOverlayFlag(m_overlayHandle, vr::VROverlayFlags_SortWithNonSceneOverlays, true);
-
-                m_renderTexture = new sf::RenderTexture();
-                if(m_renderTexture->create(static_cast<unsigned int>(g_RenderTargetSize.x), static_cast<unsigned int>(g_RenderTargetSize.y)))
-                {
-                    m_font = new sf::Font();
-                    if(m_font->loadFromFile(GlobalSettings::GetStatsFont()))
-                    {
-                        m_fontTextTime = new sf::Text("00:00:00", *m_font, 72U);
-                        m_fontTextDate = new sf::Text("Sun 0/0/0", *m_font, 36U);
-                        m_fontTextCpu = new sf::Text("0.00%", *m_font, 64U);
-                        m_fontTextRam = new sf::Text("0/0", *m_font, 40U);
-                        m_fontTextFrame = new sf::Text("0|0 FPS", *m_font, 42U);
-
-                        m_texture = new sf::Texture;
-                        m_texture->loadFromFile("icons/stats.png");
-
-                        m_spriteIcon = new sf::Sprite(*m_texture);
-                        m_spriteIcon->setScale(0.75f, 0.75f);
-                        m_spriteIcon->setPosition(16.f, 16.f);
-
-                        m_spriteRanges[SM_Watch] = sf::IntRect(0, 0, 128, 128);
-                        m_spriteRanges[SM_Cpu] = sf::IntRect(128, 0, 128, 128);
-                        m_spriteRanges[SM_Ram] = sf::IntRect(0, 128, 128, 128);
-                        m_spriteRanges[SM_Frame] = sf::IntRect(128, 128, 128, 128);
-                        m_spriteIcon->setTextureRect(m_spriteRanges[SM_Watch]);
-
-                        m_vrTexture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
-                        m_vrTexture.eType = vr::TextureType_OpenGL;
-                        m_vrTexture.eColorSpace = vr::ColorSpace_Gamma;
-
-                        m_valid = (ms_vrOverlay->SetOverlayTexture(m_overlayHandle, &m_vrTexture) == vr::VROverlayError_None);
-                    }
-                }
-            }
-        }
-    }
-    return m_valid;
-}
-void WidgetStats::Destroy()
-{
-    Cleanup();
 }
 
 void WidgetStats::Update()
 {
     if(m_valid && m_visible)
-
     {
-
         std::time_t l_time = std::time(nullptr);
         if(m_lastTime != l_time || m_forceUpdate)
         {
@@ -167,7 +169,7 @@ void WidgetStats::Update()
 
             switch(m_statsMode)
             {
-                case SM_Watch:
+                case StatsMode_Watch:
                 {
                     tm l_tmTime;
                     localtime_s(&l_tmTime, &m_lastTime);
@@ -195,14 +197,14 @@ void WidgetStats::Update()
                         l_string.assign(" ");
                         switch(m_language)
                         {
-                            case ELanguage::ELanguage_English:
+                            case Language::Language_English:
                             {
                                 l_sfString = g_WeekDayEn[l_tmTime.tm_wday];
                                 l_string.append(std::to_string(l_tmTime.tm_mon + 1));
                                 l_string.push_back('/');
                                 l_string.append(std::to_string(l_tmTime.tm_mday));
                             } break;
-                            case ELanguage::ELanguage_Russian:
+                            case Language::Language_Russian:
                             {
                                 l_sfString = g_WeekDayRu[l_tmTime.tm_wday];
                                 l_string.append(std::to_string(l_tmTime.tm_mday));
@@ -225,7 +227,7 @@ void WidgetStats::Update()
                     m_renderTexture->draw(*m_fontTextDate);
                 } break;
 
-                case SM_Cpu:
+                case StatsMode_Cpu:
                 {
                     PDH_FMT_COUNTERVALUE l_counterVal;
                     PdhCollectQueryData(m_winHandles.m_query);
@@ -244,7 +246,7 @@ void WidgetStats::Update()
                     m_renderTexture->draw(*m_fontTextCpu);
                 } break;
 
-                case SM_Ram:
+                case StatsMode_Ram:
                 {
                     GlobalMemoryStatusEx(&m_winHandles.m_memoryStatus);
 
@@ -257,10 +259,10 @@ void WidgetStats::Update()
                     sf::String l_sfString(l_text);
                     switch(m_language)
                     {
-                        case ELanguage::ELanguage_English:
+                        case Language::Language_English:
                             l_sfString += g_MemorySizeEn;
                             break;
-                        case ELanguage::ELanguage_Russian:
+                        case Language::Language_Russian:
                             l_sfString += g_MemorySizeRu;
                             break;
                     }
@@ -273,16 +275,16 @@ void WidgetStats::Update()
                     m_renderTexture->draw(*m_fontTextRam);
                 } break;
 
-                case SM_Frame:
+                case StatsMode_Frame:
                 {
                     std::string l_text;
                     vr::Compositor_FrameTiming l_frameTiming;
                     l_frameTiming.m_nSize = sizeof(vr::Compositor_FrameTiming);
                     if(ms_vrCompositor->GetFrameTiming(&l_frameTiming))
                     {
-                        if(l_frameTiming.m_flTotalRenderGpuMs > 0.f)
+                        if((l_frameTiming.m_flPreSubmitGpuMs > 0.f) && (l_frameTiming.m_flPostSubmitGpuMs > 0.f))
                         {
-                            int l_sceneFrame = static_cast<int>(1000.f / (l_frameTiming.m_flTotalRenderGpuMs));
+                            int l_sceneFrame = static_cast<int>(1000.f / (l_frameTiming.m_flPreSubmitGpuMs+l_frameTiming.m_flPostSubmitGpuMs+l_frameTiming.m_flTotalRenderGpuMs));
                             l_text.append(std::to_string(l_sceneFrame));
                         }
                         else l_text.push_back('*');
@@ -341,11 +343,16 @@ void WidgetStats::Update()
     }
 }
 
+bool WidgetStats::CloseRequested() const
+{
+    return false;
+}
+
 void WidgetStats::OnHandDeactivated(unsigned char f_hand)
 {
     if(m_valid && m_visible)
     {
-        if(f_hand == EVRHand::EVRHand_Right)
+        if(f_hand == VRHand::VRHand_Right)
         {
             m_visible = false;
             ms_vrOverlay->HideOverlay(m_overlayHandle);
@@ -357,14 +364,14 @@ void  WidgetStats::OnButtonPress(unsigned char f_hand, uint32_t f_button)
 {
     if(m_valid)
     {
-        if(f_hand == EVRHand::EVRHand_Right)
+        if(f_hand == VRHand::VRHand_Right)
         {
             switch(f_button)
             {
                 case vr::k_EButton_Grip:
                 {
                     ULONGLONG l_tick = GetTickCount64();
-                    if((l_tick - m_lastPressTick) <= 300U)
+                    if((l_tick - m_lastPressTick) <= 500U)
                     {
                         m_visible = true;
                         ms_vrOverlay->ShowOverlay(m_overlayHandle);
@@ -376,7 +383,7 @@ void  WidgetStats::OnButtonPress(unsigned char f_hand, uint32_t f_button)
                     if(m_visible)
                     {
                         m_statsMode += 1U;
-                        m_statsMode %= SM_Max;
+                        m_statsMode %= StatsMode_Max;
                         m_spriteIcon->setTextureRect(m_spriteRanges[m_statsMode]);
                         m_forceUpdate = true;
                     }
@@ -389,7 +396,7 @@ void WidgetStats::OnButtonRelease(unsigned char f_hand, uint32_t f_button)
 {
     if(m_valid && m_visible)
     {
-        if((f_hand == EVRHand::EVRHand_Right) && (f_button == vr::k_EButton_Grip))
+        if((f_hand == VRHand::VRHand_Right) && (f_button == vr::k_EButton_Grip))
         {
             m_visible = false;
             ms_vrOverlay->HideOverlay(m_overlayHandle);

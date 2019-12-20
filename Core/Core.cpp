@@ -15,6 +15,7 @@ Core::Core()
     m_vrSystem = nullptr;
     m_vrOverlay = nullptr;
     m_vrCompositor = nullptr;
+    m_vrChaperone = nullptr;
     m_event = { 0 };
     m_context = nullptr;
     m_active = false;
@@ -43,6 +44,9 @@ void Core::Cleanup()
     {
         vr::VR_Shutdown();
         m_vrSystem = nullptr;
+        m_vrOverlay = nullptr;
+        m_vrCompositor = nullptr;
+        m_vrChaperone = nullptr;
     }
 }
 
@@ -59,6 +63,8 @@ bool Core::Init()
             {
                 m_vrOverlay = vr::VROverlay();
                 m_vrCompositor = vr::VRCompositor();
+                m_vrChaperone = vr::VRChaperone();
+
                 m_leftHand = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);
                 m_rightHand = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
 
@@ -72,8 +78,8 @@ bool Core::Init()
                     m_threadDelay = std::chrono::milliseconds(m_configManager->GetUpdateDelay());
 
                     m_widgetManager = new WidgetManager(this);
-                    if(m_leftHand != vr::k_unTrackedDeviceIndexInvalid) m_widgetManager->OnHandActivated(EVRHand::EVRHand_Left);
-                    if(m_rightHand != vr::k_unTrackedDeviceIndexInvalid) m_widgetManager->OnHandActivated(EVRHand::EVRHand_Right);
+                    if(m_leftHand != vr::k_unTrackedDeviceIndexInvalid) m_widgetManager->OnHandActivated(VRHand::VRHand_Left);
+                    if(m_rightHand != vr::k_unTrackedDeviceIndexInvalid) m_widgetManager->OnHandActivated(VRHand::VRHand_Right);
                     if(m_vrOverlay->IsDashboardVisible()) m_widgetManager->OnDashboardOpen();
 
                     m_active = true;
@@ -141,7 +147,7 @@ bool Core::DoPulse()
                             if(m_vrSystem->GetControllerRoleForTrackedDeviceIndex(m_event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand)
                             {
                                 m_leftHand = m_event.trackedDeviceIndex;
-                                m_widgetManager->OnHandActivated(EVRHand::EVRHand_Left);
+                                m_widgetManager->OnHandActivated(VRHand::VRHand_Left);
                             }
                         }
                         else
@@ -151,7 +157,7 @@ bool Core::DoPulse()
                                 if(m_vrSystem->GetControllerRoleForTrackedDeviceIndex(m_event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand)
                                 {
                                     m_rightHand = m_event.trackedDeviceIndex;
-                                    m_widgetManager->OnHandActivated(EVRHand::EVRHand_Right);
+                                    m_widgetManager->OnHandActivated(VRHand::VRHand_Right);
                                 }
                             }
                         }
@@ -162,14 +168,14 @@ bool Core::DoPulse()
                     if(m_leftHand == m_event.trackedDeviceIndex)
                     {
                         m_leftHand = vr::k_unTrackedDeviceIndexInvalid;
-                        m_widgetManager->OnHandDeactivated(EVRHand::EVRHand_Left);
+                        m_widgetManager->OnHandDeactivated(VRHand::VRHand_Left);
                     }
                     else
                     {
                         if(m_rightHand == m_event.trackedDeviceIndex)
                         {
                             m_rightHand = vr::k_unTrackedDeviceIndexInvalid;
-                            m_widgetManager->OnHandDeactivated(EVRHand::EVRHand_Right);
+                            m_widgetManager->OnHandDeactivated(VRHand::VRHand_Right);
                         }
                     }
                 } break;
@@ -180,7 +186,7 @@ bool Core::DoPulse()
                         m_leftHand = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);
                         if(m_leftHand != vr::k_unTrackedDeviceIndexInvalid)
                         {
-                            m_widgetManager->OnHandActivated(EVRHand::EVRHand_Left);
+                            m_widgetManager->OnHandActivated(VRHand::VRHand_Left);
                         }
                     }
                     else
@@ -190,7 +196,7 @@ bool Core::DoPulse()
                             m_rightHand = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
                             if(m_rightHand != vr::k_unTrackedDeviceIndexInvalid)
                             {
-                                m_widgetManager->OnHandActivated(EVRHand::EVRHand_Right);
+                                m_widgetManager->OnHandActivated(VRHand::VRHand_Right);
                             }
                         }
                     }
@@ -199,14 +205,14 @@ bool Core::DoPulse()
                 {
                     if((m_event.trackedDeviceIndex == m_leftHand) || (m_event.trackedDeviceIndex == m_rightHand))
                     {
-                        m_widgetManager->OnButtonPress((m_event.trackedDeviceIndex == m_leftHand) ? EVRHand::EVRHand_Left : EVRHand::EVRHand_Right, m_event.data.controller.button);
+                        m_widgetManager->OnButtonPress((m_event.trackedDeviceIndex == m_leftHand) ? VRHand::VRHand_Left : VRHand::VRHand_Right, m_event.data.controller.button);
                     }
                 } break;
                 case vr::VREvent_ButtonUnpress:
                 {
                     if((m_event.trackedDeviceIndex == m_leftHand) || (m_event.trackedDeviceIndex == m_rightHand))
                     {
-                        m_widgetManager->OnButtonRelease((m_event.trackedDeviceIndex == m_leftHand) ? EVRHand::EVRHand_Left : EVRHand::EVRHand_Right, m_event.data.controller.button);
+                        m_widgetManager->OnButtonRelease((m_event.trackedDeviceIndex == m_leftHand) ? VRHand::VRHand_Left : VRHand::VRHand_Right, m_event.data.controller.button);
                     }
                 } break;
                 case vr::VREvent_DashboardActivated:

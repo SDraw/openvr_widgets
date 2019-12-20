@@ -12,6 +12,12 @@ extern const glm::vec3 g_AxisX(1.f, 0.f, 0.f);
 extern const glm::vec3 g_AxisY(0.f, 1.f, 0.f);
 extern const glm::vec3 g_AxisZN(0.f, 0.f, -1.f);
 extern const sf::Color g_ClearColor(0U, 0U, 0U, 127U);
+extern const unsigned char g_DummyTextureData[] = {
+    0x7FU, 0x7FU, 0x7FU, 0xFF,
+    0xF7U, 0x94U, 0x1DU, 0xFF,
+    0xF7U, 0x94U, 0x1DU, 0xFF,
+    0x7FU, 0x7FU, 0x7FU, 0xFF
+};
 
 void ConvertMatrix(const vr::HmdMatrix34_t &f_matVR, glm::mat4 &f_mat)
 {
@@ -60,7 +66,9 @@ size_t ReadEnumVector(const char *f_val, const std::vector<std::string> &f_vec)
 // Function from example code, possibly can be optimized even more
 void ExtractAndConvertToRGBA(const SL::Screen_Capture::Image &img, unsigned char *dst, size_t dst_size)
 {
+#ifdef _DEBUG
     assert(dst_size >= static_cast<size_t>(SL::Screen_Capture::Width(img) * SL::Screen_Capture::Height(img) * sizeof(SL::Screen_Capture::ImageBGRA)));
+#endif
     auto imgsrc = StartSrc(img);
     auto imgdist = dst;
     for(auto h = 0; h < Height(img); h++)

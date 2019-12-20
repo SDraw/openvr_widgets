@@ -39,7 +39,7 @@ bool WindowGrabber::StartCapture(size_t f_window)
                 delete m_texture;
                 m_texture = l_texture;
 
-                m_buffer.assign(m_windows[m_activeWindow].Size.x*m_windows[m_activeWindow].Size.y, g_FillColor);
+                m_buffer.assign(static_cast<size_t>(m_windows[m_activeWindow].Size.x)*static_cast<size_t>(m_windows[m_activeWindow].Size.y), g_FillColor);
                 m_buffer.shrink_to_fit();
 
                 m_interfaces = new CaptureInterfaces();

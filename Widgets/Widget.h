@@ -6,9 +6,6 @@ class Widget
     Widget(const Widget &that) = delete;
     Widget& operator=(const Widget &that) = delete;
 protected:
-    Widget();
-    virtual ~Widget();
-
     static vr::IVROverlay *ms_vrOverlay;
     static vr::IVRCompositor *ms_vrCompositor;
 
@@ -19,11 +16,15 @@ protected:
     bool m_visible;
     unsigned char m_language;
 
-    virtual void Cleanup() = 0;
+    Widget();
+    virtual ~Widget();
 
     virtual bool Create() = 0;
     virtual void Destroy() = 0;
+    virtual void Cleanup() = 0;
     virtual void Update() = 0;
+
+    virtual bool CloseRequested() const = 0;
 
     virtual void OnHandActivated(unsigned char f_hand) {}
     virtual void OnHandDeactivated(unsigned char f_hand) {}

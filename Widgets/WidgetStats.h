@@ -5,14 +5,14 @@ class Transformation;
 
 class WidgetStats final : public Widget
 {
-    enum StatsMode : unsigned char
+    enum StatsMode : size_t
     {
-        SM_Watch = 0U,
-        SM_Cpu,
-        SM_Ram,
-        SM_Frame,
+        StatsMode_Watch = 0U,
+        StatsMode_Cpu,
+        StatsMode_Ram,
+        StatsMode_Frame,
 
-        SM_Max
+        StatsMode_Max
     };
     unsigned char m_statsMode;
 
@@ -26,7 +26,7 @@ class WidgetStats final : public Widget
 
     sf::Texture *m_texture;
     sf::Sprite *m_spriteIcon;
-    sf::IntRect m_spriteRanges[SM_Max];
+    sf::IntRect m_spriteRanges[StatsMode_Max];
 
     ULONGLONG m_lastPressTick;
     std::time_t m_lastTime;
@@ -45,9 +45,10 @@ class WidgetStats final : public Widget
 
     // Widget
     bool Create();
-    void Update();
     void Destroy();
     void Cleanup();
+    void Update();
+    bool CloseRequested() const;
     void OnHandDeactivated(unsigned char f_hand);
     void OnButtonPress(unsigned char f_hand, uint32_t f_button);
     void OnButtonRelease(unsigned char f_hand, uint32_t f_button);

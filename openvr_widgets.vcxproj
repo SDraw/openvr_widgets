@@ -150,6 +150,9 @@
     <ClCompile Include="Core\Core.cpp" />
     <ClCompile Include="Core\GlobalSettings.cpp" />
     <ClCompile Include="Core\VRTransform.cpp" />
+    <ClCompile Include="Gui\GuiButton.cpp" />
+    <ClCompile Include="Gui\GuiElement.cpp" />
+    <ClCompile Include="Gui\GuiSystem.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Managers\ConfigManager.cpp" />
     <ClCompile Include="Managers\WidgetManager.cpp" />
@@ -176,6 +179,10 @@
     <ClInclude Include="Core\Core.h" />
     <ClInclude Include="Core\GlobalSettings.h" />
     <ClInclude Include="Core\VRTransform.h" />
+    <ClInclude Include="Gui\GuiButton.h" />
+    <ClInclude Include="Gui\GuiElement.h" />
+    <ClInclude Include="Gui\GuiStructures.h" />
+    <ClInclude Include="Gui\GuiSystem.h" />
     <ClInclude Include="Managers\ConfigManager.h" />
     <ClInclude Include="Managers\WidgetManager.h" />
     <ClInclude Include="resource.h" />

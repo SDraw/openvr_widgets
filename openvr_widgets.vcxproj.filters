@@ -39,6 +39,15 @@
     <ClCompile Include="Core\GlobalSettings.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Gui\GuiSystem.cpp">
+      <Filter>Gui</Filter>
+    </ClCompile>
+    <ClCompile Include="Gui\GuiElement.cpp">
+      <Filter>Gui</Filter>
+    </ClCompile>
+    <ClCompile Include="Gui\GuiButton.cpp">
+      <Filter>Gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -79,6 +88,18 @@
     <ClInclude Include="Core\GlobalSettings.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="Gui\GuiSystem.h">
+      <Filter>Gui</Filter>
+    </ClInclude>
+    <ClInclude Include="Gui\GuiElement.h">
+      <Filter>Gui</Filter>
+    </ClInclude>
+    <ClInclude Include="Gui\GuiStructures.h">
+      <Filter>Gui</Filter>
+    </ClInclude>
+    <ClInclude Include="Gui\GuiButton.h">
+      <Filter>Gui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Widgets">
@@ -98,6 +119,9 @@
     </Filter>
     <Filter Include="Managers">
       <UniqueIdentifier>{18462520-9e98-48a3-a963-114ff9f7b429}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Gui">
+      <UniqueIdentifier>{58f1b092-413b-4e7a-bd1e-0a912fe67a50}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -15,7 +15,7 @@ Widget::Widget()
     m_vrTexture = { 0 };
     m_visible = false;
     m_transform = new Transformation();
-    m_language = ELanguage::ELanguage_English;
+    m_language = Language::Language_English;
 }
 Widget::~Widget()
 {
