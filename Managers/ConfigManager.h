@@ -10,7 +10,6 @@ class ConfigManager final
     std::string m_directory;
     unsigned char m_language;
     unsigned int m_updateDelay;
-    unsigned int m_captureDelay;
     std::string m_guiFont;
     std::string m_guiButton;
 
@@ -20,7 +19,6 @@ public:
     inline const std::string& GetDirectory() const { return m_directory; }
     inline unsigned char GetLanguage() { return m_language; }
     inline unsigned int GetUpdateDelay() { return m_updateDelay; }
-    inline unsigned int GetCaptureDelay() { return m_captureDelay; }
     inline const std::string& GetGuiFont() const { return m_guiFont; }
     inline const std::string& GetGuiButton() const { return m_guiButton; }
 protected:

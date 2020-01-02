@@ -19,6 +19,15 @@ extern const unsigned char g_DummyTextureData[];
 sf::Texture* WidgetWindowCapture::ms_iconsAtlas = nullptr;
 vr::Texture_t WidgetWindowCapture::ms_textureControls = { 0 };
 
+const size_t g_CaptureDelays[3U] = {
+    66U, 33U, 16U
+};
+const vr::VRTextureBounds_t g_CaptureDelaysBounds[3U] = {
+    { 0.5f, 0.75f, 0.75f, 0.5f },
+    { 0.75f, 0.75f, 1.f, 0.5f },
+    { 0.f, 0.5f, 0.25f, 0.25f }
+};
+
 WidgetWindowCapture::WidgetWindowCapture()
 {
     for(size_t i = 0U; i < ControlIndex_Max; i++)
@@ -39,6 +48,7 @@ WidgetWindowCapture::WidgetWindowCapture()
     m_overlayWidth = 0.f;
     m_windowSize = g_EmptyIVector2;
     m_mousePosition = g_EmptyIVector2;
+    m_fpsMode = FpsMode_15;
 }
 WidgetWindowCapture::~WidgetWindowCapture()
 {
@@ -115,7 +125,7 @@ bool WidgetWindowCapture::Create()
 
                     l_overlayKeyFull.assign(l_overlayKeyPart);
                     l_overlayKeyFull.append(".previous");
-                    if(ms_vrOverlay->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widget - Capture - Previous", &m_overlayControlHandles[ControlIndex_Previous]) == vr::VROverlayError_None)
+                    if(ms_vrOverlay->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Capture - Previous", &m_overlayControlHandles[ControlIndex_Previous]) == vr::VROverlayError_None)
                     {
                         m_transformControls[ControlIndex_Previous]->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.035f, 0.f, 0.f));
                         l_bounds = { 0.75f, 1.f, 1.f, 0.75f };
@@ -123,7 +133,7 @@ bool WidgetWindowCapture::Create()
 
                         l_overlayKeyFull.assign(l_overlayKeyPart);
                         l_overlayKeyFull.append(".next");
-                        if(ms_vrOverlay->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widget - Capture - Next", &m_overlayControlHandles[ControlIndex_Next]) == vr::VROverlayError_None)
+                        if(ms_vrOverlay->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Capture - Next", &m_overlayControlHandles[ControlIndex_Next]) == vr::VROverlayError_None)
                         {
                             m_transformControls[ControlIndex_Next]->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.095f, 0.f, 0.f));
                             l_bounds = { 0.f, 0.75f, 0.25f, 0.5f };
@@ -131,32 +141,40 @@ bool WidgetWindowCapture::Create()
 
                             l_overlayKeyFull.assign(l_overlayKeyPart);
                             l_overlayKeyFull.append(".update");
-                            if(ms_vrOverlay->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widget - Capture - Update", &m_overlayControlHandles[ControlIndex_Update]) == vr::VROverlayError_None)
+                            if(ms_vrOverlay->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Capture - Update", &m_overlayControlHandles[ControlIndex_Update]) == vr::VROverlayError_None)
                             {
-                                m_transformControls[ControlIndex_Update]->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.065f, -0.06f, 0.f));
+                                m_transformControls[ControlIndex_Update]->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.035f, -0.06f, 0.f));
                                 l_bounds = { 0.25f, 0.75f, 0.5f, 0.5f };
                                 ms_vrOverlay->SetOverlayTextureBounds(m_overlayControlHandles[ControlIndex_Update], &l_bounds);
 
-                                // Apply same properties
-                                for(size_t i = 0U; i < ControlIndex_Max; i++)
+                                l_overlayKeyFull.assign(l_overlayKeyPart);
+                                l_overlayKeyFull.append(".fps");
+                                if(ms_vrOverlay->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Capture - FPS", &m_overlayControlHandles[ControlIndex_ChangeFps]) == vr::VROverlayError_None)
                                 {
-                                    ms_vrOverlay->SetOverlayWidthInMeters(m_overlayControlHandles[i], 0.05f);
-                                    ms_vrOverlay->SetOverlayInputMethod(m_overlayControlHandles[i], vr::VROverlayInputMethod::VROverlayInputMethod_Mouse);
-                                    m_transformControls[i]->Update(m_transform);
-                                    ms_vrOverlay->SetOverlayTransformAbsolute(m_overlayControlHandles[i], vr::TrackingUniverseRawAndUncalibrated, &m_transformControls[i]->GetMatrixVR());
-                                    ms_vrOverlay->SetOverlayTexture(m_overlayControlHandles[i], &ms_textureControls);
+                                    m_transformControls[ControlIndex_ChangeFps]->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.095f, -0.06f, 0.f));
+                                    ms_vrOverlay->SetOverlayTextureBounds(m_overlayControlHandles[ControlIndex_ChangeFps], &g_CaptureDelaysBounds[FpsMode_15]);
+
+                                    // Apply same properties
+                                    for(size_t i = 0U; i < ControlIndex_Max; i++)
+                                    {
+                                        ms_vrOverlay->SetOverlayWidthInMeters(m_overlayControlHandles[i], 0.05f);
+                                        ms_vrOverlay->SetOverlayInputMethod(m_overlayControlHandles[i], vr::VROverlayInputMethod::VROverlayInputMethod_Mouse);
+                                        m_transformControls[i]->Update(m_transform);
+                                        ms_vrOverlay->SetOverlayTransformAbsolute(m_overlayControlHandles[i], vr::TrackingUniverseRawAndUncalibrated, &m_transformControls[i]->GetMatrixVR());
+                                        ms_vrOverlay->SetOverlayTexture(m_overlayControlHandles[i], &ms_textureControls);
+                                    }
+
+                                    // Create window grabber and start capture
+                                    m_windowGrabber = new WindowGrabber();
+                                    m_windowGrabber->UpdateWindows();
+                                    m_windowIndex = 0U;
+                                    InternalStartCapture();
+
+                                    // Show main overlay
+                                    ms_vrOverlay->ShowOverlay(m_overlayHandle);
+
+                                    m_valid = true;
                                 }
-
-                                // Create window grabber and start capture
-                                m_windowGrabber = new WindowGrabber();
-                                m_windowGrabber->UpdateWindows();
-                                m_windowIndex = 0U;
-                                InternalStartCapture();
-
-                                // Show main overlay
-                                ms_vrOverlay->ShowOverlay(m_overlayHandle);
-
-                                m_valid = true;
                             }
                         }
                     }
@@ -228,6 +246,7 @@ void WidgetWindowCapture::Update()
                         }
                     }
                 } break;
+
                 case vr::VREvent_MouseButtonDown:
                 {
                     if(m_activeDashboard)
@@ -267,6 +286,7 @@ void WidgetWindowCapture::Update()
                         }
                     }
                 } break;
+
                 case vr::VREvent_ScrollDiscrete:
                 {
                     if(m_activeDashboard)
@@ -291,7 +311,7 @@ void WidgetWindowCapture::Update()
             {
                 case vr::VREvent_MouseButtonDown:
                 {
-                    if(m_overlayEvent.data.mouse.button == vr::EVRMouseButton::VRMouseButton_Left)
+                    if(m_overlayEvent.data.mouse.button == vr::VRMouseButton_Left)
                     {
                         m_activePin = !m_activePin;
 
@@ -310,7 +330,7 @@ void WidgetWindowCapture::Update()
             {
                 case vr::VREvent_MouseButtonDown:
                 {
-                    if(m_overlayEvent.data.mouse.button == vr::EVRMouseButton::VRMouseButton_Left)
+                    if(m_overlayEvent.data.mouse.button == vr::VRMouseButton_Left)
                     {
                         m_closed = true;
                     }
@@ -324,7 +344,7 @@ void WidgetWindowCapture::Update()
             {
                 case vr::VREvent_MouseButtonDown:
                 {
-                    if(m_overlayEvent.data.mouse.button == vr::EVRMouseButton::VRMouseButton_Left)
+                    if(m_overlayEvent.data.mouse.button == vr::VRMouseButton_Left)
                     {
                         size_t l_windowsCount = m_windowGrabber->GetWindowsCount();
                         if(l_windowsCount > 0U)
@@ -346,7 +366,7 @@ void WidgetWindowCapture::Update()
             {
                 case vr::VREvent_MouseButtonDown:
                 {
-                    if(m_overlayEvent.data.mouse.button == vr::EVRMouseButton::VRMouseButton_Left)
+                    if(m_overlayEvent.data.mouse.button == vr::VRMouseButton_Left)
                     {
                         size_t l_windowsCount = m_windowGrabber->GetWindowsCount();
                         if(l_windowsCount > 0U)
@@ -368,12 +388,30 @@ void WidgetWindowCapture::Update()
             {
                 case vr::VREvent_MouseButtonDown:
                 {
-                    if(m_overlayEvent.data.mouse.button == vr::EVRMouseButton::VRMouseButton_Left)
+                    if(m_overlayEvent.data.mouse.button == vr::VRMouseButton_Left)
                     {
                         m_windowGrabber->StopCapture();
                         m_windowGrabber->UpdateWindows();
                         m_windowIndex = 0U;
                         InternalStartCapture();
+                    }
+                } break;
+            }
+        }
+
+        while(ms_vrOverlay->PollNextOverlayEvent(m_overlayControlHandles[ControlIndex_ChangeFps], &m_overlayEvent, sizeof(vr::VREvent_t)))
+        {
+            switch(m_overlayEvent.eventType)
+            {
+                case vr::VREvent_MouseButtonDown:
+                {
+                    if(m_overlayEvent.data.mouse.button == vr::VRMouseButton_Left)
+                    {
+                        m_fpsMode += 1U;
+                        m_fpsMode %= FpsMode_Max;
+
+                        m_windowGrabber->SetDelay(g_CaptureDelays[m_fpsMode]);
+                        ms_vrOverlay->SetOverlayTextureBounds(m_overlayControlHandles[ControlIndex_ChangeFps], &g_CaptureDelaysBounds[m_fpsMode]);
                     }
                 } break;
             }
@@ -394,12 +432,13 @@ void WidgetWindowCapture::Update()
             m_transformControls[ControlIndex_Close]->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.095f, 0.06f, 0.f));
             m_transformControls[ControlIndex_Previous]->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.035f, 0.f, 0.f));
             m_transformControls[ControlIndex_Next]->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.095f, 0.f, 0.f));
-            m_transformControls[ControlIndex_Update]->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.065f, -0.06f, 0.f));
+            m_transformControls[ControlIndex_Update]->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.035f, -0.06f, 0.f));
+            m_transformControls[ControlIndex_ChangeFps]->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.095f, -0.06f, 0.f));
         }
 
         if(m_windowGrabber->IsStale())
         {
-            // Window was resized or destoryed
+            // Window was resized or destroyed
             m_windowGrabber->StopCapture();
             m_windowGrabber->UpdateWindows();
             m_windowIndex = 0U;

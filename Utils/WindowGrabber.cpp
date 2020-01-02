@@ -16,6 +16,7 @@ WindowGrabber::WindowGrabber()
     m_activeWindow = std::numeric_limits<size_t>::max();
     m_lastTick = 0U;
     m_stale = false;
+    m_captureDelay = std::chrono::milliseconds(66U);
 }
 WindowGrabber::~WindowGrabber()
 {
@@ -54,7 +55,7 @@ bool WindowGrabber::StartCapture(size_t f_window)
                 });
                 m_interfaces->m_captureConfiguration->onNewFrame(l_captureCallback);
                 m_interfaces->m_captureInterface = m_interfaces->m_captureConfiguration->start_capturing();
-                m_interfaces->m_captureInterface->setFrameChangeInterval(std::chrono::milliseconds(GlobalSettings::GetCaptureDelay()));
+                m_interfaces->m_captureInterface->setFrameChangeInterval(m_captureDelay);
 
                 m_lastTick = GetTickCount64();
                 m_stale = false;
@@ -72,6 +73,7 @@ void WindowGrabber::StopCapture()
         m_stale = false;
         m_active = false;
 
+        m_interfaces->m_captureInterface->pause();
         delete m_interfaces;
         m_interfaces = nullptr;
     }
@@ -86,6 +88,17 @@ void WindowGrabber::Update()
             if(!m_stale) m_texture->update(reinterpret_cast<unsigned char*>(m_buffer.data()), static_cast<unsigned int>(m_windows[m_activeWindow].Size.x), static_cast<unsigned int>(m_windows[m_activeWindow].Size.y), 0U, 0U);
             m_bufferLock.unlock();
         }
+    }
+}
+
+void WindowGrabber::SetDelay(size_t f_delay)
+{
+    m_captureDelay = std::chrono::milliseconds(f_delay);
+    if(m_active)
+    {
+        m_interfaces->m_captureInterface->pause();
+        m_interfaces->m_captureInterface->setFrameChangeInterval(m_captureDelay);
+        m_interfaces->m_captureInterface->resume();
     }
 }
 

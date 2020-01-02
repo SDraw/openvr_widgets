@@ -26,7 +26,6 @@ class WidgetStats final : public Widget
 
     sf::Texture *m_texture;
     sf::Sprite *m_spriteIcon;
-    sf::IntRect m_spriteRanges[StatsMode_Max];
 
     ULONGLONG m_lastPressTick;
     std::time_t m_lastTime;

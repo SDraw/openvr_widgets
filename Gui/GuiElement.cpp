@@ -11,6 +11,7 @@ GuiElement::GuiElement()
     m_hoverColor = sf::Color(255U, 255U, 255U, 255U);
     m_activeHover = false;
     m_visible = true;
+    m_update = false;
 
     m_mouseClickCallback = nullptr;
     m_mouseMoveCallback = nullptr;
@@ -21,12 +22,20 @@ GuiElement::~GuiElement()
 
 void GuiElement::SetPosition(const sf::Vector2f &f_pos)
 {
-    if(m_position != f_pos) m_position = f_pos;
+    if(m_position != f_pos)
+    {
+        m_position = f_pos;
+        m_update = true;
+    }
 }
 
 void GuiElement::SetSize(const sf::Vector2f &f_size)
 {
-    if(m_size != f_size) m_size = f_size;
+    if(m_size != f_size)
+    {
+        m_size = f_size;
+        m_update = true;
+    }
 }
 
 void GuiElement::SetVisibility(bool f_state)
@@ -87,4 +96,9 @@ void GuiElement::ProcessMouseMove(unsigned int f_mouseX, unsigned f_mouseY)
         }
         else m_activeHover = false;
     }
+}
+
+void GuiElement::Update()
+{
+    m_update = false;
 }

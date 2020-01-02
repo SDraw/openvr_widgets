@@ -88,7 +88,7 @@ void ExtractAndConvertToRGBA(const SL::Screen_Capture::Image &img, unsigned char
 
 void GetRotationToPoint(const glm::vec3 &f_pointA, const glm::vec3 &f_pointB, const glm::quat &f_rotationA, glm::quat &f_result)
 {
-    glm::vec3 l_dir = f_pointA - f_pointB;
+    glm::vec3 l_dir = (f_pointA - f_pointB);
     l_dir = glm::normalize(l_dir);
 
     glm::vec3 l_up = f_rotationA*g_AxisY;

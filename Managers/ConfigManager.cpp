@@ -9,14 +9,13 @@
 
 const std::vector<std::string> g_ConfigSettings
 {
-    "language", "update_rate", "capture_rate",
+    "language", "update_rate",
     "gui_font", "gui_button"
 };
 enum ConfigSetting : size_t
 {
     ConfigSetting_Language = 0U,
     ConfigSetting_UpdateRate,
-    ConfigSetting_CaptureRate,
     ConfigSetting_GuiFont,
     ConfigSetting_GuiButton
 };
@@ -32,7 +31,6 @@ ConfigManager::ConfigManager(Core *f_core)
     m_settingsFile = new pugi::xml_document();
     m_language = Language::Language_English;
     m_updateDelay = 11U; // ~90 FPS by default
-    m_captureDelay = 66U; // ~15 FPS by default
     m_guiFont.assign("fonts/Hack-Regular.ttf");
     m_guiButton.assign("gui/button.png");
 }
@@ -66,9 +64,6 @@ void ConfigManager::Load()
                     case ConfigSetting_UpdateRate:
                         m_updateDelay = l_attribValue.as_uint(11U);
                         break;
-                        case ConfigSetting_CaptureRate:
-                        m_captureDelay = l_attribValue.as_uint(66U);
-                        break;
                     case ConfigSetting_GuiFont:
                         m_guiFont.assign(l_attribValue.as_string("fonts/Hack-Regular.ttf"));
                         break;
@@ -81,7 +76,6 @@ void ConfigManager::Load()
     }
 
     GlobalSettings::SetDirectory(m_directory);
-    GlobalSettings::SetCaptureDelay(m_captureDelay);
     GlobalSettings::SetGuiFont(m_guiFont);
     GlobalSettings::SetGuiButton(m_guiButton);
 }

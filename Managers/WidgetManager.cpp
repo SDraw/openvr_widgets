@@ -11,6 +11,14 @@
 #include "Gui/GuiButton.h"
 #include "Widgets/WidgetStats.h"
 #include "Widgets/WidgetWindowCapture.h"
+#include "Utils/GlobalStructures.h"
+
+const char* g_ButtonsTextsEn[] = {
+    "Add window capture widget"
+};
+const wchar_t* g_ButtonsTextsRu[] = {
+    L"\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0432\u0438\u0434\u0436\u0435\u0442 \u0437\u0430\u0445\u0432\u0430\u0442\u0430 \u043E\u043A\u043D\u0430"
+};
 
 enum ConstantWidget : size_t
 {
@@ -47,10 +55,22 @@ WidgetManager::WidgetManager(Core *f_core)
 
         m_guiElements[GuiElementIndex_AddCaptureWindow] = m_guiSystem->CreateButton();
         m_guiElements[GuiElementIndex_AddCaptureWindow]->SetPosition(sf::Vector2f(96.f, 16.f));
+        m_guiElements[GuiElementIndex_AddCaptureWindow]->SetSize(sf::Vector2f(320.f, 64.f));
         m_guiElements[GuiElementIndex_AddCaptureWindow]->SetMouseClickCallback(l_clickCallback);
         m_guiElements[GuiElementIndex_AddCaptureWindow]->SetHoverColor(g_HoverColor);
-        dynamic_cast<GuiButton*>(m_guiElements[GuiElementIndex_AddCaptureWindow])->SetText("Add window capture widget");
         dynamic_cast<GuiButton*>(m_guiElements[GuiElementIndex_AddCaptureWindow])->SetTextSize(20U);
+
+        switch(m_core->GetConfigManager()->GetLanguage())
+        {
+            case Language::Language_English:
+            {
+                dynamic_cast<GuiButton*>(m_guiElements[GuiElementIndex_AddCaptureWindow])->SetText(g_ButtonsTextsEn[GuiElementIndex_AddCaptureWindow]);
+            } break;
+            case Language::Language_Russian:
+            {
+                dynamic_cast<GuiButton*>(m_guiElements[GuiElementIndex_AddCaptureWindow])->SetText(g_ButtonsTextsRu[GuiElementIndex_AddCaptureWindow]);
+            } break;
+        }
     }
 
     m_core->GetVROverlay()->CreateDashboardOverlay("ovrw.settings", "OpenVR Widgets\nSettings", &m_overlayDashboard, &m_overlayDashboardThumbnail);

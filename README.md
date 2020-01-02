@@ -30,13 +30,12 @@ List of global settings:
 * **Features:**
   * **Movement:** Double press on trigger button of left hand at the center of overlay to attach it to your hand. Double press again to detach.
   * **Resize:** While overlay is attached to hand, bring right hand controller closely to overlay and double press trigger button. Move your right hand controller to adjust preferable size. Let go trigger button on your right hand controller to stop resizing.
-  * **Control items:** Bring SteamVR dashboard to make control button appear.
+  * **Controls:** Bring SteamVR dashboard to make control buttons appear.
     * **Pin:** Pin widget to prevent interactions outside of SteamVR dashboard.
     * **Close:** Close current capture widget.
     * **Left:** Cycle window to left.
     * **Right:** Cycle window to right.
-    * **Update:** Update stored list of windows. Helpful when new window has appeared or old has been destroyed.
+    * **Update:** Update list of windows. Helpful when new window has appeared or old has been destroyed.
+    * **FPS:** Changes captured FPS rate.
   * **Interaction:** You can interact with captured window using trigger as click and touchpad as scroll. Note: Not all active and non-active windows accept click and scroll messages sent via Windows API.
-  * **Modifications:**
-    * **Capture rate:** You can adjust capture rate by changing 'capture_rate' value. Default value is 66 milliseconds that corresponds to ~15 frames per second.
-  * **Notes:** Widget is highly CPU dependent. Consider to be in a range of 5 windows in resolution 1920x1080.
+* **Notes:** Widget is highly CPU dependent. Consider to be in a range of 5 windows in resolution 1920x1080 and 15 FPS.

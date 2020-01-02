@@ -34,6 +34,7 @@ public:
 protected:
     sf::Vector2f m_position;
     sf::Vector2f m_size;
+    bool m_update;
     sf::Color m_hoverColor;
     sf::Color m_color;
     bool m_activeHover;
@@ -43,7 +44,7 @@ protected:
 
     virtual void GetDrawables(std::vector<const sf::Drawable*> &f_vec) const = 0;
 
-    virtual void Update() {};
+    virtual void Update();
 
     void ProcessMouseClick(unsigned char f_button, unsigned char f_state, unsigned int f_mouseX, unsigned f_mouseY);
     void ProcessMouseMove(unsigned int f_mouseX, unsigned f_mouseY);

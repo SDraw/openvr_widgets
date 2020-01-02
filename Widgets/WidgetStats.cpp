@@ -18,7 +18,7 @@ extern const unsigned char g_DummyTextureData[];
 const sf::Vector2f g_RenderTargetSize(512.f, 128.f);
 const glm::vec3 g_OverlayOffset(0.f, 0.05f, 0.f);
 const glm::vec2 g_ViewAngleRange(g_Pi / 6.f, g_Pi / 12.f);
-const float g_ViewAngleRangeDif = (g_ViewAngleRange.x - g_ViewAngleRange.y);
+const float g_ViewAngleRangeDiff = (g_ViewAngleRange.x - g_ViewAngleRange.y);
 
 const char* g_WeekDayEn[] = {
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
@@ -29,6 +29,13 @@ const wchar_t* g_WeekDayRu[] = {
 
 const char* g_MemorySizeEn = "MB";
 const wchar_t* g_MemorySizeRu = L"\u041C\u0411";
+
+const sf::IntRect g_SpritesBounds[4U] = {
+    { 0, 0, 128, 128 },
+    { 128, 0, 128, 128 },
+    { 0, 128, 128, 128 },
+    { 128, 128, 128, 128 }
+};
 
 WidgetStats::WidgetStats()
 {
@@ -59,9 +66,9 @@ bool WidgetStats::Create()
 {
     if(!m_valid)
     {
-        if(PdhOpenQueryA(NULL, NULL, &m_winHandles.m_query) == ERROR_SUCCESS)
+        if(PdhOpenQuery(NULL, NULL, &m_winHandles.m_query) == ERROR_SUCCESS)
         {
-            PdhAddEnglishCounterA(m_winHandles.m_query, "\\Processor(_Total)\\% Processor Time", NULL, &m_winHandles.m_counter);
+            PdhAddEnglishCounter(m_winHandles.m_query, L"\\Processor(_Total)\\% Processor Time", NULL, &m_winHandles.m_counter);
 
             if(ms_vrOverlay->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlayHandle) == vr::VROverlayError_None)
             {
@@ -81,17 +88,12 @@ bool WidgetStats::Create()
                         m_fontTextFrame = new sf::Text("0|0 FPS", *m_font, 42U);
 
                         m_texture = new sf::Texture;
-                        if(!m_texture->loadFromFile("icons/atlas_stats.png")) m_texture->loadFromMemory(g_DummyTextureData,16U);
+                        if(!m_texture->loadFromFile("icons/atlas_stats.png")) m_texture->loadFromMemory(g_DummyTextureData, 16U);
 
                         m_spriteIcon = new sf::Sprite(*m_texture);
                         m_spriteIcon->setScale(0.75f, 0.75f);
                         m_spriteIcon->setPosition(16.f, 16.f);
-
-                        m_spriteRanges[StatsMode_Watch] = sf::IntRect(0, 0, 128, 128);
-                        m_spriteRanges[StatsMode_Cpu] = sf::IntRect(128, 0, 128, 128);
-                        m_spriteRanges[StatsMode_Ram] = sf::IntRect(0, 128, 128, 128);
-                        m_spriteRanges[StatsMode_Frame] = sf::IntRect(128, 128, 128, 128);
-                        m_spriteIcon->setTextureRect(m_spriteRanges[StatsMode_Watch]);
+                        m_spriteIcon->setTextureRect(g_SpritesBounds[StatsMode_Watch]);
 
                         m_vrTexture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
                         m_vrTexture.eType = vr::TextureType_OpenGL;
@@ -284,7 +286,7 @@ void WidgetStats::Update()
                     {
                         if((l_frameTiming.m_flPreSubmitGpuMs > 0.f) && (l_frameTiming.m_flPostSubmitGpuMs > 0.f))
                         {
-                            int l_sceneFrame = static_cast<int>(1000.f / (l_frameTiming.m_flPreSubmitGpuMs+l_frameTiming.m_flPostSubmitGpuMs+l_frameTiming.m_flTotalRenderGpuMs));
+                            int l_sceneFrame = static_cast<int>(1000.f / (l_frameTiming.m_flPreSubmitGpuMs + l_frameTiming.m_flPostSubmitGpuMs));
                             l_text.append(std::to_string(l_sceneFrame));
                         }
                         else l_text.push_back('*');
@@ -329,7 +331,7 @@ void WidgetStats::Update()
         float l_opacity = glm::dot(l_toHandDir, l_viewDir);
         l_opacity = glm::acos(l_opacity);
         l_opacity = glm::clamp(l_opacity, g_ViewAngleRange.y, g_ViewAngleRange.x);
-        l_opacity = 1.f - ((l_opacity - g_ViewAngleRange.y) / g_ViewAngleRangeDif);
+        l_opacity = 1.f - ((l_opacity - g_ViewAngleRange.y) / g_ViewAngleRangeDiff);
         ms_vrOverlay->SetOverlayAlpha(m_overlayHandle, l_opacity);
 
         // Set rotation based on direction to HMD
@@ -384,7 +386,7 @@ void  WidgetStats::OnButtonPress(unsigned char f_hand, uint32_t f_button)
                     {
                         m_statsMode += 1U;
                         m_statsMode %= StatsMode_Max;
-                        m_spriteIcon->setTextureRect(m_spriteRanges[m_statsMode]);
+                        m_spriteIcon->setTextureRect(g_SpritesBounds[m_statsMode]);
                         m_forceUpdate = true;
                     }
                 } break;

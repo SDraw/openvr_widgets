@@ -6,6 +6,7 @@ class WindowGrabber final
     sf::Texture *m_texture;
     std::vector<SL::Screen_Capture::ImageBGRA> m_buffer;
     std::mutex m_bufferLock;
+    std::chrono::milliseconds m_captureDelay;
     std::atomic<bool> m_active;
     ULONGLONG m_lastTick;
     bool m_stale;
@@ -27,6 +28,7 @@ public:
     ~WindowGrabber();
 
     bool StartCapture(size_t f_window);
+    void SetDelay(size_t f_delay);
     void StopCapture();
     void Update();
 
