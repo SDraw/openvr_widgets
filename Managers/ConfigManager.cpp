@@ -47,7 +47,7 @@ void ConfigManager::Load()
 
     if(m_settingsFile->load_file("settings.xml"))
     {
-        pugi::xml_node l_root = m_settingsFile->child("root");
+        pugi::xml_node l_root = m_settingsFile->child("settings");
         for(pugi::xml_node l_node = l_root.child("setting"); l_node; l_node = l_node.next_sibling("setting"))
         {
             pugi::xml_attribute l_attribName = l_node.attribute("name");

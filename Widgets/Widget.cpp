@@ -10,12 +10,14 @@ vr::IVRCompositor *Widget::ms_vrCompositor = nullptr;
 
 Widget::Widget()
 {
-    m_valid = false;
     m_overlayHandle = vr::k_ulOverlayHandleInvalid;
     m_vrTexture = { 0 };
+
+    m_valid = false;
     m_visible = false;
-    m_transform = new Transformation();
+
     m_language = Language::Language_English;
+    m_transform = new Transformation();
 }
 Widget::~Widget()
 {

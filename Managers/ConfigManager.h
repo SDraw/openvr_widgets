@@ -30,4 +30,3 @@ protected:
 
     friend class Core;
 };
-

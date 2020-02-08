@@ -41,19 +41,18 @@ WidgetStats::WidgetStats()
 {
     m_renderTexture = nullptr;
     m_font = nullptr;
-    m_fontTextTime = nullptr;
-    m_fontTextDate = nullptr;
-    m_fontTextCpu = nullptr;
-    m_fontTextRam = nullptr;
-    m_fontTextFrame = nullptr;
+    for(size_t i = 0U; i < StatsText_Count; i++) m_fontText[i] = nullptr;
     m_texture = nullptr;
     m_spriteIcon = nullptr;
-    m_lastTime = 0U;
-    m_lastDay = -1;
-    m_lastPressTick = 0U;
+
     m_winHandles.m_query = NULL;
     m_winHandles.m_counter = NULL;
     m_winHandles.m_memoryStatus.dwLength = sizeof(MEMORYSTATUSEX);
+
+    m_lastTime = 0U;
+    m_lastDay = -1;
+    m_lastPressTick = 0U;
+
     m_forceUpdate = false;
     m_statsMode = StatsMode_Watch;
 }
@@ -81,11 +80,11 @@ bool WidgetStats::Create()
                     m_font = new sf::Font();
                     if(m_font->loadFromFile(GlobalSettings::GetGuiFont()))
                     {
-                        m_fontTextTime = new sf::Text("00:00:00", *m_font, 72U);
-                        m_fontTextDate = new sf::Text("Sun 0/0/0", *m_font, 36U);
-                        m_fontTextCpu = new sf::Text("0.00%", *m_font, 64U);
-                        m_fontTextRam = new sf::Text("0/0", *m_font, 40U);
-                        m_fontTextFrame = new sf::Text("0|0 FPS", *m_font, 42U);
+                        m_fontText[StatsText_Time] = new sf::Text("00:00:00", *m_font, 72U);
+                        m_fontText[StatsText_Date] = new sf::Text("Sun 0/0/0", *m_font, 36U);
+                        m_fontText[StatsText_Cpu] = new sf::Text("0.00%", *m_font, 64U);
+                        m_fontText[StatsText_Ram] = new sf::Text("0/0", *m_font, 40U);
+                        m_fontText[StatsText_Frame] = new sf::Text("0|0 FPS", *m_font, 42U);
 
                         m_texture = new sf::Texture;
                         if(!m_texture->loadFromFile("icons/atlas_stats.png")) m_texture->loadFromMemory(g_DummyTextureData, 16U);
@@ -131,16 +130,11 @@ void WidgetStats::Cleanup()
         m_overlayHandle = vr::k_ulOverlayHandleInvalid;
     }
 
-    delete m_fontTextTime;
-    m_fontTextTime = nullptr;
-    delete m_fontTextDate;
-    m_fontTextDate = nullptr;
-    delete m_fontTextCpu;
-    m_fontTextCpu = nullptr;
-    delete m_fontTextRam;
-    m_fontTextRam = nullptr;
-    delete m_fontTextFrame;
-    m_fontTextFrame = nullptr;
+    for(size_t i = 0U; i < StatsText_Count; i++)
+    {
+        delete m_fontText[i];
+        m_fontText[i] = nullptr;
+    }
 
     delete m_spriteIcon;
     m_spriteIcon = nullptr;
@@ -185,11 +179,11 @@ void WidgetStats::Update()
                     l_string.push_back(':');
                     if(l_tmTime.tm_sec < 10) l_string.push_back('0');
                     l_string.append(std::to_string(l_tmTime.tm_sec));
-                    m_fontTextTime->setString(l_string);
+                    m_fontText[StatsText_Time]->setString(l_string);
 
-                    sf::FloatRect l_bounds = m_fontTextTime->getLocalBounds();
+                    sf::FloatRect l_bounds = m_fontText[StatsText_Time]->getLocalBounds();
                     sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 40.f);
-                    m_fontTextTime->setPosition(l_position);
+                    m_fontText[StatsText_Time]->setPosition(l_position);
 
                     if(m_lastDay != l_tmTime.tm_yday)
                     {
@@ -217,16 +211,16 @@ void WidgetStats::Update()
                         l_string.push_back('/');
                         l_string.append(std::to_string(1900 + l_tmTime.tm_year));
                         l_sfString += l_string;
-                        m_fontTextDate->setString(l_sfString);
+                        m_fontText[StatsText_Date]->setString(l_sfString);
 
-                        l_bounds = m_fontTextDate->getLocalBounds();
+                        l_bounds = m_fontText[StatsText_Date]->getLocalBounds();
                         l_position.x = 56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f;
                         l_position.y = (g_RenderTargetSize.y - l_bounds.height) * 0.5f + 30.f;
-                        m_fontTextDate->setPosition(l_position);
+                        m_fontText[StatsText_Date]->setPosition(l_position);
                     }
 
-                    m_renderTexture->draw(*m_fontTextTime);
-                    m_renderTexture->draw(*m_fontTextDate);
+                    m_renderTexture->draw(*m_fontText[StatsText_Time]);
+                    m_renderTexture->draw(*m_fontText[StatsText_Date]);
                 } break;
 
                 case StatsMode_Cpu:
@@ -239,13 +233,13 @@ void WidgetStats::Update()
                     int l_length = sprintf_s(const_cast<char*>(l_text.data()), 16U, "%.2f", l_counterVal.doubleValue);
                     l_text.resize(static_cast<size_t>(l_length));
                     l_text.push_back('%');
-                    m_fontTextCpu->setString(l_text);
+                    m_fontText[StatsText_Cpu]->setString(l_text);
 
-                    sf::FloatRect l_bounds = m_fontTextCpu->getLocalBounds();
+                    sf::FloatRect l_bounds = m_fontText[StatsText_Cpu]->getLocalBounds();
                     sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 15.f);
-                    m_fontTextCpu->setPosition(l_position);
+                    m_fontText[StatsText_Cpu]->setPosition(l_position);
 
-                    m_renderTexture->draw(*m_fontTextCpu);
+                    m_renderTexture->draw(*m_fontText[StatsText_Cpu]);
                 } break;
 
                 case StatsMode_Ram:
@@ -268,13 +262,13 @@ void WidgetStats::Update()
                             l_sfString += g_MemorySizeRu;
                             break;
                     }
-                    m_fontTextRam->setString(l_sfString);
+                    m_fontText[StatsText_Ram]->setString(l_sfString);
 
-                    sf::FloatRect l_bounds = m_fontTextRam->getLocalBounds();
+                    sf::FloatRect l_bounds = m_fontText[StatsText_Ram]->getLocalBounds();
                     sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
-                    m_fontTextRam->setPosition(l_position);
+                    m_fontText[StatsText_Ram]->setPosition(l_position);
 
-                    m_renderTexture->draw(*m_fontTextRam);
+                    m_renderTexture->draw(*m_fontText[StatsText_Ram]);
                 } break;
 
                 case StatsMode_Frame:
@@ -300,13 +294,13 @@ void WidgetStats::Update()
                         l_text.append(" FPS");
                     }
                     else l_text.assign("* | * FPS");
-                    m_fontTextFrame->setString(l_text);
+                    m_fontText[StatsText_Frame]->setString(l_text);
 
-                    sf::FloatRect l_bounds = m_fontTextFrame->getLocalBounds();
+                    sf::FloatRect l_bounds = m_fontText[StatsText_Frame]->getLocalBounds();
                     sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
-                    m_fontTextFrame->setPosition(l_position);
+                    m_fontText[StatsText_Frame]->setPosition(l_position);
 
-                    m_renderTexture->draw(*m_fontTextFrame);
+                    m_renderTexture->draw(*m_fontText[StatsText_Frame]);
                 } break;
             }
 
@@ -385,7 +379,7 @@ void  WidgetStats::OnButtonPress(unsigned char f_hand, uint32_t f_button)
                     if(m_visible)
                     {
                         m_statsMode += 1U;
-                        m_statsMode %= StatsMode_Max;
+                        m_statsMode %= StatsMode_Count;
                         m_spriteIcon->setTextureRect(g_SpritesBounds[m_statsMode]);
                         m_forceUpdate = true;
                     }

@@ -37,7 +37,7 @@ void GuiSystem::SetFont(const std::string &f_path)
 
 GuiButton* GuiSystem::CreateButton()
 {
-    GuiButton *l_button = new GuiButton(m_mainTextures[GuiTextureType_Button],m_mainFont);
+    GuiButton *l_button = new GuiButton(m_mainTextures[GuiTextureType_Button], m_mainFont);
     m_guiElements.push_back(l_button);
     return l_button;
 }

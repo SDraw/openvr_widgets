@@ -9,13 +9,17 @@ const SL::Screen_Capture::ImageBGRA g_FillColor = { 0U, 0U, 0U, 255U };
 
 WindowGrabber::WindowGrabber()
 {
-    m_texture = nullptr;
-    m_active = false;
     m_interfaces = nullptr;
+
     m_windowsCount = 0U;
     m_activeWindow = std::numeric_limits<size_t>::max();
-    m_lastTick = 0U;
+
+    m_texture = nullptr;
+
+    m_active = false;
     m_stale = false;
+
+    m_lastTick = 0U;
     m_captureDelay = std::chrono::milliseconds(66U);
 }
 WindowGrabber::~WindowGrabber()

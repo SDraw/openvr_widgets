@@ -17,8 +17,9 @@ class GuiButton final : public GuiElement
 
         ButtonPart_Max
     };
-    sf::Sprite *m_sprites[ButtonPart_Max];
+
     sf::Text *m_fontText;
+    sf::Sprite *m_sprites[ButtonPart_Max];
 
     GuiButton(const GuiButton &that) = delete;
     GuiButton& operator=(const GuiButton &that) = delete;
@@ -33,6 +34,7 @@ protected:
     ~GuiButton();
 
     void GetDrawables(std::vector<const sf::Drawable*> &f_vec) const;
+
     void Update();
 
     friend class GuiSystem;

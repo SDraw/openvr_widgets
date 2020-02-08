@@ -67,18 +67,22 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\bin\</OutDir>
+    <OutDir>$(SolutionDir)bin\win32\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
+    <IntDir>$(SolutionDir)objs\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)_d</TargetName>
-    <OutDir>.\bin64\</OutDir>
+    <OutDir>$(SolutionDir)bin\win64\</OutDir>
+    <IntDir>$(SolutionDir)objs\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>.\bin\</OutDir>
+    <OutDir>$(SolutionDir)bin\win32\</OutDir>
+    <IntDir>$(SolutionDir)objs\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>.\bin64\</OutDir>
+    <OutDir>$(SolutionDir)bin\win64\</OutDir>
+    <IntDir>$(SolutionDir)objs\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

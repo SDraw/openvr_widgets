@@ -8,6 +8,6 @@ enum GuiMouseClick : unsigned char
 };
 enum GuiMouseClickState : unsigned char
 {
-    GuiClickState_Press = 0U,
-    GuiClickState_Release
+    GuiMouseClickState_Press = 0U,
+    GuiMouseClickState_Release
 };

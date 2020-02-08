@@ -5,6 +5,8 @@
 
 GuiElement::GuiElement()
 {
+    m_userPointer = nullptr;
+
     m_position = sf::Vector2f(0.f, 0.f);
     m_size = sf::Vector2f(0.f, 0.f);
     m_color = sf::Color(255U, 255U, 255U, 255U);
@@ -52,7 +54,7 @@ void GuiElement::SetHoverColor(const sf::Color &f_color)
     m_hoverColor = f_color;
 }
 
-void GuiElement::SetMouseClickCallback(const std::function<void(void*, unsigned char, unsigned char, unsigned int, unsigned int)> &f_callback)
+void GuiElement::SetMouseClickCallback(const std::function<void(GuiElement*, unsigned char, unsigned char, unsigned int, unsigned int)> &f_callback)
 {
     m_mouseClickCallback = f_callback;
 }
@@ -61,7 +63,7 @@ void GuiElement::RemoveMouseClickCallback()
     m_mouseClickCallback = nullptr;
 }
 
-void GuiElement::SetMouseMoveCallback(const std::function<void(void*, unsigned int, unsigned int)> &f_callback)
+void GuiElement::SetMouseMoveCallback(const std::function<void(GuiElement*, unsigned int, unsigned int)> &f_callback)
 {
     m_mouseMoveCallback = f_callback;
 }

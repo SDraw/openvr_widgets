@@ -15,12 +15,14 @@ Core::Core()
     m_vrSystem = nullptr;
     m_vrOverlay = nullptr;
     m_vrCompositor = nullptr;
-    m_vrChaperone = nullptr;
+    m_vrDebug = nullptr;
     m_event = { 0 };
-    m_context = nullptr;
-    m_active = false;
     m_leftHand = vr::k_unTrackedDeviceIndexInvalid;
     m_rightHand = vr::k_unTrackedDeviceIndexInvalid;
+
+    m_context = nullptr;
+    m_active = false;
+
     m_configManager = nullptr;
     m_widgetManager = nullptr;
 }
@@ -46,11 +48,11 @@ void Core::Cleanup()
         m_vrSystem = nullptr;
         m_vrOverlay = nullptr;
         m_vrCompositor = nullptr;
-        m_vrChaperone = nullptr;
+        m_vrDebug = nullptr;
     }
 }
 
-bool Core::Init()
+bool Core::Initialize()
 {
     if(!m_active)
     {
@@ -63,7 +65,7 @@ bool Core::Init()
             {
                 m_vrOverlay = vr::VROverlay();
                 m_vrCompositor = vr::VRCompositor();
-                m_vrChaperone = vr::VRChaperone();
+                m_vrDebug = vr::VRDebug();
 
                 m_leftHand = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);
                 m_rightHand = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
@@ -231,4 +233,35 @@ bool Core::DoPulse()
         }
     }
     return m_active;
+}
+
+void Core::ForceHandSearch()
+{
+    if(m_active)
+    {
+        m_leftHand = vr::k_unTrackedDeviceIndexInvalid;
+        m_rightHand = vr::k_unTrackedDeviceIndexInvalid;
+
+        m_leftHand = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);
+        m_rightHand = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
+    }
+}
+
+void Core::SendMessageToDeviceWithProperty(uint64_t f_value, const char *f_message)
+{
+    if(m_active)
+    {
+        for(uint32_t i = 0U; i < vr::k_unMaxTrackedDeviceCount; i++)
+        {
+            if(m_vrSystem->IsTrackedDeviceConnected(i))
+            {
+                if(m_vrSystem->GetUint64TrackedDeviceProperty(i, vr::Prop_VendorSpecific_Reserved_Start) == f_value)
+                {
+                    char l_response[32U];
+                    m_vrDebug->DriverDebugRequest(i, f_message, l_response, 32U);
+                    break;
+                }
+            }
+        }
+    }
 }

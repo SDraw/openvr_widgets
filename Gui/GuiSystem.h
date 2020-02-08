@@ -9,17 +9,18 @@ class GuiImage;*/
 
 class GuiSystem final
 {
-    sf::RenderTexture *m_renderTexture;
-    std::vector<GuiElement*> m_guiElements;
-
     enum GuiTextureType : size_t
     {
         GuiTextureType_Button = 0U,
 
         GuiTextureType_Max
     };
+
+    sf::RenderTexture *m_renderTexture;
     sf::Texture *m_mainTextures[GuiTextureType::GuiTextureType_Max];
     sf::Font *m_mainFont;
+
+    std::vector<GuiElement*> m_guiElements;
 
     GuiSystem(const GuiSystem &that) = delete;
     GuiSystem& operator=(const GuiSystem &that) = delete;

@@ -30,24 +30,26 @@ const vr::VRTextureBounds_t g_CaptureDelaysBounds[3U] = {
 
 WidgetWindowCapture::WidgetWindowCapture()
 {
-    for(size_t i = 0U; i < ControlIndex_Max; i++)
-    {
-        m_overlayControlHandles[i] = vr::k_ulOverlayHandleInvalid;
-        m_transformControls[i] = nullptr;
-    }
+    for(size_t i = 0U; i < ControlIndex_Count; i++) m_overlayControlHandles[i] = vr::k_ulOverlayHandleInvalid;
     m_overlayEvent = { 0 };
+
     m_windowGrabber = nullptr;
     m_windowIndex = std::numeric_limits<size_t>::max();
+
     m_lastLeftTriggerTick = 0U;
     m_lastRightTriggerTick = 0U;
+
     m_closed = false;
     m_activeDashboard = false;
     m_activeMove = false;
     m_activeResize = false;
     m_activePin = false;
+
     m_overlayWidth = 0.f;
     m_windowSize = g_EmptyIVector2;
     m_mousePosition = g_EmptyIVector2;
+    for(size_t i = 0U; i < ControlIndex_Count; i++) m_transformControls[i] = nullptr;
+
     m_fpsMode = FpsMode_15;
 }
 WidgetWindowCapture::~WidgetWindowCapture()
@@ -72,7 +74,7 @@ bool WidgetWindowCapture::Create()
             ms_textureControls.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(ms_iconsAtlas->getNativeHandle()));
         }
 
-        for(size_t i = 0U; i < ControlIndex_Max; i++) m_transformControls[i] = new Transformation();
+        for(size_t i = 0U; i < ControlIndex_Count; i++) m_transformControls[i] = new Transformation();
 
         std::string l_overlayKeyPart("ovrw.capture_");
         l_overlayKeyPart.append(std::to_string(reinterpret_cast<size_t>(this)));
@@ -155,7 +157,7 @@ bool WidgetWindowCapture::Create()
                                     ms_vrOverlay->SetOverlayTextureBounds(m_overlayControlHandles[ControlIndex_ChangeFps], &g_CaptureDelaysBounds[FpsMode_15]);
 
                                     // Apply same properties
-                                    for(size_t i = 0U; i < ControlIndex_Max; i++)
+                                    for(size_t i = 0U; i < ControlIndex_Count; i++)
                                     {
                                         ms_vrOverlay->SetOverlayWidthInMeters(m_overlayControlHandles[i], 0.05f);
                                         ms_vrOverlay->SetOverlayInputMethod(m_overlayControlHandles[i], vr::VROverlayInputMethod::VROverlayInputMethod_Mouse);
@@ -202,7 +204,7 @@ void WidgetWindowCapture::Cleanup()
         m_overlayHandle = vr::k_ulOverlayHandleInvalid;
     }
 
-    for(size_t i = 0U; i < ControlIndex_Max; i++)
+    for(size_t i = 0U; i < ControlIndex_Count; i++)
     {
         if(m_overlayControlHandles[i] != vr::k_ulOverlayHandleInvalid)
         {
@@ -408,7 +410,7 @@ void WidgetWindowCapture::Update()
                     if(m_overlayEvent.data.mouse.button == vr::VRMouseButton_Left)
                     {
                         m_fpsMode += 1U;
-                        m_fpsMode %= FpsMode_Max;
+                        m_fpsMode %= FpsMode_Count;
 
                         m_windowGrabber->SetDelay(g_CaptureDelays[m_fpsMode]);
                         ms_vrOverlay->SetOverlayTextureBounds(m_overlayControlHandles[ControlIndex_ChangeFps], &g_CaptureDelaysBounds[m_fpsMode]);
@@ -450,7 +452,7 @@ void WidgetWindowCapture::Update()
         m_transform->Update();
         ms_vrOverlay->SetOverlayTransformAbsolute(m_overlayHandle, vr::TrackingUniverseRawAndUncalibrated, &m_transform->GetMatrixVR());
 
-        for(size_t i = 0U; i < ControlIndex_Max; i++)
+        for(size_t i = 0U; i < ControlIndex_Count; i++)
         {
             m_transformControls[i]->Update(m_transform);
             if(m_activeDashboard)
@@ -533,7 +535,7 @@ void WidgetWindowCapture::OnDashboardOpen()
             m_activeMove = false;
             m_activeResize = false;
 
-            for(size_t i = 0U; i < ControlIndex_Max; i++) ms_vrOverlay->ShowOverlay(m_overlayControlHandles[i]);
+            for(size_t i = 0U; i < ControlIndex_Count; i++) ms_vrOverlay->ShowOverlay(m_overlayControlHandles[i]);
         }
     }
 }
@@ -544,22 +546,12 @@ void WidgetWindowCapture::OnDashboardClose()
         m_activeDashboard = false;
         if(m_visible)
         {
-            for(size_t i = 0U; i < ControlIndex_Max; i++) ms_vrOverlay->HideOverlay(m_overlayControlHandles[i]);
+            for(size_t i = 0U; i < ControlIndex_Count; i++) ms_vrOverlay->HideOverlay(m_overlayControlHandles[i]);
         }
     }
 }
 
-void WidgetWindowCapture::RemoveIconsAtlas()
-{
-    if(ms_iconsAtlas)
-    {
-        delete ms_iconsAtlas;
-        ms_iconsAtlas = nullptr;
-        ms_textureControls = { 0 };
-    }
-}
-
-// Internal methods
+// Internal method only
 void WidgetWindowCapture::InternalStartCapture()
 {
     if(m_windowGrabber->StartCapture(m_windowIndex))
@@ -573,4 +565,15 @@ void WidgetWindowCapture::InternalStartCapture()
         }
     }
     else m_vrTexture.handle = nullptr;
+}
+
+// Static
+void WidgetWindowCapture::RemoveIconsAtlas()
+{
+    if(ms_iconsAtlas)
+    {
+        delete ms_iconsAtlas;
+        ms_iconsAtlas = nullptr;
+        ms_textureControls = { 0 };
+    }
 }

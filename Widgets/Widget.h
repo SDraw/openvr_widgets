@@ -8,13 +8,14 @@ class Widget
 protected:
     static vr::IVROverlay *ms_vrOverlay;
     static vr::IVRCompositor *ms_vrCompositor;
-
-    bool m_valid;
     vr::VROverlayHandle_t m_overlayHandle;
     vr::Texture_t m_vrTexture;
-    Transformation *m_transform;
+
+    bool m_valid;
     bool m_visible;
+
     unsigned char m_language;
+    Transformation *m_transform;
 
     Widget();
     virtual ~Widget();
@@ -38,4 +39,3 @@ protected:
 
     friend class WidgetManager;
 };
-

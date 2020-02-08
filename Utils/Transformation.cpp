@@ -11,8 +11,10 @@ Transformation::Transformation()
 {
     m_position = g_EmptyVector;
     m_rotation = g_EmptyQuat;
+
     m_matrix = g_IdentityMatrix;
     m_vrMatrix = { { { 0.f } } };
+
     m_update = false;
     m_updated = false;
 }

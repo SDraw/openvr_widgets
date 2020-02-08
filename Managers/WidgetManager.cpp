@@ -13,11 +13,21 @@
 #include "Widgets/WidgetWindowCapture.h"
 #include "Utils/GlobalStructures.h"
 
-const char* g_ButtonsTextsEn[] = {
-    "Add window capture widget"
+#include "Core/VRTransform.h"
+
+const char *g_ButtonsTextsEn[] = {
+    "Add window capture widget",
+    "Reassign hands",
+    "Switch KinectV2 tracking",
+    "Switch Leap left hand",
+    "Switch Leap right hand"
 };
-const wchar_t* g_ButtonsTextsRu[] = {
-    L"\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0432\u0438\u0434\u0436\u0435\u0442 \u0437\u0430\u0445\u0432\u0430\u0442\u0430 \u043E\u043A\u043D\u0430"
+const wchar_t *g_ButtonsTextsRu[] = {
+    L"\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0432\u0438\u0434\u0436\u0435\u0442 \u0437\u0430\u0445\u0432\u0430\u0442\u0430",
+    L"\u041E\u043F\u0440\u0435\u0434\u0435\u043B\u0438\u0442\u044C \u0440\u0443\u043A\u0438",
+    L"\u0418\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043E\u0442\u0441\u043B\u0435\u0436\u0438\u0432\u0430\u043D\u0438\u0435 KinectV2",
+    L"\u0418\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043E\u0442\u0441\u043B\u0435\u0436\u0438\u0432\u0430\u043D\u0438\u0435 LM \u043B\u0435\u0432\u043E\u0439 \u0440\u0443\u043A\u0438",
+    L"\u0418\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043E\u0442\u0441\u043B\u0435\u0436\u0438\u0432\u0430\u043D\u0438\u0435 LM \u043F\u0440\u0430\u0432\u043E\u0439 \u0440\u0443\u043A\u0438"
 };
 
 enum ConstantWidget : size_t
@@ -26,50 +36,54 @@ enum ConstantWidget : size_t
 };
 
 const sf::Color g_HoverColor(142U, 205U, 246U);
+const sf::Vector2f g_ButtonSize(320.f, 64.f);
 
 WidgetManager::WidgetManager(Core *f_core)
 {
     m_core = f_core;
 
     // Init with empty fields
-    m_guiSystem = nullptr;
     m_overlayDashboardThumbnail = vr::k_ulOverlayHandleInvalid;
     m_overlayDashboard = vr::k_ulOverlayHandleInvalid;
     m_textureDashboard = { 0 };
     m_overlayEvent = { 0 };
     m_activeDashboard = false;
+    m_guiSystem = nullptr;
+    for(size_t i = 0U; i < GuiElementIndex_Max; i++) m_guiElements[i] = nullptr;
 
     // Create settings dashboard overlay
     sf::Vector2u l_guiSize(512U, 512U);
     m_guiSystem = new GuiSystem(l_guiSize);
-    for(size_t i = 0U; i < GuiElementIndex_Max; i++) m_guiElements[i] = nullptr;
     if(m_guiSystem->IsValid())
     {
         m_guiSystem->SetButtonsTexture(m_core->GetConfigManager()->GetGuiButton());
         m_guiSystem->SetFont(m_core->GetConfigManager()->GetGuiFont());
 
-        std::function<void(void*, unsigned char, unsigned char, unsigned int, unsigned int)> l_clickCallback([this](void *f_guiElement, unsigned char f_button, unsigned char f_state, unsigned int, unsigned int)
+        std::function<void(GuiElement*, unsigned char, unsigned char, unsigned int, unsigned int)> l_clickCallback([this](GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state, unsigned int, unsigned int)
         {
             this->OnGuiElementMouseClick(f_guiElement, f_button, f_state);
         });
 
-        m_guiElements[GuiElementIndex_AddCaptureWindow] = m_guiSystem->CreateButton();
-        m_guiElements[GuiElementIndex_AddCaptureWindow]->SetPosition(sf::Vector2f(96.f, 16.f));
-        m_guiElements[GuiElementIndex_AddCaptureWindow]->SetSize(sf::Vector2f(320.f, 64.f));
-        m_guiElements[GuiElementIndex_AddCaptureWindow]->SetMouseClickCallback(l_clickCallback);
-        m_guiElements[GuiElementIndex_AddCaptureWindow]->SetHoverColor(g_HoverColor);
-        dynamic_cast<GuiButton*>(m_guiElements[GuiElementIndex_AddCaptureWindow])->SetTextSize(20U);
-
-        switch(m_core->GetConfigManager()->GetLanguage())
+        for(size_t i = 0U; i < GuiElementIndex_Max; i++)
         {
-            case Language::Language_English:
+            m_guiElements[i] = m_guiSystem->CreateButton();
+            m_guiElements[i]->SetPosition(sf::Vector2f(96.f, 16.f + 80.f * static_cast<float>(i)));
+            m_guiElements[i]->SetSize(g_ButtonSize);
+            m_guiElements[i]->SetHoverColor(g_HoverColor);
+            dynamic_cast<GuiButton*>(m_guiElements[i])->SetTextSize(20U);
+
+            switch(m_core->GetConfigManager()->GetLanguage())
             {
-                dynamic_cast<GuiButton*>(m_guiElements[GuiElementIndex_AddCaptureWindow])->SetText(g_ButtonsTextsEn[GuiElementIndex_AddCaptureWindow]);
-            } break;
-            case Language::Language_Russian:
-            {
-                dynamic_cast<GuiButton*>(m_guiElements[GuiElementIndex_AddCaptureWindow])->SetText(g_ButtonsTextsRu[GuiElementIndex_AddCaptureWindow]);
-            } break;
+                case Language::Language_English:
+                    dynamic_cast<GuiButton*>(m_guiElements[i])->SetText(g_ButtonsTextsEn[i]);
+                    break;
+                case Language::Language_Russian:
+                    dynamic_cast<GuiButton*>(m_guiElements[i])->SetText(g_ButtonsTextsRu[i]);
+                    break;
+            }
+
+            m_guiElements[i]->SetMouseClickCallback(l_clickCallback);
+            m_guiElements[i]->SetUserPointer(reinterpret_cast<void*>(i));
         }
     }
 
@@ -155,7 +169,7 @@ void WidgetManager::DoPulse()
                                 l_button = GuiMouseClick::GuiMouseClick_Middle;
                                 break;
                         }
-                        unsigned char l_state = ((m_overlayEvent.eventType == vr::VREvent_MouseButtonDown) ? GuiMouseClickState::GuiClickState_Press : GuiMouseClickState::GuiClickState_Release);
+                        unsigned char l_state = ((m_overlayEvent.eventType == vr::VREvent_MouseButtonDown) ? GuiMouseClickState::GuiMouseClickState_Press : GuiMouseClickState::GuiMouseClickState_Release);
                         m_guiSystem->ProcessMouseClick(l_button, l_state, static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(m_overlayEvent.data.mouse.y));
                     } break;
                     case vr::VREvent_MouseMove:
@@ -228,35 +242,35 @@ void WidgetManager::OnDashboardClose()
     for(auto l_widget : m_widgets) l_widget->OnDashboardClose();
 }
 
-void WidgetManager::OnGuiElementMouseClick(void *f_guiElement, unsigned char f_button, unsigned char f_state)
+void WidgetManager::OnGuiElementMouseClick(GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state)
 {
-    size_t l_index = std::numeric_limits<size_t>::max();
-    for(size_t i = 0U; i < GuiElementIndex::GuiElementIndex_Max; i++)
+    if((f_button == GuiMouseClick::GuiMouseClick_Left) && (f_state == GuiMouseClickState::GuiMouseClickState_Press))
     {
-        if(m_guiElements[i] == f_guiElement)
-        {
-            l_index = i;
-            break;
-        }
-    }
-    if(l_index != std::numeric_limits<size_t>::max())
-    {
-        switch(l_index)
+        switch(reinterpret_cast<size_t>(f_guiElement->GetUserPointer())) // Bold move for someone within stabbing range
         {
             case GuiElementIndex::GuiElementIndex_AddCaptureWindow:
             {
-                if((f_button == GuiMouseClick::GuiMouseClick_Left) && (f_state == GuiMouseClickState::GuiClickState_Press))
+                Widget *l_widget = new WidgetWindowCapture();
+                if(l_widget->Create())
                 {
-                    Widget *l_widget = new WidgetWindowCapture();
-                    if(l_widget->Create())
-                    {
-                        l_widget->OnLanguageChange(m_core->GetConfigManager()->GetLanguage());
-                        if(m_activeDashboard) l_widget->OnDashboardOpen();
-                        m_widgets.push_back(l_widget);
-                    }
-                    else delete l_widget;
+                    l_widget->OnLanguageChange(m_core->GetConfigManager()->GetLanguage());
+                    if(m_activeDashboard) l_widget->OnDashboardOpen();
+                    m_widgets.push_back(l_widget);
                 }
+                else delete l_widget;
             } break;
+            case GuiElementIndex_ReassignHands:
+                m_core->ForceHandSearch();
+                break;
+            case GuiElementIndex_SwitchKinectTracking:
+                m_core->SendMessageToDeviceWithProperty(0x4B696E6563745632, "switch"); // Refer to driver_kinectV2
+                break;
+            case GuiElementIndex_SwitchLeapLeftHand:
+                m_core->SendMessageToDeviceWithProperty(0x4C4D6F74696F6E, "setting left_hand"); // Refer to driver_leap - leap_monitor
+                break;
+            case GuiElementIndex_SwitchLeapRightHand:
+                m_core->SendMessageToDeviceWithProperty(0x4C4D6F74696F6E, "setting right_hand"); // Refer to driver_leap - leap_monitor
+                break;
         }
     }
 }

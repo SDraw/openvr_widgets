@@ -4,8 +4,10 @@ class GuiElement
 {
     bool m_visible;
 
-    std::function<void(void*, unsigned char, unsigned char, unsigned int, unsigned int)> m_mouseClickCallback;
-    std::function<void(void*, unsigned int, unsigned int)> m_mouseMoveCallback;
+    void *m_userPointer;
+
+    std::function<void(GuiElement*, unsigned char, unsigned char, unsigned int, unsigned int)> m_mouseClickCallback;
+    std::function<void(GuiElement*, unsigned int, unsigned int)> m_mouseMoveCallback;
 
     GuiElement(const GuiElement &that) = delete;
     GuiElement& operator=(const GuiElement &that) = delete;
@@ -22,10 +24,13 @@ public:
     void SetColor(const sf::Color &f_color);
     void SetHoverColor(const sf::Color &f_color);
 
-    void SetMouseClickCallback(const std::function<void(void*, unsigned char, unsigned char, unsigned int, unsigned int)> &f_callback);
+    inline void SetUserPointer(void *f_pointer) { m_userPointer = f_pointer; }
+    inline void* GetUserPointer() const { return m_userPointer; }
+
+    void SetMouseClickCallback(const std::function<void(GuiElement*, unsigned char, unsigned char, unsigned int, unsigned int)> &f_callback);
     void RemoveMouseClickCallback();
 
-    void SetMouseMoveCallback(const std::function<void(void*, unsigned int, unsigned int)> &f_callback);
+    void SetMouseMoveCallback(const std::function<void(GuiElement*, unsigned int, unsigned int)> &f_callback);
     void RemoveMouseMoveCallback();
 
     // Internal methods for subclasses

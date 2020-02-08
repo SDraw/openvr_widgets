@@ -4,9 +4,11 @@ class VRTransform final
     static glm::vec3 ms_hmdPos;
     static glm::quat ms_hmdRot;
     static glm::mat4 ms_hmdMat;
+
     static glm::vec3 ms_leftHandPos;
     static glm::quat ms_leftHandRot;
     static glm::mat4 ms_leftHandMat;
+
     static glm::vec3 ms_rightHandPos;
     static glm::quat ms_rightHandRot;
     static glm::mat4 ms_rightHandMat;
@@ -29,4 +31,3 @@ protected:
 
     friend class Core;
 };
-

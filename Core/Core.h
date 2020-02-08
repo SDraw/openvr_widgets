@@ -8,16 +8,15 @@ class Core final
     vr::IVRSystem *m_vrSystem;
     vr::IVROverlay *m_vrOverlay;
     vr::IVRCompositor *m_vrCompositor;
-    vr::IVRChaperone *m_vrChaperone;
+    vr::IVRDebug *m_vrDebug;
     vr::VREvent_t m_event;
-
-    sf::Context *m_context;
-    std::chrono::milliseconds m_threadDelay;
-    bool m_active;
-
     vr::TrackedDeviceIndex_t m_leftHand;
     vr::TrackedDeviceIndex_t m_rightHand;
-    
+
+    bool m_active;
+    sf::Context *m_context;
+    std::chrono::milliseconds m_threadDelay;
+
     ConfigManager *m_configManager;
     WidgetManager *m_widgetManager;
 
@@ -29,16 +28,17 @@ public:
     Core();
     ~Core();
 
-    bool Init();
-    bool DoPulse();
+    bool Initialize();
     void Terminate();
+    bool DoPulse();
 
     inline vr::IVRSystem* GetVRSystem() const { return m_vrSystem; }
     inline vr::IVROverlay* GetVROverlay() const { return m_vrOverlay; }
     inline vr::IVRCompositor* GetVRCompositor() const { return m_vrCompositor; }
-    inline vr::IVRChaperone* GetVRChaperone() const { return m_vrChaperone; }
 
     inline WidgetManager* GetWidgetManager() const { return m_widgetManager; }
     inline ConfigManager* GetConfigManager() const { return m_configManager; }
-};
 
+    void ForceHandSearch();
+    void SendMessageToDeviceWithProperty(uint64_t f_value, const char *f_message);
+};

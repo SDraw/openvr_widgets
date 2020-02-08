@@ -12,25 +12,24 @@ class WidgetStats final : public Widget
         StatsMode_Ram,
         StatsMode_Frame,
 
-        StatsMode_Max
+        StatsMode_Count
     };
-    unsigned char m_statsMode;
+    enum StatsText : size_t
+    {
+        StatsText_Time = 0U,
+        StatsText_Date,
+        StatsText_Cpu,
+        StatsText_Ram,
+        StatsText_Frame,
+
+        StatsText_Count
+    };
 
     sf::RenderTexture *m_renderTexture;
     sf::Font *m_font;
-    sf::Text *m_fontTextTime;
-    sf::Text *m_fontTextDate;
-    sf::Text *m_fontTextCpu;
-    sf::Text *m_fontTextRam;
-    sf::Text *m_fontTextFrame;
-
+    sf::Text *m_fontText[StatsText_Count];
     sf::Texture *m_texture;
     sf::Sprite *m_spriteIcon;
-
-    ULONGLONG m_lastPressTick;
-    std::time_t m_lastTime;
-    int m_lastDay;
-    bool m_forceUpdate;
 
     struct WinHandles
     {
@@ -38,6 +37,13 @@ class WidgetStats final : public Widget
         PDH_HCOUNTER m_counter;
         MEMORYSTATUSEX m_memoryStatus;
     } m_winHandles;
+
+    ULONGLONG m_lastPressTick;
+    std::time_t m_lastTime;
+    int m_lastDay;
+
+    size_t m_statsMode;
+    bool m_forceUpdate;
 
     WidgetStats(const WidgetStats &that) = delete;
     WidgetStats& operator=(const WidgetStats &that) = delete;
@@ -57,4 +63,3 @@ protected:
 
     friend class WidgetManager;
 };
-

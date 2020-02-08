@@ -4,8 +4,10 @@ class Transformation final
 {
     glm::vec3 m_position;
     glm::quat m_rotation;
+
     glm::mat4 m_matrix;
     vr::HmdMatrix34_t m_vrMatrix;
+
     bool m_update;
     bool m_updated;
 public:
@@ -24,4 +26,3 @@ public:
 
     void Update(const Transformation *f_parent = nullptr);
 };
-

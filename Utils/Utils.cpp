@@ -36,6 +36,22 @@ void ConvertMatrix(const glm::mat4 &f_mat, vr::HmdMatrix34_t &f_matVR)
     }
 }
 
+void GetRotationToPoint(const glm::vec3 &f_pointA, const glm::vec3 &f_pointB, const glm::quat &f_rotationA, glm::quat &f_result)
+{
+    glm::vec3 l_dir = (f_pointA - f_pointB);
+    l_dir = glm::normalize(l_dir);
+
+    glm::vec3 l_up = f_rotationA*g_AxisY;
+    glm::vec3 l_crossA = glm::cross(l_up, l_dir);
+    l_crossA = glm::normalize(l_crossA);
+
+    glm::vec3 l_crossB = glm::cross(l_dir, l_crossA);
+    l_crossB = glm::normalize(l_crossB);
+
+    glm::mat3 l_rotMat(l_crossA, l_crossB, l_dir);
+    f_result = l_rotMat;
+}
+
 size_t ReadEnumVector(const std::string &f_val, const std::vector<std::string> &f_vec)
 {
     size_t l_result = std::numeric_limits<size_t>::max();
@@ -84,22 +100,6 @@ void ExtractAndConvertToRGBA(const SL::Screen_Capture::Image &img, unsigned char
         }
         imgsrc = SL::Screen_Capture::GotoNextRow(img, startimgsrc);
     }
-}
-
-void GetRotationToPoint(const glm::vec3 &f_pointA, const glm::vec3 &f_pointB, const glm::quat &f_rotationA, glm::quat &f_result)
-{
-    glm::vec3 l_dir = (f_pointA - f_pointB);
-    l_dir = glm::normalize(l_dir);
-
-    glm::vec3 l_up = f_rotationA*g_AxisY;
-    glm::vec3 l_crossA = glm::cross(l_up, l_dir);
-    l_crossA = glm::normalize(l_crossA);
-
-    glm::vec3 l_crossB = glm::cross(l_dir, l_crossA);
-    l_crossB = glm::normalize(l_crossB);
-
-    glm::mat3 l_rotMat(l_crossA, l_crossB, l_dir);
-    f_result = l_rotMat;
 }
 
 void SendWinAPIMessage(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)

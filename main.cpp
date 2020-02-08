@@ -12,7 +12,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     UNREFERENCED_PARAMETER(lpCmdLine);
 #endif
     Core *l_core = new Core();
-    if(l_core->Init())
+    if(l_core->Initialize())
     {
         while(l_core->DoPulse());
         l_core->Terminate();

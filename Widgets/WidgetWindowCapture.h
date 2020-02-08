@@ -6,9 +6,6 @@ class WindowGrabber;
 
 class WidgetWindowCapture final : public Widget
 {
-    static sf::Texture *ms_iconsAtlas;
-    static vr::Texture_t ms_textureControls;
-
     enum ControlIndex : size_t
     {
         ControlIndex_PinUnpin = 0U,
@@ -18,7 +15,7 @@ class WidgetWindowCapture final : public Widget
         ControlIndex_Update,
         ControlIndex_ChangeFps,
 
-        ControlIndex_Max
+        ControlIndex_Count
     };
     enum FpsMode : size_t
     {
@@ -26,28 +23,33 @@ class WidgetWindowCapture final : public Widget
         FpsMode_30,
         FpsMode_60,
 
-        FpsMode_Max
+        FpsMode_Count
     };
 
-    vr::VROverlayHandle_t m_overlayControlHandles[ControlIndex_Max];
+    vr::VROverlayHandle_t m_overlayControlHandles[ControlIndex_Count];
     vr::VREvent_t m_overlayEvent;
+
+    static sf::Texture *ms_iconsAtlas;
+    static vr::Texture_t ms_textureControls;
 
     WindowGrabber *m_windowGrabber;
     size_t m_windowIndex;
 
     ULONGLONG m_lastLeftTriggerTick;
     ULONGLONG m_lastRightTriggerTick;
+
     bool m_closed;
     bool m_activeDashboard;
     bool m_activeMove;
     bool m_activeResize;
     bool m_activePin;
-    size_t m_fpsMode;
+
     float m_overlayWidth;
     glm::ivec2 m_windowSize;
     glm::ivec2 m_mousePosition;
-    Transformation *m_transformControls[ControlIndex_Max];
+    Transformation *m_transformControls[ControlIndex_Count];
 
+    size_t m_fpsMode;
 
     WidgetWindowCapture(const WidgetWindowCapture &that) = delete;
     WidgetWindowCapture& operator=(const WidgetWindowCapture &that) = delete;
@@ -72,4 +74,3 @@ protected:
 
     friend class WidgetManager;
 };
-
