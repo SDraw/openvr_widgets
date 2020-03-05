@@ -59,8 +59,8 @@ void GuiButton::Update()
 {
     if(m_update)
     {
-        sf::Vector2f l_diff = (m_size - g_DefaultButtonHalfSize);
-        sf::Vector2f l_scale = (l_diff * 0.03125f); // Division by 32
+        const sf::Vector2f l_diff = (m_size - g_DefaultButtonHalfSize);
+        const sf::Vector2f l_scale = (l_diff * 0.03125f); // Division by 32
 
         // Segment 1
         m_sprites[ButtonPart_TopLeft]->setPosition(m_position);
@@ -94,7 +94,7 @@ void GuiButton::Update()
         // Segment 9
         m_sprites[ButtonPart_BottomRight]->setPosition(m_position.x + 16.f + l_diff.x, m_position.y + 16.f + l_diff.y);
 
-        sf::FloatRect l_bounds = m_fontText->getLocalBounds();
+        const sf::FloatRect l_bounds = m_fontText->getLocalBounds();
         m_fontText->setPosition(m_position.x + (m_size.x - l_bounds.width)*0.5f, m_position.y + (m_size.y - l_bounds.height)*0.5f);
     }
     m_fontText->setFillColor(m_activeHover ? m_hoverColor : m_color);

@@ -155,7 +155,7 @@ void WidgetStats::Update()
 {
     if(m_valid && m_visible)
     {
-        std::time_t l_time = std::time(nullptr);
+        const std::time_t l_time = std::time(nullptr);
         if(m_lastTime != l_time || m_forceUpdate)
         {
             m_lastTime = l_time;
@@ -235,8 +235,8 @@ void WidgetStats::Update()
                     l_text.push_back('%');
                     m_fontText[StatsText_Cpu]->setString(l_text);
 
-                    sf::FloatRect l_bounds = m_fontText[StatsText_Cpu]->getLocalBounds();
-                    sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 15.f);
+                    const sf::FloatRect l_bounds = m_fontText[StatsText_Cpu]->getLocalBounds();
+                    const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 15.f);
                     m_fontText[StatsText_Cpu]->setPosition(l_position);
 
                     m_renderTexture->draw(*m_fontText[StatsText_Cpu]);
@@ -264,8 +264,8 @@ void WidgetStats::Update()
                     }
                     m_fontText[StatsText_Ram]->setString(l_sfString);
 
-                    sf::FloatRect l_bounds = m_fontText[StatsText_Ram]->getLocalBounds();
-                    sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
+                    const sf::FloatRect l_bounds = m_fontText[StatsText_Ram]->getLocalBounds();
+                    const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
                     m_fontText[StatsText_Ram]->setPosition(l_position);
 
                     m_renderTexture->draw(*m_fontText[StatsText_Ram]);
@@ -296,8 +296,8 @@ void WidgetStats::Update()
                     else l_text.assign("* | * FPS");
                     m_fontText[StatsText_Frame]->setString(l_text);
 
-                    sf::FloatRect l_bounds = m_fontText[StatsText_Frame]->getLocalBounds();
-                    sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
+                    const sf::FloatRect l_bounds = m_fontText[StatsText_Frame]->getLocalBounds();
+                    const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
                     m_fontText[StatsText_Frame]->setPosition(l_position);
 
                     m_renderTexture->draw(*m_fontText[StatsText_Frame]);
@@ -318,10 +318,10 @@ void WidgetStats::Update()
         m_transform->Move(l_handRot*g_OverlayOffset);
 
         // Set opacity based on angle between view direction and hmd to hand direction
-        glm::vec3 l_toHandDir = m_transform->GetPosition() - l_hmdPos;
+        glm::vec3 l_toHandDir = (m_transform->GetPosition() - l_hmdPos);
         l_toHandDir = glm::normalize(l_toHandDir);
 
-        glm::vec3 l_viewDir = l_hmdRot*g_AxisZN;
+        const glm::vec3 l_viewDir = l_hmdRot*g_AxisZN;
         float l_opacity = glm::dot(l_toHandDir, l_viewDir);
         l_opacity = glm::acos(l_opacity);
         l_opacity = glm::clamp(l_opacity, g_ViewAngleRange.y, g_ViewAngleRange.x);
@@ -366,7 +366,7 @@ void  WidgetStats::OnButtonPress(unsigned char f_hand, uint32_t f_button)
             {
                 case vr::k_EButton_Grip:
                 {
-                    ULONGLONG l_tick = GetTickCount64();
+                    const ULONGLONG l_tick = GetTickCount64();
                     if((l_tick - m_lastPressTick) <= 500U)
                     {
                         m_visible = true;

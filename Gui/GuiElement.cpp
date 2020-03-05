@@ -76,7 +76,7 @@ void GuiElement::ProcessMouseClick(unsigned char f_button, unsigned char f_state
 {
     if(m_visible)
     {
-        sf::FloatRect l_rectangle(m_position.x, m_position.y, m_size.x, m_size.y);
+        const sf::FloatRect l_rectangle(m_position.x, m_position.y, m_size.x, m_size.y);
         if(l_rectangle.contains(static_cast<float>(f_mouseX), static_cast<float>(f_mouseY)))
         {
             ProcessMouseClickInternal(f_button, f_state, f_mouseX, f_mouseY);
@@ -89,7 +89,7 @@ void GuiElement::ProcessMouseMove(unsigned int f_mouseX, unsigned f_mouseY)
 {
     if(m_visible)
     {
-        sf::FloatRect l_rectangle(m_position.x, m_position.y, m_size.x, m_size.y);
+        const sf::FloatRect l_rectangle(m_position.x, m_position.y, m_size.x, m_size.y);
         if(l_rectangle.contains(static_cast<float>(f_mouseX), static_cast<float>(f_mouseY)))
         {
             m_activeHover = true;

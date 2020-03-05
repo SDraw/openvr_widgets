@@ -41,14 +41,14 @@ void GetRotationToPoint(const glm::vec3 &f_pointA, const glm::vec3 &f_pointB, co
     glm::vec3 l_dir = (f_pointA - f_pointB);
     l_dir = glm::normalize(l_dir);
 
-    glm::vec3 l_up = f_rotationA*g_AxisY;
+    const glm::vec3 l_up = f_rotationA*g_AxisY;
     glm::vec3 l_crossA = glm::cross(l_up, l_dir);
     l_crossA = glm::normalize(l_crossA);
 
     glm::vec3 l_crossB = glm::cross(l_dir, l_crossA);
     l_crossB = glm::normalize(l_crossB);
 
-    glm::mat3 l_rotMat(l_crossA, l_crossB, l_dir);
+    const glm::mat3 l_rotMat(l_crossA, l_crossB, l_dir);
     f_result = l_rotMat;
 }
 
@@ -104,5 +104,5 @@ void ExtractAndConvertToRGBA(const SL::Screen_Capture::Image &img, unsigned char
 
 void SendWinAPIMessage(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-    if(SendMessage(hWnd, Msg, wParam, lParam)) PostMessage(hWnd, Msg, wParam, lParam);
+    if(PostMessage(hWnd, Msg, wParam, lParam)) SendMessage(hWnd, Msg, wParam, lParam);
 }

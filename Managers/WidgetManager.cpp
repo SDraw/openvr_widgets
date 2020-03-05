@@ -37,6 +37,7 @@ enum ConstantWidget : size_t
 
 const sf::Color g_HoverColor(142U, 205U, 246U);
 const sf::Vector2f g_ButtonSize(320.f, 64.f);
+const sf::Vector2u g_GuiSize(512U, 512U);
 
 WidgetManager::WidgetManager(Core *f_core)
 {
@@ -52,14 +53,13 @@ WidgetManager::WidgetManager(Core *f_core)
     for(size_t i = 0U; i < GuiElementIndex_Max; i++) m_guiElements[i] = nullptr;
 
     // Create settings dashboard overlay
-    sf::Vector2u l_guiSize(512U, 512U);
-    m_guiSystem = new GuiSystem(l_guiSize);
+    m_guiSystem = new GuiSystem(g_GuiSize);
     if(m_guiSystem->IsValid())
     {
         m_guiSystem->SetButtonsTexture(m_core->GetConfigManager()->GetGuiButton());
         m_guiSystem->SetFont(m_core->GetConfigManager()->GetGuiFont());
 
-        std::function<void(GuiElement*, unsigned char, unsigned char, unsigned int, unsigned int)> l_clickCallback([this](GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state, unsigned int, unsigned int)
+        const std::function<void(GuiElement*, unsigned char, unsigned char, unsigned int, unsigned int)> l_clickCallback([this](GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state, unsigned int, unsigned int)
         {
             this->OnGuiElementMouseClick(f_guiElement, f_button, f_state);
         });
@@ -97,7 +97,7 @@ WidgetManager::WidgetManager(Core *f_core)
         m_core->GetVROverlay()->SetOverlayInputMethod(m_overlayDashboard, vr::VROverlayInputMethod_Mouse);
         m_core->GetVROverlay()->SetOverlayWidthInMeters(m_overlayDashboard, 1.0f);
 
-        vr::HmdVector2_t l_mouseScale = { 512.f, 512.f };
+        const vr::HmdVector2_t l_mouseScale = { 512.f, 512.f };
         m_core->GetVROverlay()->SetOverlayMouseScale(m_overlayDashboard, &l_mouseScale);
 
         m_textureDashboard.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_guiSystem->GetRenderTextureHandle()));
@@ -169,7 +169,7 @@ void WidgetManager::DoPulse()
                                 l_button = GuiMouseClick::GuiMouseClick_Middle;
                                 break;
                         }
-                        unsigned char l_state = ((m_overlayEvent.eventType == vr::VREvent_MouseButtonDown) ? GuiMouseClickState::GuiMouseClickState_Press : GuiMouseClickState::GuiMouseClickState_Release);
+                        const unsigned char l_state = ((m_overlayEvent.eventType == vr::VREvent_MouseButtonDown) ? GuiMouseClickState::GuiMouseClickState_Press : GuiMouseClickState::GuiMouseClickState_Release);
                         m_guiSystem->ProcessMouseClick(l_button, l_state, static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(m_overlayEvent.data.mouse.y));
                     } break;
                     case vr::VREvent_MouseMove:

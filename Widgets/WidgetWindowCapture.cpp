@@ -317,7 +317,7 @@ void WidgetWindowCapture::Update()
                     {
                         m_activePin = !m_activePin;
 
-                        vr::VRTextureBounds_t l_bounds;
+                        vr::VRTextureBounds_t l_bounds = { 0 };
                         if(m_activePin) l_bounds = { 0.25f, 1.f, 0.5f, 0.75f };
                         else l_bounds = { 0.f, 1.f, 0.25f, 0.75f };
                         ms_vrOverlay->SetOverlayTextureBounds(m_overlayControlHandles[ControlIndex_PinUnpin], &l_bounds);
@@ -348,7 +348,7 @@ void WidgetWindowCapture::Update()
                 {
                     if(m_overlayEvent.data.mouse.button == vr::VRMouseButton_Left)
                     {
-                        size_t l_windowsCount = m_windowGrabber->GetWindowsCount();
+                        const size_t l_windowsCount = m_windowGrabber->GetWindowsCount();
                         if(l_windowsCount > 0U)
                         {
                             m_windowIndex += (l_windowsCount - 1U);
@@ -370,7 +370,7 @@ void WidgetWindowCapture::Update()
                 {
                     if(m_overlayEvent.data.mouse.button == vr::VRMouseButton_Left)
                     {
-                        size_t l_windowsCount = m_windowGrabber->GetWindowsCount();
+                        const size_t l_windowsCount = m_windowGrabber->GetWindowsCount();
                         if(l_windowsCount > 0U)
                         {
                             m_windowIndex += 1U;
@@ -421,7 +421,7 @@ void WidgetWindowCapture::Update()
 
         if(m_activeMove)
         {
-            glm::quat l_rot = glm::rotate(VRTransform::GetLeftHandRotation(), -g_Pi*0.5f, g_AxisX);
+            const glm::quat l_rot = glm::rotate(VRTransform::GetLeftHandRotation(), -g_Pi*0.5f, g_AxisX);
             m_transform->SetRotation(l_rot);
             m_transform->SetPosition(VRTransform::GetLeftHandPosition());
         }
@@ -478,7 +478,7 @@ void WidgetWindowCapture::OnButtonPress(unsigned char f_hand, uint32_t f_button)
                     {
                         if(m_visible && !m_activeDashboard && !m_activePin)
                         {
-                            ULONGLONG l_tick = GetTickCount64();
+                            const ULONGLONG l_tick = GetTickCount64();
                             if((l_tick - m_lastLeftTriggerTick) < 500U)
                             {
                                 if(!m_activeMove)
@@ -497,7 +497,7 @@ void WidgetWindowCapture::OnButtonPress(unsigned char f_hand, uint32_t f_button)
             {
                 if(m_activeMove && (f_button == vr::k_EButton_SteamVR_Trigger))
                 {
-                    ULONGLONG l_tick = GetTickCount64();
+                    const ULONGLONG l_tick = GetTickCount64();
                     if((l_tick - m_lastRightTriggerTick) < 500U)
                     {
                         m_activeResize = (glm::distance(VRTransform::GetRightHandPosition(), m_transform->GetPosition()) <= (m_overlayWidth * 0.5f));
@@ -560,7 +560,7 @@ void WidgetWindowCapture::InternalStartCapture()
         const auto *l_window = m_windowGrabber->GetWindowInfo(m_windowIndex);
         if(l_window)
         {
-            vr::HmdVector2_t l_scale = { static_cast<float>(l_window->Size.x), static_cast<float>(l_window->Size.y) };
+            const vr::HmdVector2_t l_scale = { static_cast<float>(l_window->Size.x), static_cast<float>(l_window->Size.y) };
             ms_vrOverlay->SetOverlayMouseScale(m_overlayHandle, &l_scale);
         }
     }

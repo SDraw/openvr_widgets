@@ -47,18 +47,18 @@ void ConfigManager::Load()
 
     if(m_settingsFile->load_file("settings.xml"))
     {
-        pugi::xml_node l_root = m_settingsFile->child("settings");
+        const pugi::xml_node l_root = m_settingsFile->child("settings");
         for(pugi::xml_node l_node = l_root.child("setting"); l_node; l_node = l_node.next_sibling("setting"))
         {
-            pugi::xml_attribute l_attribName = l_node.attribute("name");
-            pugi::xml_attribute l_attribValue = l_node.attribute("value");
+            const pugi::xml_attribute l_attribName = l_node.attribute("name");
+            const pugi::xml_attribute l_attribValue = l_node.attribute("value");
             if(l_attribName && l_attribValue)
             {
                 switch(ReadEnumVector(l_attribName.as_string(), g_ConfigSettings))
                 {
                     case ConfigSetting_Language:
                     {
-                        size_t l_langIndex = ReadEnumVector(l_attribValue.as_string("en"), g_ConfigLanguages);
+                        const size_t l_langIndex = ReadEnumVector(l_attribValue.as_string("en"), g_ConfigLanguages);
                         if(l_langIndex != std::numeric_limits<size_t>::max()) m_language = static_cast<unsigned char>(l_langIndex);
                     } break;
                     case ConfigSetting_UpdateRate:

@@ -69,11 +69,8 @@ void GuiSystem::Update()
             m_renderTexture->clear(g_ClearColor);
 
             std::vector<const sf::Drawable*> l_drawables;
-            for(auto l_element : m_guiElements)
-            {
-                l_element->GetDrawables(l_drawables);
-                for(auto l_drawable : l_drawables) m_renderTexture->draw(*l_drawable);
-            }
+            for(auto l_element : m_guiElements) l_element->GetDrawables(l_drawables);
+            for(auto l_drawable : l_drawables) m_renderTexture->draw(*l_drawable);
 
             m_renderTexture->setActive(false);
         }
