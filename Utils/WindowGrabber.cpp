@@ -3,9 +3,13 @@
 #include "Utils/WindowGrabber.h"
 
 #include "Core/GlobalSettings.h"
+#include "Utils/TexturePooler.h"
 #include "Utils/Utils.h"
 
 const SL::Screen_Capture::ImageBGRA g_FillColor = { 0U, 0U, 0U, 255U };
+
+sf::Shader *WindowGrabber::ms_shader = nullptr;
+sf::RenderStates WindowGrabber::ms_renderState;
 
 WindowGrabber::WindowGrabber()
 {
@@ -15,6 +19,9 @@ WindowGrabber::WindowGrabber()
     m_activeWindow = std::numeric_limits<size_t>::max();
 
     m_texture = nullptr;
+    m_sprite = new sf::Sprite();
+    m_renderTexture = nullptr;
+    m_bufferUpdated = false;
 
     m_active = false;
     m_stale = false;
@@ -26,7 +33,8 @@ WindowGrabber::~WindowGrabber()
 {
     m_active = false;
     delete m_interfaces;
-    delete m_texture;
+    if(m_texture) TexturePooler::DeleteTexture(m_texture);
+    delete m_sprite;
 }
 
 bool WindowGrabber::StartCapture(size_t f_window)
@@ -37,35 +45,44 @@ bool WindowGrabber::StartCapture(size_t f_window)
         {
             m_activeWindow = f_window;
 
-            // Create new texture with different OpenGL handle to prevent texture locking in vrcompositor
-            sf::Texture *l_texture = new sf::Texture();
-            if(l_texture->create(m_windows[m_activeWindow].Size.x, m_windows[m_activeWindow].Size.y))
+            if(!ms_shader)
             {
-                delete m_texture;
-                m_texture = l_texture;
-
-                m_buffer.assign(static_cast<size_t>(m_windows[m_activeWindow].Size.x)*static_cast<size_t>(m_windows[m_activeWindow].Size.y), g_FillColor);
-                m_buffer.shrink_to_fit();
-
-                m_interfaces = new CaptureInterfaces();
-                SL::Screen_Capture::WindowCallback l_windowCallback([this]()
+                ms_shader = new sf::Shader();
+                if(ms_shader->loadFromFile("shaders/frag_color_swap.glsl", sf::Shader::Fragment))
                 {
-                    return this->GetCapturedWindow();
-                });
-                m_interfaces->m_captureConfiguration = SL::Screen_Capture::CreateCaptureConfiguration(l_windowCallback);
-                SL::Screen_Capture::WindowCaptureCallback l_captureCallback([this](const SL::Screen_Capture::Image &f_img, const SL::Screen_Capture::Window &f_window)
-                {
-                    this->ProcessCapture(f_img, f_window);
-                });
-                m_interfaces->m_captureConfiguration->onNewFrame(l_captureCallback);
-                m_interfaces->m_captureInterface = m_interfaces->m_captureConfiguration->start_capturing();
-                m_interfaces->m_captureInterface->setFrameChangeInterval(m_captureDelay);
-
-                m_lastTick = GetTickCount64();
-                m_stale = false;
-                m_active = true;
+                    ms_shader->setUniform("gTexture0", sf::Shader::CurrentTexture);
+                    ms_renderState = sf::RenderStates(ms_shader);
+                }
             }
-            else delete l_texture;
+
+            if(m_texture) TexturePooler::DeleteTexture(m_texture);
+            m_texture = TexturePooler::CreateTexture(m_windows[m_activeWindow].Size.x, m_windows[m_activeWindow].Size.y);
+            m_sprite->setTexture(*m_texture, true);
+
+            if(m_renderTexture) TexturePooler::DeleteRenderTexture(m_renderTexture);
+            m_renderTexture = TexturePooler::CreateRenderTexture(m_windows[m_activeWindow].Size.x, m_windows[m_activeWindow].Size.y);
+
+            m_buffer.assign(static_cast<size_t>(m_windows[m_activeWindow].Size.x*m_windows[m_activeWindow].Size.y), g_FillColor);
+            m_buffer.shrink_to_fit();
+
+            m_interfaces = new CaptureInterfaces();
+            SL::Screen_Capture::WindowCallback l_windowCallback([this]()
+            {
+                return this->GetCapturedWindow();
+            });
+            m_interfaces->m_captureConfiguration = SL::Screen_Capture::CreateCaptureConfiguration(l_windowCallback);
+            SL::Screen_Capture::WindowCaptureCallback l_captureCallback([this](const SL::Screen_Capture::Image &f_img, const SL::Screen_Capture::Window &f_window)
+            {
+                this->ProcessCapture(f_img, f_window);
+            });
+            m_interfaces->m_captureConfiguration->onNewFrame(l_captureCallback);
+            m_interfaces->m_captureInterface = m_interfaces->m_captureConfiguration->start_capturing();
+            m_interfaces->m_captureInterface->setFrameChangeInterval(m_captureDelay);
+
+            m_lastTick = GetTickCount64();
+            m_stale = false;
+            m_bufferUpdated = true; // Enforce update to prevent old data visibilty from VRAM
+            m_active = true;
         }
     }
     return m_active;
@@ -75,6 +92,7 @@ void WindowGrabber::StopCapture()
     if(m_active)
     {
         m_stale = false;
+        m_bufferUpdated = false;
         m_active = false;
 
         m_interfaces->m_captureInterface->pause();
@@ -89,7 +107,19 @@ void WindowGrabber::Update()
         if(m_bufferLock.try_lock())
         {
             m_stale = ((GetTickCount64() - m_lastTick) > 5000U);
-            if(!m_stale) m_texture->update(reinterpret_cast<unsigned char*>(m_buffer.data()), static_cast<unsigned int>(m_windows[m_activeWindow].Size.x), static_cast<unsigned int>(m_windows[m_activeWindow].Size.y), 0U, 0U);
+
+            if(!m_stale && m_bufferUpdated)
+            {
+                m_texture->update(reinterpret_cast<unsigned char*>(m_buffer.data()), static_cast<unsigned int>(m_windows[m_activeWindow].Size.x), static_cast<unsigned int>(m_windows[m_activeWindow].Size.y), 0U, 0U);
+                if(m_renderTexture->setActive(true))
+                {
+                    m_renderTexture->clear();
+                    m_renderTexture->draw(*m_sprite, ms_renderState);
+                    m_renderTexture->display();
+                    m_renderTexture->setActive(false);
+                }
+                m_bufferUpdated = false;
+            }
             m_bufferLock.unlock();
         }
     }
@@ -109,7 +139,7 @@ void WindowGrabber::SetDelay(size_t f_delay)
 void* WindowGrabber::GetTextureHandle() const
 {
     void *l_result = nullptr;
-    if(m_texture) l_result = reinterpret_cast<void*>(static_cast<uintptr_t>(m_texture->getNativeHandle()));
+    if(m_texture) l_result = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
     return l_result;
 }
 
@@ -148,8 +178,19 @@ void WindowGrabber::ProcessCapture(const SL::Screen_Capture::Image &f_img, const
     if(m_active)
     {
         m_bufferLock.lock();
-        ExtractAndConvertToRGBA(f_img, reinterpret_cast<unsigned char*>(m_buffer.data()), m_buffer.size()*sizeof(SL::Screen_Capture::ImageBGRA));
+        ExtractScreenCaptureImage(f_img, reinterpret_cast<unsigned char*>(m_buffer.data()), m_buffer.size()*sizeof(SL::Screen_Capture::ImageBGRA));
         m_lastTick = GetTickCount64();
+        m_bufferUpdated = true;
         m_bufferLock.unlock();
+    }
+}
+
+void WindowGrabber::RemoveStaticResources()
+{
+    if(ms_shader)
+    {
+        delete ms_shader;
+        ms_shader = nullptr;
+        ms_renderState = sf::RenderStates();
     }
 }

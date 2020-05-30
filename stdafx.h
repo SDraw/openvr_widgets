@@ -11,6 +11,7 @@
 #endif
 #include <string>
 #include <vector>
+#include <set>
 #include <chrono>
 #include <thread>
 #include <atomic>

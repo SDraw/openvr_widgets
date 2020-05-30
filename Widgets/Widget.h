@@ -8,12 +8,14 @@ class Widget
 protected:
     static vr::IVROverlay *ms_vrOverlay;
     static vr::IVRCompositor *ms_vrCompositor;
-    vr::VROverlayHandle_t m_overlayHandle;
-    vr::Texture_t m_vrTexture;
+    vr::VROverlayHandle_t m_overlay;
+    vr::Texture_t m_texture;
+    vr::VREvent_t m_event;
 
     bool m_valid;
-    bool m_visible;
-
+    bool m_visible; // Used for constant widgets in general
+    bool m_closed;
+    bool m_activeDashboard;
     unsigned char m_language;
     Transformation *m_transform;
 
@@ -21,18 +23,17 @@ protected:
     virtual ~Widget();
 
     virtual bool Create() = 0;
-    virtual void Destroy() = 0;
-    virtual void Cleanup() = 0;
+    virtual void Destroy();
     virtual void Update() = 0;
 
-    virtual bool CloseRequested() const = 0;
+    bool IsClosed() const;
 
-    virtual void OnHandActivated(unsigned char f_hand) {}
-    virtual void OnHandDeactivated(unsigned char f_hand) {}
-    virtual void OnButtonPress(unsigned char f_hand, uint32_t f_button) {}
-    virtual void OnButtonRelease(unsigned char f_hand, uint32_t f_button) {}
-    virtual void OnDashboardOpen() {}
-    virtual void OnDashboardClose() {}
+    virtual void OnHandActivated(unsigned char f_hand);
+    virtual void OnHandDeactivated(unsigned char f_hand);
+    virtual void OnButtonPress(unsigned char f_hand, uint32_t f_button);
+    virtual void OnButtonRelease(unsigned char f_hand, uint32_t f_button);
+    virtual void OnDashboardOpen();
+    virtual void OnDashboardClose();
     virtual void OnLanguageChange(unsigned char f_lang);
 
     static void SetInterfaces(vr::IVROverlay *f_overlay, vr::IVRCompositor *f_compositor);

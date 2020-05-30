@@ -1,13 +1,13 @@
 #pragma once
 
-enum VRHand : unsigned char
+enum VRHandIndex : unsigned char
 {
-    VRHand_Left = 0U,
-    VRHand_Right
+    VRHI_Left = 0U,
+    VRHI_Right
 };
 
-enum Language : unsigned char
+enum LanguageIndex : unsigned char
 {
-    Language_English = 0U,
-    Language_Russian
+    LI_English = 0U,
+    LI_Russian
 };

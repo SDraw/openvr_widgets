@@ -1,36 +1,43 @@
 #pragma once
 #include "Widgets/Widget.h"
 
+class GuiSystem;
+class GuiElement;
+class GuiImage;
+class GuiText;
 class Transformation;
 class WindowGrabber;
 
 class WidgetWindowCapture final : public Widget
 {
-    enum ControlIndex : size_t
+    enum GuiElementIndex : size_t
     {
-        ControlIndex_PinUnpin = 0U,
-        ControlIndex_Close,
-        ControlIndex_Previous,
-        ControlIndex_Next,
-        ControlIndex_Update,
-        ControlIndex_ChangeFps,
+        CEI_Pin = 0U,
+        CEI_Close,
+        CEI_Previous,
+        CEI_Next,
+        CEI_Update,
+        CEI_FPS,
 
-        ControlIndex_Count
+        CEI_Count
     };
     enum FpsMode : size_t
     {
-        FpsMode_15 = 0U,
-        FpsMode_30,
-        FpsMode_60,
+        FM_15 = 0U,
+        FM_30,
+        FM_60,
 
-        FpsMode_Count
+        FM_Count
     };
 
-    vr::VROverlayHandle_t m_overlayControlHandles[ControlIndex_Count];
-    vr::VREvent_t m_overlayEvent;
+    vr::VROverlayHandle_t m_overlayControl;
 
-    static sf::Texture *ms_iconsAtlas;
-    static vr::Texture_t ms_textureControls;
+    GuiSystem *m_guiSystem;
+    GuiImage *m_guiImages[CEI_Count];
+    GuiText *m_guiTextWindow;
+
+    static sf::Texture *ms_textureAtlas;
+    vr::Texture_t m_textureControls;
 
     WindowGrabber *m_windowGrabber;
     size_t m_windowIndex;
@@ -38,8 +45,6 @@ class WidgetWindowCapture final : public Widget
     ULONGLONG m_lastLeftTriggerTick;
     ULONGLONG m_lastRightTriggerTick;
 
-    bool m_closed;
-    bool m_activeDashboard;
     bool m_activeMove;
     bool m_activeResize;
     bool m_activePin;
@@ -47,30 +52,30 @@ class WidgetWindowCapture final : public Widget
     float m_overlayWidth;
     glm::ivec2 m_windowSize;
     glm::ivec2 m_mousePosition;
-    Transformation *m_transformControls[ControlIndex_Count];
+    Transformation *m_transformControl;
 
     size_t m_fpsMode;
 
     WidgetWindowCapture(const WidgetWindowCapture &that) = delete;
     WidgetWindowCapture& operator=(const WidgetWindowCapture &that) = delete;
 
-    void InternalStartCapture();
+    void StartCapture();
 
     // Widget
     bool Create();
-    void Destroy();
-    void Cleanup();
+    void Destroy() override;
     void Update();
-    bool CloseRequested() const;
-    void OnButtonPress(unsigned char f_hand, uint32_t f_button);
-    void OnButtonRelease(unsigned char  f_hand, uint32_t f_button);
-    void OnDashboardOpen();
-    void OnDashboardClose();
+    void OnButtonPress(unsigned char f_hand, uint32_t f_button) override;
+    void OnButtonRelease(unsigned char  f_hand, uint32_t f_button) override;
+    void OnDashboardOpen() override;
+    void OnDashboardClose() override;
+public:
+    void OnGuiElementMouseClick(GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state);
 protected:
     WidgetWindowCapture();
     ~WidgetWindowCapture();
 
-    static void RemoveIconsAtlas();
+    static void RemoveStaticResources();
 
     friend class WidgetManager;
 };

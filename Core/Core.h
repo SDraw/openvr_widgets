@@ -16,6 +16,7 @@ class Core final
     bool m_active;
     sf::Context *m_context;
     std::chrono::milliseconds m_threadDelay;
+    ULONGLONG m_powerTick;
 
     ConfigManager *m_configManager;
     WidgetManager *m_widgetManager;

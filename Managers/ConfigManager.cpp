@@ -12,12 +12,11 @@ const std::vector<std::string> g_ConfigSettings
     "language", "update_rate",
     "gui_font", "gui_button"
 };
-enum ConfigSetting : size_t
+enum ConfigSettingIndex : size_t
 {
-    ConfigSetting_Language = 0U,
-    ConfigSetting_UpdateRate,
-    ConfigSetting_GuiFont,
-    ConfigSetting_GuiButton
+    CSI_Language = 0U,
+    CSI_UpdateRate,
+    CSI_GuiFont
 };
 
 const std::vector<std::string> g_ConfigLanguages
@@ -29,10 +28,9 @@ ConfigManager::ConfigManager(Core *f_core)
 {
     m_core = f_core;
     m_settingsFile = new pugi::xml_document();
-    m_language = Language::Language_English;
+    m_language = LanguageIndex::LI_English;
     m_updateDelay = 11U; // ~90 FPS by default
     m_guiFont.assign("fonts/Hack-Regular.ttf");
-    m_guiButton.assign("gui/button.png");
 }
 ConfigManager::~ConfigManager()
 {
@@ -56,19 +54,16 @@ void ConfigManager::Load()
             {
                 switch(ReadEnumVector(l_attribName.as_string(), g_ConfigSettings))
                 {
-                    case ConfigSetting_Language:
+                    case ConfigSettingIndex::CSI_Language:
                     {
                         const size_t l_langIndex = ReadEnumVector(l_attribValue.as_string("en"), g_ConfigLanguages);
                         if(l_langIndex != std::numeric_limits<size_t>::max()) m_language = static_cast<unsigned char>(l_langIndex);
                     } break;
-                    case ConfigSetting_UpdateRate:
+                    case ConfigSettingIndex::CSI_UpdateRate:
                         m_updateDelay = l_attribValue.as_uint(11U);
                         break;
-                    case ConfigSetting_GuiFont:
+                    case ConfigSettingIndex::CSI_GuiFont:
                         m_guiFont.assign(l_attribValue.as_string("fonts/Hack-Regular.ttf"));
-                        break;
-                    case ConfigSetting_GuiButton:
-                        m_guiButton.assign(l_attribValue.as_string("gui/button.png"));
                         break;
                 }
             }
@@ -77,7 +72,6 @@ void ConfigManager::Load()
 
     GlobalSettings::SetDirectory(m_directory);
     GlobalSettings::SetGuiFont(m_guiFont);
-    GlobalSettings::SetGuiButton(m_guiButton);
 }
 
 void ConfigManager::Save()

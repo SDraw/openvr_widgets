@@ -2,20 +2,16 @@
 
 #include "Gui/GuiSystem.h"
 #include "Gui/GuiButton.h"
+#include "Gui/GuiImage.h"
+#include "Gui/GuiText.h"
+#include "Utils/TexturePooler.h"
 
 extern const sf::Color g_ClearColor;
 extern const unsigned char g_DummyTextureData[];
 
 GuiSystem::GuiSystem(const sf::Vector2u &f_size)
 {
-    m_renderTexture = new sf::RenderTexture();
-    if(!m_renderTexture->create(f_size.x, f_size.y))
-    {
-        delete m_renderTexture;
-        m_renderTexture = nullptr;
-    }
-
-    for(size_t i = 0U; i < GuiTextureType_Max; i++) m_mainTextures[i] = new sf::Texture();
+    m_renderTexture = TexturePooler::CreateRenderTexture(f_size.x, f_size.y);
     m_mainFont = new sf::Font();
 }
 GuiSystem::~GuiSystem()
@@ -23,13 +19,9 @@ GuiSystem::~GuiSystem()
     for(auto l_element : m_guiElements) delete l_element;
     m_guiElements.clear();
 
-    delete m_renderTexture;
+    if(m_renderTexture) TexturePooler::DeleteRenderTexture(m_renderTexture);
 }
 
-void GuiSystem::SetButtonsTexture(const std::string &f_path)
-{
-    m_mainTextures[GuiTextureType_Button]->loadFromFile(f_path);
-}
 void GuiSystem::SetFont(const std::string &f_path)
 {
     m_mainFont->loadFromFile(f_path);
@@ -37,9 +29,23 @@ void GuiSystem::SetFont(const std::string &f_path)
 
 GuiButton* GuiSystem::CreateButton()
 {
-    GuiButton *l_button = new GuiButton(m_mainTextures[GuiTextureType_Button], m_mainFont);
+    GuiButton *l_button = new GuiButton(m_mainFont);
     m_guiElements.push_back(l_button);
     return l_button;
+}
+
+GuiImage* GuiSystem::CreateImage(const sf::Texture *f_texture)
+{
+    GuiImage *l_image = new GuiImage(f_texture);
+    m_guiElements.push_back(l_image);
+    return l_image;
+}
+
+GuiText* GuiSystem::CreateText()
+{
+    GuiText *l_text = new GuiText(m_mainFont);
+    m_guiElements.push_back(l_text);
+    return l_text;
 }
 
 void GuiSystem::Remove(GuiElement *f_element)
@@ -68,20 +74,25 @@ void GuiSystem::Update()
         {
             m_renderTexture->clear(g_ClearColor);
 
-            std::vector<const sf::Drawable*> l_drawables;
-            for(auto l_element : m_guiElements) l_element->GetDrawables(l_drawables);
-            for(auto l_drawable : l_drawables) m_renderTexture->draw(*l_drawable);
+            for(auto l_element : m_guiElements)
+            {
+                if(l_element->GetVisibility())
+                {
+                    for(auto l_drawable : l_element->GetDrawables()) m_renderTexture->draw(*l_drawable);
+                }
+            }
 
+            m_renderTexture->display();
             m_renderTexture->setActive(false);
         }
     }
 }
 
-void GuiSystem::ProcessMouseClick(unsigned char f_button, unsigned char f_state, unsigned int f_mouseX, unsigned f_mouseY)
+void GuiSystem::ProcessClick(unsigned char f_button, unsigned char f_state, unsigned int f_mouseX, unsigned f_mouseY)
 {
-    for(auto l_element : m_guiElements) l_element->ProcessMouseClick(f_button, f_state, f_mouseX, f_mouseY);
+    for(auto l_element : m_guiElements) l_element->ProcessClick(f_button, f_state, f_mouseX, f_mouseY);
 }
-void GuiSystem::ProcessMouseMove(unsigned int f_posX, unsigned int f_posY)
+void GuiSystem::ProcessMove(unsigned int f_posX, unsigned int f_posY)
 {
-    for(auto l_element : m_guiElements) l_element->ProcessMouseMove(f_posX, f_posY);
+    for(auto l_element : m_guiElements) l_element->ProcessMove(f_posX, f_posY);
 }

@@ -7,5 +7,5 @@ void GetRotationToPoint(const glm::vec3 &f_pointA, const glm::vec3 &f_pointB, co
 size_t ReadEnumVector(const std::string &f_val, const std::vector<std::string> &f_vec);
 size_t ReadEnumVector(const char *f_val, const std::vector<std::string> &f_vec);
 
-void ExtractAndConvertToRGBA(const SL::Screen_Capture::Image &img, unsigned char *dst, size_t dst_size);
+void ExtractScreenCaptureImage(const SL::Screen_Capture::Image &f_img, unsigned char *f_dst, size_t f_size);
 void SendWinAPIMessage(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);

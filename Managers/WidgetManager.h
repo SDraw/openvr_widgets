@@ -9,13 +9,14 @@ class WidgetManager final
 {
     enum GuiElementIndex : size_t
     {
-        GuiElementIndex_AddCaptureWindow = 0U,
-        GuiElementIndex_ReassignHands,
-        GuiElementIndex_SwitchKinectTracking,
-        GuiElementIndex_SwitchLeapLeftHand,
-        GuiElementIndex_SwitchLeapRightHand,
+        GEI_AddWindowCapture = 0U,
+        GEI_AddKeyboard,
+        GEI_ReassignHands,
+        GEI_SwitchKinectTracking,
+        GEI_SwitchLeapLeftHand,
+        GEI_SwitchLeapRightHand,
 
-        GuiElementIndex_Max
+        GEI_Max
     };
 
     Core *m_core;
@@ -29,7 +30,7 @@ class WidgetManager final
     std::vector<Widget*> m_widgets;
 
     GuiSystem *m_guiSystem;
-    GuiElement *m_guiElements[GuiElementIndex_Max];
+    GuiElement *m_guiElements[GEI_Max];
     bool m_activeDashboard;
 
     WidgetManager(const WidgetManager &that) = delete;

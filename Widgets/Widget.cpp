@@ -10,18 +10,66 @@ vr::IVRCompositor *Widget::ms_vrCompositor = nullptr;
 
 Widget::Widget()
 {
-    m_overlayHandle = vr::k_ulOverlayHandleInvalid;
-    m_vrTexture = { 0 };
+    m_overlay = vr::k_ulOverlayHandleInvalid;
+    m_texture = { 0 };
+    m_texture.eType = vr::TextureType_OpenGL;
+    m_texture.eColorSpace = vr::ColorSpace_Gamma;
+    m_event = { 0 };
 
     m_valid = false;
     m_visible = false;
-
-    m_language = Language::Language_English;
+    m_closed = false;
+    m_activeDashboard = false;
+    m_language = LanguageIndex::LI_English;
     m_transform = new Transformation();
 }
 Widget::~Widget()
 {
     delete m_transform;
+}
+
+void Widget::Destroy()
+{
+    if(m_overlay != vr::k_ulOverlayHandleInvalid)
+    {
+        ms_vrOverlay->HideOverlay(m_overlay);
+        ms_vrOverlay->ClearOverlayTexture(m_overlay);
+        ms_vrOverlay->DestroyOverlay(m_overlay);
+        m_overlay = vr::k_ulOverlayHandleInvalid;
+    }
+
+    m_valid = false;
+    m_visible = false;
+    m_closed = false;
+    m_activeDashboard = false;
+    m_language = LanguageIndex::LI_English;
+}
+
+bool Widget::IsClosed() const
+{
+    return m_closed;
+}
+
+void Widget::OnHandActivated(unsigned char f_hand)
+{
+}
+void Widget::OnHandDeactivated(unsigned char f_hand)
+{
+}
+void Widget::OnButtonPress(unsigned char f_hand, uint32_t f_button)
+{
+}
+void Widget::OnButtonRelease(unsigned char f_hand, uint32_t f_button)
+{
+}
+
+void Widget::OnDashboardOpen()
+{
+    if(m_valid) m_activeDashboard = true;
+}
+void Widget::OnDashboardClose()
+{
+    if(m_valid) m_activeDashboard = false;
 }
 
 void Widget::OnLanguageChange(unsigned char f_lang)

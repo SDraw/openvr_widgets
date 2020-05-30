@@ -3,5 +3,4 @@
 	<setting name="language" value="en" />
 	<setting name="update_rate" value="11" />
 	<setting name="gui_font" value="fonts/Hack-Regular.ttf" />
-	<setting name="gui_button" value="gui/button.png" />
 </settings>

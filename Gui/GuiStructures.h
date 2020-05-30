@@ -1,13 +1,13 @@
 #pragma once
 
-enum GuiMouseClick : unsigned char
+enum GuiClick : unsigned char
 {
-    GuiMouseClick_Left = 0U,
-    GuiMouseClick_Right,
-    GuiMouseClick_Middle
+    GC_Left = 0U,
+    GC_Right,
+    GC_Middle
 };
-enum GuiMouseClickState : unsigned char
+enum GuiClickState : unsigned char
 {
-    GuiMouseClickState_Press = 0U,
-    GuiMouseClickState_Release
+    GCS_Press = 0U,
+    GCS_Release
 };

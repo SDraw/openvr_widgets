@@ -22,37 +22,41 @@ public:
     inline bool GetVisibility() const { return m_visible; }
 
     void SetColor(const sf::Color &f_color);
-    void SetHoverColor(const sf::Color &f_color);
+    void SetSelectionColor(const sf::Color &f_color);
 
     inline void SetUserPointer(void *f_pointer) { m_userPointer = f_pointer; }
     inline void* GetUserPointer() const { return m_userPointer; }
 
-    void SetMouseClickCallback(const std::function<void(GuiElement*, unsigned char, unsigned char, unsigned int, unsigned int)> &f_callback);
-    void RemoveMouseClickCallback();
+    void SetClickCallback(const std::function<void(GuiElement*, unsigned char, unsigned char, unsigned int, unsigned int)> &f_callback);
+    void RemoveClickCallback();
 
-    void SetMouseMoveCallback(const std::function<void(GuiElement*, unsigned int, unsigned int)> &f_callback);
-    void RemoveMouseMoveCallback();
+    void SetMoveCallback(const std::function<void(GuiElement*, unsigned int, unsigned int)> &f_callback);
+    void RemoveMoveCallback();
 
     // Internal methods for subclasses
-    virtual void ProcessMouseClickInternal(unsigned char f_button, unsigned char f_state, unsigned int f_mouseX, unsigned f_mouseY) {}
-    virtual void ProcessMouseMoveInternal(unsigned int f_mouseX, unsigned f_mouseY) {}
+    virtual void ProcessFocusInternal(unsigned int f_mouseX, unsigned int f_mouseY);
+    virtual void ProcessBlurInternal(unsigned int f_mouseX, unsigned int f_mouseY);
+    virtual void ProcessClickInternal(unsigned char f_button, unsigned char f_state, unsigned int f_mouseX, unsigned int f_mouseY);
+    virtual void ProcessMoveInternal(unsigned int f_mouseX, unsigned int f_mouseY);
 protected:
+    std::vector<const sf::Drawable*> m_drawables;
+
     sf::Vector2f m_position;
     sf::Vector2f m_size;
-    bool m_update;
-    sf::Color m_hoverColor;
+    sf::Color m_selectionColor;
     sf::Color m_color;
     bool m_activeHover;
+    bool m_update;
 
     GuiElement();
     virtual ~GuiElement();
 
-    virtual void GetDrawables(std::vector<const sf::Drawable*> &f_vec) const = 0;
+    inline const std::vector<const sf::Drawable*>& GetDrawables() const { return m_drawables; }
 
     virtual void Update();
 
-    void ProcessMouseClick(unsigned char f_button, unsigned char f_state, unsigned int f_mouseX, unsigned f_mouseY);
-    void ProcessMouseMove(unsigned int f_mouseX, unsigned f_mouseY);
+    void ProcessClick(unsigned char f_button, unsigned char f_state, unsigned int f_mouseX, unsigned f_mouseY);
+    void ProcessMove(unsigned int f_mouseX, unsigned f_mouseY);
 
     friend class GuiSystem;
 };

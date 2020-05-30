@@ -14,8 +14,13 @@ class WindowGrabber final
     size_t m_activeWindow;
 
     sf::Texture *m_texture;
+    sf::Sprite *m_sprite;
+    sf::RenderTexture *m_renderTexture;
+    static sf::Shader *ms_shader;
+    static sf::RenderStates ms_renderState;
     std::vector<SL::Screen_Capture::ImageBGRA> m_buffer;
     std::mutex m_bufferLock;
+    bool m_bufferUpdated;
 
     std::atomic<bool> m_active;
     bool m_stale;
@@ -47,4 +52,8 @@ public:
     // Internal use only
     std::vector<SL::Screen_Capture::Window> GetCapturedWindow();
     void ProcessCapture(const SL::Screen_Capture::Image &f_img, const SL::Screen_Capture::Window &f_window);
+protected:
+    static void RemoveStaticResources();
+
+    friend class WidgetWindowCapture;
 };

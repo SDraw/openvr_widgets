@@ -7,28 +7,30 @@ class WidgetStats final : public Widget
 {
     enum StatsMode : size_t
     {
-        StatsMode_Watch = 0U,
-        StatsMode_Cpu,
-        StatsMode_Ram,
-        StatsMode_Frame,
+        SM_Watch = 0U,
+        SM_Cpu,
+        SM_Ram,
+        SM_Frame,
+        SM_Power,
 
-        StatsMode_Count
+        SM_Count
     };
     enum StatsText : size_t
     {
-        StatsText_Time = 0U,
-        StatsText_Date,
-        StatsText_Cpu,
-        StatsText_Ram,
-        StatsText_Frame,
+        ST_Time = 0U,
+        ST_Date,
+        ST_Cpu,
+        ST_Ram,
+        ST_Frame,
+        ST_Power,
 
-        StatsText_Count
+        ST_Count
     };
 
     sf::RenderTexture *m_renderTexture;
     sf::Font *m_font;
-    sf::Text *m_fontText[StatsText_Count];
-    sf::Texture *m_texture;
+    sf::Text *m_fontText[ST_Count];
+    sf::Texture *m_textureAtlas;
     sf::Sprite *m_spriteIcon;
 
     struct WinHandles
@@ -50,13 +52,11 @@ class WidgetStats final : public Widget
 
     // Widget
     bool Create();
-    void Destroy();
-    void Cleanup();
+    void Destroy() override;
     void Update();
-    bool CloseRequested() const;
-    void OnHandDeactivated(unsigned char f_hand);
-    void OnButtonPress(unsigned char f_hand, uint32_t f_button);
-    void OnButtonRelease(unsigned char f_hand, uint32_t f_button);
+    void OnHandDeactivated(unsigned char f_hand) override;
+    void OnButtonPress(unsigned char f_hand, uint32_t f_button) override;
+    void OnButtonRelease(unsigned char f_hand, uint32_t f_button) override;
 protected:
     WidgetStats();
     ~WidgetStats();
