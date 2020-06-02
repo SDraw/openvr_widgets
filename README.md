@@ -37,11 +37,11 @@ List of global settings:
     * **FPS:** Changes captured FPS rate.
   * **Interaction:** You can interact with captured window using trigger as click and touchpad as scroll. Note: Not all active and non-active windows accept click and scroll messages sent via Windows API.
   
-  # Keyboard overlay widget
-  * **Activation:** Press 'Add keyboard widget' in dashboard menu 'OpenVR Widgets - Settings'.
-  * **Behaviour:** Emulates global keyboard input.
-  * **Controls:**
-    * **Pin/unpin:** Attach widget to left hand and make it visible outside SteamVR dashboard.
-    * **Close:** Close widget.
-  * **Interaction:** Point to desired key and press trigger button.
-  * **Notes:** Widget is in experimental state and can be changed in future.
+# Keyboard overlay widget
+* **Activation:** Press 'Add keyboard widget' in dashboard menu 'OpenVR Widgets - Settings'.
+* **Behaviour:** Emulates global keyboard input.
+* **Controls:**
+  * **Pin/unpin:** Attach widget to left hand and make it visible outside SteamVR dashboard.
+  * **Close:** Close widget.
+* **Interaction:** Point to desired key and press trigger button.
+* **Notes:** Widget is in experimental state and can be changed in future.
