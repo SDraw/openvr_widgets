@@ -1,5 +1,5 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/ctb2t0bawyus9x90?svg=true)](https://ci.appveyor.com/project/SDraw/openvr-widgets)
-# OpenVR Widgets
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I0XK1A)
+# OpenVR Widgets [![Build status](https://ci.appveyor.com/api/projects/status/ctb2t0bawyus9x90?svg=true)](https://ci.appveyor.com/project/SDraw/openvr-widgets)
 Set of simple overlay widgets for usage in SteamVR environment.  
 Application supports Windows 7, 8, 8.1 and 10.
 
