@@ -11,7 +11,8 @@ extern const glm::vec3 g_AxisX(1.f, 0.f, 0.f);
 extern const glm::vec3 g_AxisY(0.f, 1.f, 0.f);
 extern const glm::vec3 g_AxisZN(0.f, 0.f, -1.f);
 extern const sf::Color g_ClearColor(0U, 0U, 0U, 127U);
-extern const unsigned char g_DummyTextureData[] = {
+extern const unsigned char g_DummyTextureData[]
+{
     0x7FU, 0x7FU, 0x7FU, 0xFF,
     0xF7U, 0x94U, 0x1DU, 0xFF,
     0xF7U, 0x94U, 0x1DU, 0xFF,

@@ -16,7 +16,8 @@
 
 #include "Core/VRTransform.h"
 
-const char *g_ButtonsTextsEn[] = {
+const char *g_ButtonsTextsEn[]
+{
     "Add window capture widget",
     "Add keyboard widget",
     "Reassign hands",
@@ -24,7 +25,8 @@ const char *g_ButtonsTextsEn[] = {
     "Switch Leap left hand",
     "Switch Leap right hand"
 };
-const wchar_t *g_ButtonsTextsRu[] = {
+const wchar_t *g_ButtonsTextsRu[]
+{
     L"\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0432\u0438\u0434\u0436\u0435\u0442 \u0437\u0430\u0445\u0432\u0430\u0442\u0430",
     L"\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043A\u043B\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0443",
     L"\u041E\u043F\u0440\u0435\u0434\u0435\u043B\u0438\u0442\u044C \u0440\u0443\u043A\u0438",
@@ -87,7 +89,7 @@ WidgetManager::WidgetManager(Core *f_core)
         }
     }
 
-    m_core->GetVROverlay()->CreateDashboardOverlay("ovrw.settings", "OpenVR Widgets\nSettings", &m_overlayDashboard, &m_overlayDashboardThumbnail);
+    m_core->GetVROverlay()->CreateDashboardOverlay("ovrw.settings", "OpenVR Widgets Settings", &m_overlayDashboard, &m_overlayDashboardThumbnail);
     if((m_overlayDashboard != vr::k_ulOverlayHandleInvalid) && (m_overlayDashboardThumbnail != vr::k_ulOverlayHandleInvalid))
     {
         std::string l_iconPath(m_core->GetConfigManager()->GetDirectory());

@@ -20,10 +20,12 @@ const glm::vec3 g_OverlayOffset(0.f, 0.05f, 0.f);
 const glm::vec2 g_ViewAngleRange(g_Pi / 6.f, g_Pi / 12.f);
 const float g_ViewAngleRangeDiff = (g_ViewAngleRange.x - g_ViewAngleRange.y);
 
-const char* g_WeekDayEn[] = {
+const char* g_WeekDayEn[]
+{
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
 };
-const wchar_t* g_WeekDayRu[] = {
+const wchar_t* g_WeekDayRu[]
+{
     L"\u0412\u0441", L"\u041f\u043d", L"\u0412\u0442", L"\u0421\u0440", L"\u0427\u0442", L"\u041f\u0442", L"\u0421\u0431"
 };
 

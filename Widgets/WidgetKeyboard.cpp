@@ -20,7 +20,8 @@ const sf::Vector2u g_TargetSize(1024U, 512U);
 const sf::Color g_HoverColor(142U, 205U, 246U);
 const sf::Vector2f g_ButtonSize(64.f, 64.f);
 
-const unsigned short g_KeyReferences[] = {
+const unsigned short g_KeyReferences[]
+{
     VK_ESCAPE, VK_PRINT, VK_PAUSE,
     VK_F1, VK_F2, VK_F3, VK_F4, VK_F5, VK_F6, VK_F7, VK_F8, VK_F9, VK_F10, VK_F11, VK_F12,
     VK_OEM_3, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, VK_OEM_MINUS, VK_OEM_PLUS,
@@ -47,7 +48,8 @@ const unsigned short g_KeyReferences[] = {
     VK_NUMLOCK,
     VK_CAPITAL
 };
-const char *g_KeyNames[] = {
+const char *g_KeyNames[]
+{
     "Esc", "PrtSc", "Pause",
     "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
     "~", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=",

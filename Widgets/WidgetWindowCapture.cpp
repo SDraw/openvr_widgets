@@ -150,7 +150,7 @@ bool WidgetWindowCapture::Create()
                 m_guiImages[i]->SetClickCallback(l_clickCallback);
             }
             m_guiTextWindow = m_guiSystem->CreateText();
-            m_guiTextWindow->Set("None");
+            m_guiTextWindow->Set("<>");
             m_guiTextWindow->SetCharactersSize(16U);
             m_guiTextWindow->SetAlignment(GuiText::GTA_Center);
             m_guiTextWindow->SetPosition(sf::Vector2f(128.f, 32.f));
@@ -436,7 +436,9 @@ void WidgetWindowCapture::StartCapture()
             const vr::HmdVector2_t l_scale = { static_cast<float>(l_window->Size.x), static_cast<float>(l_window->Size.y) };
             ms_vrOverlay->SetOverlayMouseScale(m_overlay, &l_scale);
 
-            m_guiTextWindow->Set(l_window->Name);
+            wchar_t l_windowName[256U];
+            if(GetWindowTextW(reinterpret_cast<HWND>(l_window->Handle), l_windowName, 256) != 0) m_guiTextWindow->Set(l_windowName);
+            else m_guiTextWindow->Set("<>");
         }
     }
     else m_texture.handle = nullptr;
