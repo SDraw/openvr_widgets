@@ -6,15 +6,15 @@ Application supports Windows 7, 8, 8.1 and 10.
 # Installation
 * Grab latest [release](../../releases/latest) for your platform.
 * Extract archive to your preferable folder.
-* Launch 'openvr_widgets' binary.
+* Launch `openvr_widgets` binary.
 * Optional: Enable auto-launch in SteamVR settings.
 
 # Settings
-Editing 'settings.xml' allows to make few own changes to widgets.  
+Editing `settings.xml` allows to make few own changes to widgets.  
 List of global settings:
 * **update_rate** - update rate in milliseconds. Default value is 11, that corresponds to 90 FPS.
-* **language** - applied language to widgets. Available values: en, ru. Default value is 'en'.
-* **gui_font** - font that will be used for text. Default value is 'fonts/Hack-Regular.ttf'. Refer to [Hack font repository](../../../../source-foundry/Hack).
+* **language** - applied language to widgets. Available values: en, ru. Default value is `en`.
+* **gui_font** - font that will be used for text. Default value is `fonts/Hack-Regular.ttf`. Refer to [Hack font repository](../../../../source-foundry/Hack).
 
 # Stats overlay widget
 * **Activation:** Double press on grip button of right hand controller.
@@ -23,7 +23,7 @@ List of global settings:
 * **Deactivation:** Release grip button of right hand controller.
   
 # Windows capture overlay widget
-* **Activation:** Press 'Add window capture widget' in dashboard menu 'OpenVR Widgets - Settings'.
+* **Activation:** Press `Add window capture widget` in dashboard menu `OpenVR Widgets - Settings`.
 * **Behaviour:** Captures selected visible system window.
 * **Features:**
   * **Movement:** Double press on trigger button of left hand at the center of overlay to attach it to your hand. Double press again to detach.
@@ -38,7 +38,7 @@ List of global settings:
   * **Interaction:** You can interact with captured window using trigger as click and touchpad as scroll. Note: Not all active and non-active windows accept click and scroll messages sent via Windows API.
   
 # Keyboard overlay widget
-* **Activation:** Press 'Add keyboard widget' in dashboard menu 'OpenVR Widgets - Settings'.
+* **Activation:** Press `Add keyboard widget` in dashboard menu `OpenVR Widgets - Settings`.
 * **Behaviour:** Emulates global keyboard input.
 * **Controls:**
   * **Pin/unpin:** Attach widget to left hand and make it visible outside SteamVR dashboard.
