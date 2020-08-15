@@ -2,6 +2,7 @@
 
 #include "Core/Core.h"
 
+#ifdef _WIN32
 #ifdef _DEBUG
 int main(void)
 {
@@ -10,6 +11,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
+#endif
+#elif __linux__
+int main(void)
+{
 #endif
     Core *l_core = new Core();
     if(l_core->Initialize())

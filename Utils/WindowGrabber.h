@@ -26,7 +26,7 @@ class WindowGrabber final
     bool m_stale;
 
     std::chrono::milliseconds m_captureDelay;
-    ULONGLONG m_lastTick;
+    unsigned long long m_lastTick;
 
     WindowGrabber(const WindowGrabber &that) = delete;
     WindowGrabber& operator=(const WindowGrabber &that) = delete;

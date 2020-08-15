@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <settings>
-	<setting name="language" value="en" />
 	<setting name="update_rate" value="11" />
 	<setting name="gui_font" value="fonts/Hack-Regular.ttf" />
 </settings>

@@ -74,7 +74,7 @@ class WidgetKeyboard : public Widget
     bool m_activeMove;
     bool m_activePin;
 
-    ULONGLONG m_lastTriggerTick;
+    unsigned long long m_lastTriggerTick;
 
     // Widget
     bool Create();

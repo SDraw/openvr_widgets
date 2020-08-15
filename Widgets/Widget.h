@@ -16,7 +16,6 @@ protected:
     bool m_visible; // Used for constant widgets in general
     bool m_closed;
     bool m_activeDashboard;
-    unsigned char m_language;
     Transformation *m_transform;
 
     Widget();
@@ -34,7 +33,6 @@ protected:
     virtual void OnButtonRelease(unsigned char f_hand, uint32_t f_button);
     virtual void OnDashboardOpen();
     virtual void OnDashboardClose();
-    virtual void OnLanguageChange(unsigned char f_lang);
 
     static void SetInterfaces(vr::IVROverlay *f_overlay, vr::IVRCompositor *f_compositor);
 

@@ -16,23 +16,14 @@
 
 #include "Core/VRTransform.h"
 
-const char *g_ButtonsTextsEn[]
+const char *g_ButtonTexts[]
 {
     "Add window capture widget",
-    "Add keyboard widget",
-    "Reassign hands",
-    "Switch KinectV2 tracking",
-    "Switch Leap left hand",
-    "Switch Leap right hand"
-};
-const wchar_t *g_ButtonsTextsRu[]
-{
-    L"\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0432\u0438\u0434\u0436\u0435\u0442 \u0437\u0430\u0445\u0432\u0430\u0442\u0430",
-    L"\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043A\u043B\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0443",
-    L"\u041E\u043F\u0440\u0435\u0434\u0435\u043B\u0438\u0442\u044C \u0440\u0443\u043A\u0438",
-    L"\u0418\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043E\u0442\u0441\u043B\u0435\u0436\u0438\u0432\u0430\u043D\u0438\u0435 KinectV2",
-    L"\u0418\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043E\u0442\u0441\u043B\u0435\u0436\u0438\u0432\u0430\u043D\u0438\u0435 LM \u043B\u0435\u0432\u043E\u0439 \u0440\u0443\u043A\u0438",
-    L"\u0418\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043E\u0442\u0441\u043B\u0435\u0436\u0438\u0432\u0430\u043D\u0438\u0435 LM \u043F\u0440\u0430\u0432\u043E\u0439 \u0440\u0443\u043A\u0438"
+        "Add keyboard widget",
+        "Reassign hands",
+        "Switch KinectV2 tracking",
+        "Switch Leap left hand",
+        "Switch Leap right hand"
 };
 
 enum ConstantWidgetIndex : size_t
@@ -73,17 +64,7 @@ WidgetManager::WidgetManager(Core *f_core)
             m_guiElements[i]->SetPosition(sf::Vector2f(96.f, 16.f + 80.f * static_cast<float>(i)));
             m_guiElements[i]->SetSize(g_ButtonSize);
             dynamic_cast<GuiButton*>(m_guiElements[i])->SetTextSize(20U);
-
-            switch(m_core->GetConfigManager()->GetLanguage())
-            {
-                case LanguageIndex::LI_English:
-                    dynamic_cast<GuiButton*>(m_guiElements[i])->SetText(g_ButtonsTextsEn[i]);
-                    break;
-                case LanguageIndex::LI_Russian:
-                    dynamic_cast<GuiButton*>(m_guiElements[i])->SetText(g_ButtonsTextsRu[i]);
-                    break;
-            }
-
+            dynamic_cast<GuiButton*>(m_guiElements[i])->SetText(g_ButtonTexts[i]);
             m_guiElements[i]->SetClickCallback(l_clickCallback);
             m_guiElements[i]->SetUserPointer(reinterpret_cast<void*>(i));
         }
@@ -111,13 +92,7 @@ WidgetManager::WidgetManager(Core *f_core)
     // Init constant overlays
     Widget::SetInterfaces(m_core->GetVROverlay(), m_core->GetVRCompositor());
     m_constantWidgets.emplace(ConstantWidgetIndex::CWI_Stats, new WidgetStats());
-    for(auto l_iter : m_constantWidgets)
-    {
-        if(l_iter.second->Create())
-        {
-            l_iter.second->OnLanguageChange(m_core->GetConfigManager()->GetLanguage());
-        }
-    }
+    for(auto l_iter : m_constantWidgets) l_iter.second->Create();
 
     m_activeDashboard = m_core->GetVROverlay()->IsDashboardVisible();
     if(m_activeDashboard) OnDashboardOpen();
@@ -256,7 +231,6 @@ void WidgetManager::OnGuiElementMouseClick(GuiElement *f_guiElement, unsigned ch
                 Widget *l_widget = new WidgetWindowCapture();
                 if(l_widget->Create())
                 {
-                    l_widget->OnLanguageChange(m_core->GetConfigManager()->GetLanguage());
                     if(m_activeDashboard) l_widget->OnDashboardOpen();
                     m_widgets.push_back(l_widget);
                 }
@@ -271,7 +245,6 @@ void WidgetManager::OnGuiElementMouseClick(GuiElement *f_guiElement, unsigned ch
                 Widget *l_widget = new WidgetKeyboard();
                 if(l_widget->Create())
                 {
-                    l_widget->OnLanguageChange(m_core->GetConfigManager()->GetLanguage());
                     if(m_activeDashboard) l_widget->OnDashboardOpen();
                     m_widgets.push_back(l_widget);
                 }

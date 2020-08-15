@@ -42,8 +42,8 @@ class WidgetWindowCapture final : public Widget
     WindowGrabber *m_windowGrabber;
     size_t m_windowIndex;
 
-    ULONGLONG m_lastLeftTriggerTick;
-    ULONGLONG m_lastRightTriggerTick;
+    unsigned long long m_lastLeftTriggerTick;
+    unsigned long long m_lastRightTriggerTick;
 
     bool m_activeMove;
     bool m_activeResize;

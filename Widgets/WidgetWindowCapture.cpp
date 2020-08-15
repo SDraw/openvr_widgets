@@ -229,11 +229,15 @@ void WidgetWindowCapture::Update()
                     const auto *l_window = m_windowGrabber->GetWindowInfo(m_windowIndex);
                     if(l_window)
                     {
+#ifdef _WIN32
                         if(IsWindow(reinterpret_cast<HWND>(l_window->Handle)))
                         {
                             m_mousePosition.x = static_cast<int>(m_event.data.mouse.x);
                             m_mousePosition.y = l_window->Size.y - static_cast<int>(m_event.data.mouse.y);
                         }
+#elif __linux__
+                        // Implement in Linux way
+#endif
                     }
                 } break;
 
@@ -242,6 +246,7 @@ void WidgetWindowCapture::Update()
                     const auto *l_window = m_windowGrabber->GetWindowInfo(m_windowIndex);
                     if(l_window)
                     {
+#ifdef _WIN32
                         if(IsWindow(reinterpret_cast<HWND>(l_window->Handle)))
                         {
                             DWORD l_buttonData[3] = { 0 };
@@ -268,10 +273,13 @@ void WidgetWindowCapture::Update()
                             }
 
                             const int l_posY = l_window->Size.y - m_mousePosition.y;
-                            SendWinAPIMessage(reinterpret_cast<HWND>(l_window->Handle), WM_MOUSEMOVE, NULL, MAKELPARAM(m_mousePosition.x, l_posY));
-                            SendWinAPIMessage(reinterpret_cast<HWND>(l_window->Handle), l_buttonData[1], l_buttonData[0], MAKELPARAM(m_mousePosition.x, l_posY));
-                            SendWinAPIMessage(reinterpret_cast<HWND>(l_window->Handle), l_buttonData[2], NULL, MAKELPARAM(m_mousePosition.x, l_posY));
+                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), WM_MOUSEMOVE, NULL, MAKELPARAM(m_mousePosition.x, l_posY));
+                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), l_buttonData[1], l_buttonData[0], MAKELPARAM(m_mousePosition.x, l_posY));
+                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), l_buttonData[2], NULL, MAKELPARAM(m_mousePosition.x, l_posY));
                         }
+#elif __linux__
+                        // Implement in Linux way
+#endif
                     }
                 } break;
 
@@ -280,12 +288,16 @@ void WidgetWindowCapture::Update()
                     const auto *l_window = m_windowGrabber->GetWindowInfo(m_windowIndex);
                     if(l_window)
                     {
+#ifdef _WIN32
                         if(IsWindow(reinterpret_cast<HWND>(l_window->Handle)))
                         {
                             const int l_posY = l_window->Size.y - m_mousePosition.y;
-                            SendWinAPIMessage(reinterpret_cast<HWND>(l_window->Handle), WM_MOUSEMOVE, NULL, MAKELPARAM(m_mousePosition.x, l_posY));
-                            SendWinAPIMessage(reinterpret_cast<HWND>(l_window->Handle), WM_MOUSEWHEEL, MAKEWPARAM(NULL, m_event.data.scroll.ydelta * WHEEL_DELTA), MAKELPARAM(m_mousePosition.x, l_posY));
+                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), WM_MOUSEMOVE, NULL, MAKELPARAM(m_mousePosition.x, l_posY));
+                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), WM_MOUSEWHEEL, MAKEWPARAM(NULL, m_event.data.scroll.ydelta * WHEEL_DELTA), MAKELPARAM(m_mousePosition.x, l_posY));
                         }
+#elif __linux__
+                        // Implement in Linux way
+#endif
                     }
                 } break;
             }
@@ -362,7 +374,7 @@ void WidgetWindowCapture::OnButtonPress(unsigned char f_hand, uint32_t f_button)
                     {
                         if(m_visible && !m_activeDashboard && !m_activePin)
                         {
-                            const ULONGLONG l_tick = GetTickCount64();
+                            const unsigned long long l_tick = GetTickCount64();
                             if((l_tick - m_lastLeftTriggerTick) < 500U)
                             {
                                 if(!m_activeMove)
@@ -381,7 +393,7 @@ void WidgetWindowCapture::OnButtonPress(unsigned char f_hand, uint32_t f_button)
             {
                 if(m_activeMove && (f_button == vr::k_EButton_SteamVR_Trigger))
                 {
-                    const ULONGLONG l_tick = GetTickCount64();
+                    const unsigned long long l_tick = GetTickCount64();
                     if((l_tick - m_lastRightTriggerTick) < 500U)
                     {
                         m_activeResize = (glm::distance(VRTransform::GetRightHandPosition(), m_transform->GetPosition()) <= (m_overlayWidth * 0.5f));
@@ -436,9 +448,13 @@ void WidgetWindowCapture::StartCapture()
             const vr::HmdVector2_t l_scale = { static_cast<float>(l_window->Size.x), static_cast<float>(l_window->Size.y) };
             ms_vrOverlay->SetOverlayMouseScale(m_overlay, &l_scale);
 
+#ifdef _WIN32
             wchar_t l_windowName[256U];
             if(GetWindowTextW(reinterpret_cast<HWND>(l_window->Handle), l_windowName, 256) != 0) m_guiTextWindow->Set(l_windowName);
             else m_guiTextWindow->Set("<>");
+#elif __linux__
+            m_guiTextWindow->Set(l_window->Name);
+#endif
         }
     }
     else m_texture.handle = nullptr;

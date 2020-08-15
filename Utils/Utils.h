@@ -8,4 +8,7 @@ size_t ReadEnumVector(const std::string &f_val, const std::vector<std::string> &
 size_t ReadEnumVector(const char *f_val, const std::vector<std::string> &f_vec);
 
 void ExtractScreenCaptureImage(const SL::Screen_Capture::Image &f_img, unsigned char *f_dst, size_t f_size);
-void SendWinAPIMessage(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+
+#ifdef __linux__
+unsigned long long GetTickCount64();
+#endif

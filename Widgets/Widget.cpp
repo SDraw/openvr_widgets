@@ -20,7 +20,6 @@ Widget::Widget()
     m_visible = false;
     m_closed = false;
     m_activeDashboard = false;
-    m_language = LanguageIndex::LI_English;
     m_transform = new Transformation();
 }
 Widget::~Widget()
@@ -42,7 +41,6 @@ void Widget::Destroy()
     m_visible = false;
     m_closed = false;
     m_activeDashboard = false;
-    m_language = LanguageIndex::LI_English;
 }
 
 bool Widget::IsClosed() const
@@ -70,11 +68,6 @@ void Widget::OnDashboardOpen()
 void Widget::OnDashboardClose()
 {
     if(m_valid) m_activeDashboard = false;
-}
-
-void Widget::OnLanguageChange(unsigned char f_lang)
-{
-    if(m_valid) m_language = f_lang;
 }
 
 void Widget::SetInterfaces(vr::IVROverlay *f_overlay, vr::IVRCompositor *f_compositor)

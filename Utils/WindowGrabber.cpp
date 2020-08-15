@@ -150,7 +150,11 @@ void WindowGrabber::UpdateWindows()
         m_windows = SL::Screen_Capture::GetWindows();
         for(auto l_iter = m_windows.begin(); l_iter != m_windows.end();)
         {
+#ifdef _WIN32
             if((strlen(l_iter->Name) < 1U) || (l_iter->Size.x <= 10) || (l_iter->Size.y <= 10) || !IsWindowVisible(reinterpret_cast<HWND>(l_iter->Handle))) l_iter = m_windows.erase(l_iter);
+#elif __linux__
+            if((strlen(l_iter->Name) < 1U) || (l_iter->Size.x <= 10) || (l_iter->Size.y <= 10)) l_iter = m_windows.erase(l_iter);
+#endif
             else ++l_iter;
         }
         m_windowsCount = m_windows.size();

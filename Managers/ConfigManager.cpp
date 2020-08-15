@@ -9,26 +9,18 @@
 
 const std::vector<std::string> g_ConfigSettings
 {
-    "language", "update_rate",
-    "gui_font", "gui_button"
+    "update_rate", "gui_font"
 };
 enum ConfigSettingIndex : size_t
 {
-    CSI_Language = 0U,
-    CSI_UpdateRate,
+    CSI_UpdateRate = 0U,
     CSI_GuiFont
-};
-
-const std::vector<std::string> g_ConfigLanguages
-{
-    "en", "ru"
 };
 
 ConfigManager::ConfigManager(Core *f_core)
 {
     m_core = f_core;
     m_settingsFile = new pugi::xml_document();
-    m_language = LanguageIndex::LI_English;
     m_updateDelay = 11U; // ~90 FPS by default
     m_guiFont.assign("fonts/Hack-Regular.ttf");
 }
@@ -39,9 +31,16 @@ ConfigManager::~ConfigManager()
 
 void ConfigManager::Load()
 {
+#ifdef _WIN32
     char l_path[MAX_PATH];
     GetCurrentDirectoryA(MAX_PATH, l_path);
     m_directory.assign(l_path);
+#elif __linux__
+    char l_result[PATH_MAX];
+    ssize_t l_count = readlink( "/proc/self/exe", l_result, PATH_MAX );
+    m_directory.assign(l_result,(l_count > 0) ? l_count : 0 );
+    m_directory.assign(m_directory.substr(0,m_directory.find_last_of("/\\")));
+#endif
 
     if(m_settingsFile->load_file("settings.xml"))
     {
@@ -54,11 +53,6 @@ void ConfigManager::Load()
             {
                 switch(ReadEnumVector(l_attribName.as_string(), g_ConfigSettings))
                 {
-                    case ConfigSettingIndex::CSI_Language:
-                    {
-                        const size_t l_langIndex = ReadEnumVector(l_attribValue.as_string("en"), g_ConfigLanguages);
-                        if(l_langIndex != std::numeric_limits<size_t>::max()) m_language = static_cast<unsigned char>(l_langIndex);
-                    } break;
                     case ConfigSettingIndex::CSI_UpdateRate:
                         m_updateDelay = l_attribValue.as_uint(11U);
                         break;

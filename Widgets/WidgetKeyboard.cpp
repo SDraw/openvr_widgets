@@ -22,59 +22,63 @@ const sf::Vector2f g_ButtonSize(64.f, 64.f);
 
 const unsigned short g_KeyReferences[]
 {
+#ifdef _WIN32
     VK_ESCAPE, VK_PRINT, VK_PAUSE,
-    VK_F1, VK_F2, VK_F3, VK_F4, VK_F5, VK_F6, VK_F7, VK_F8, VK_F9, VK_F10, VK_F11, VK_F12,
-    VK_OEM_3, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, VK_OEM_MINUS, VK_OEM_PLUS,
-    0x51, 0x57, 0x45, 0x52, 0x54, 0x59, 0x55, 0x49, 0x4F, 0x50, VK_OEM_4, VK_OEM_6,
-    0x41, 0x53, 0x44, 0x46, 0x47, 0x48, 0x4A, 0x4B, 0x4C, VK_OEM_1, VK_OEM_7, VK_OEM_8,
-    VK_OEM_102, 0x5A, 0x58, 0x43, 0x56, 0x42, 0x4E, 0x4D, VK_OEM_PERIOD, VK_OEM_COMMA, VK_OEM_2,
-    VK_SPACE,
-    VK_LSHIFT, VK_RSHIFT,
-    VK_LCONTROL, VK_RCONTROL, VK_MENU, VK_MENU,
-    VK_BACK, VK_INSERT,
-    VK_RETURN, VK_DELETE,
-    VK_RETURN,
-    VK_TAB,
-    VK_HOME, VK_PRIOR,
-    VK_END, VK_NEXT,
-    VK_UP,
-    VK_LEFT, VK_DOWN, VK_RIGHT,
-    VK_DIVIDE, VK_MULTIPLY, VK_SUBTRACT,
-    VK_NUMPAD7, VK_NUMPAD8, VK_NUMPAD9, VK_ADD,
-    VK_NUMPAD4, VK_NUMPAD5, VK_NUMPAD6,
-    VK_NUMPAD1, VK_NUMPAD2, VK_NUMPAD3,
-    VK_NUMPAD0, VK_OEM_COMMA,
-    VK_SCROLL,
-    VK_NUMLOCK,
-    VK_CAPITAL
+        VK_F1, VK_F2, VK_F3, VK_F4, VK_F5, VK_F6, VK_F7, VK_F8, VK_F9, VK_F10, VK_F11, VK_F12,
+        VK_OEM_3, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, VK_OEM_MINUS, VK_OEM_PLUS,
+        0x51, 0x57, 0x45, 0x52, 0x54, 0x59, 0x55, 0x49, 0x4F, 0x50, VK_OEM_4, VK_OEM_6,
+        0x41, 0x53, 0x44, 0x46, 0x47, 0x48, 0x4A, 0x4B, 0x4C, VK_OEM_1, VK_OEM_7, VK_OEM_8,
+        VK_OEM_102, 0x5A, 0x58, 0x43, 0x56, 0x42, 0x4E, 0x4D, VK_OEM_PERIOD, VK_OEM_COMMA, VK_OEM_2,
+        VK_SPACE,
+        VK_LSHIFT, VK_RSHIFT,
+        VK_LCONTROL, VK_RCONTROL, VK_MENU, VK_MENU,
+        VK_BACK, VK_INSERT,
+        VK_RETURN, VK_DELETE,
+        VK_RETURN,
+        VK_TAB,
+        VK_HOME, VK_PRIOR,
+        VK_END, VK_NEXT,
+        VK_UP,
+        VK_LEFT, VK_DOWN, VK_RIGHT,
+        VK_DIVIDE, VK_MULTIPLY, VK_SUBTRACT,
+        VK_NUMPAD7, VK_NUMPAD8, VK_NUMPAD9, VK_ADD,
+        VK_NUMPAD4, VK_NUMPAD5, VK_NUMPAD6,
+        VK_NUMPAD1, VK_NUMPAD2, VK_NUMPAD3,
+        VK_NUMPAD0, VK_OEM_COMMA,
+        VK_SCROLL,
+        VK_NUMLOCK,
+        VK_CAPITAL
+#elif __linux__
+    // Implement in Linux way
+#endif
 };
 const char *g_KeyNames[]
 {
     "Esc", "PrtSc", "Pause",
-    "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
-    "~", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=",
-    "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]",
-    "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "#", // Last one is unknown, 
-    "\\", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/",
-    "Space",
-    "LShift", "RShift",
-    "LCtrl", "RCtrl", "Alt", "AltGr",
-    "Backspace", "Insert",
-    "Enter", "Delete",
-    "NumEnter",
-    "Tab",
-    "Home", "PgUp",
-    "End", "PgDown",
-    "Up",
-    "Left", "Down", "Right",
-    "/", "*", "-",
-    "Num7", "Num8", "Num9", "+",
-    "Num4", "Num5", "Num6",
-    "Num1", "Num2", "Num3",
-    "Num0", "Delete",
-    "ScrLk",
-    "NumLk",
-    "CapsLk"
+        "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+        "~", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=",
+        "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]",
+        "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "#", // Last one is unknown, 
+        "\\", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/",
+        "Space",
+        "LShift", "RShift",
+        "LCtrl", "RCtrl", "Alt", "AltGr",
+        "Backspace", "Insert",
+        "Enter", "Delete",
+        "NumEnter",
+        "Tab",
+        "Home", "PgUp",
+        "End", "PgDown",
+        "Up",
+        "Left", "Down", "Right",
+        "/", "*", "-",
+        "Num7", "Num8", "Num9", "+",
+        "Num4", "Num5", "Num6",
+        "Num1", "Num2", "Num3",
+        "Num0", "Delete",
+        "ScrLk",
+        "NumLk",
+        "CapsLk"
 };
 
 sf::Texture *WidgetKeyboard::ms_textureAtlas = nullptr;
@@ -326,34 +330,6 @@ void WidgetKeyboard::Update()
                 ms_vrOverlay->SetOverlayTexture(m_overlayControls[i], &ms_textureControls);
             }
         }
-
-        // Testing
-        //{
-        //    vr::VROverlayIntersectionParams_t l_inputParams;
-        //    l_inputParams.eOrigin = vr::TrackingUniverseRawAndUncalibrated;
-
-        //    const glm::vec3 &l_handPos = VRTransform::GetRightHandPosition();
-        //    const glm::vec3 l_handDir = glm::normalize(VRTransform::GetLeftHandPosition() - l_handPos); // g_AxisZN*VRTransform::GetRightHandRotation();
-
-        //    for(size_t i = 0U; i < 3U; i++)
-        //    {
-        //        l_inputParams.vSource.v[i] = l_handPos[i];
-        //        l_inputParams.vDirection.v[i] = l_handDir[i];
-        //    }
-
-        //    vr::VROverlayIntersectionResults_t l_outputParams;
-        //    if(ms_vrOverlay->ComputeOverlayIntersection(m_overlay, &l_inputParams, &l_outputParams))
-        //    {
-        //        std::cout << "> Intersected! (" << l_outputParams.vUVs.v[0] << ", " << l_outputParams.vUVs.v[1] << ')' << std::endl;
-        //        /*glm::uvec2 l_overlayPoint;
-        //        l_overlayPoint.x = static_cast<unsigned int>(static_cast<float>(g_TargetSize.x)*l_outputParams.vUVs.v[0U]);
-        //        l_overlayPoint.y = static_cast<unsigned int>(static_cast<float>(g_TargetSize.y)*l_outputParams.vUVs.v[1U]);
-
-        //        m_guiSystem->ProcessMove(l_overlayPoint.x, l_overlayPoint.y);*/
-        //    }
-        //}
-
-
     }
 }
 
@@ -375,7 +351,7 @@ void WidgetKeyboard::OnButtonPress(unsigned char f_hand, uint32_t f_button)
     {
         if((f_hand == VRHandIndex::VRHI_Left) && (f_button == vr::k_EButton_SteamVR_Trigger))
         {
-            const ULONGLONG l_tick = GetTickCount64();
+            const unsigned long long l_tick = GetTickCount64();
             if(l_tick - m_lastTriggerTick < 500U)
             {
                 if(!m_activeMove)
@@ -417,6 +393,7 @@ void WidgetKeyboard::OnGuiElementClick(GuiElement *f_guiElement, unsigned char f
 {
     if((f_button == GuiClick::GC_Left) && (f_state == GuiClickState::GCS_Press))
     {
+#ifdef _WIN32
         INPUT l_input;
         l_input.type = INPUT_KEYBOARD;
         l_input.ki.wScan = 0;
@@ -428,6 +405,9 @@ void WidgetKeyboard::OnGuiElementClick(GuiElement *f_guiElement, unsigned char f
 
         l_input.ki.dwFlags = KEYEVENTF_KEYUP;
         SendInput(1U, &l_input, sizeof(INPUT));
+#elif __linux__
+        // Implement in Linux way
+#endif
     }
 }
 

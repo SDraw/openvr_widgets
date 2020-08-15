@@ -33,14 +33,16 @@ class WidgetStats final : public Widget
     sf::Texture *m_textureAtlas;
     sf::Sprite *m_spriteIcon;
 
+#ifdef _WIN32
     struct WinHandles
     {
         PDH_HQUERY m_query;
         PDH_HCOUNTER m_counter;
         MEMORYSTATUSEX m_memoryStatus;
     } m_winHandles;
+#endif
 
-    ULONGLONG m_lastPressTick;
+    unsigned long long m_lastPressTick;
     std::time_t m_lastTime;
     int m_lastDay;
 

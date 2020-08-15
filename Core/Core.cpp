@@ -10,7 +10,7 @@
 
 SFML_DEFINE_DISCRETE_GPU_PREFERENCE
 
-const ULONGLONG g_PowerUpdateInterval = 30000U;
+const unsigned long long g_PowerUpdateInterval = 30000U;
 
 Core::Core()
 {
@@ -89,7 +89,14 @@ bool Core::Initialize()
 
                     m_active = true;
                 }
-                else MessageBoxA(NULL, "Unable to create OpenGL 3.0 (or higher) context", NULL, MB_OK | MB_ICONEXCLAMATION);
+                else
+                {
+#ifdef _WIN32
+                    MessageBoxA(NULL, "Unable to create OpenGL 3.0 (or higher) context", NULL, MB_OK | MB_ICONEXCLAMATION);
+#elif __linux__
+                    std::cerr << "Unable to create OpenGL 3.0 (or higher) context" << std::endl;
+#endif
+                }
             }
             else
             {
@@ -97,7 +104,11 @@ bool Core::Initialize()
 
                 std::string l_errorString("Unable to launch application\nOpenVR description: ");
                 l_errorString.append(vr::VR_GetVRInitErrorAsEnglishDescription(l_initError));
+#ifdef _WIN32
                 MessageBoxA(NULL, l_errorString.c_str(), NULL, MB_OK | MB_ICONEXCLAMATION);
+#elif __linux__
+                std::cerr << l_errorString.c_str() << std::endl;
+#endif
             }
         }
     }
@@ -129,7 +140,7 @@ bool Core::DoPulse()
         }
 
         // Get battery levels
-        ULONGLONG l_tick = GetTickCount64();
+        unsigned long long l_tick = GetTickCount64();
         if((l_tick - m_powerTick) >= g_PowerUpdateInterval) // Check every 30 seconds
         {
             m_powerTick = l_tick;

@@ -20,17 +20,10 @@ const glm::vec3 g_OverlayOffset(0.f, 0.05f, 0.f);
 const glm::vec2 g_ViewAngleRange(g_Pi / 6.f, g_Pi / 12.f);
 const float g_ViewAngleRangeDiff = (g_ViewAngleRange.x - g_ViewAngleRange.y);
 
-const char* g_WeekDayEn[]
+const char* g_WeekDays[]
 {
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
 };
-const wchar_t* g_WeekDayRu[]
-{
-    L"\u0412\u0441", L"\u041f\u043d", L"\u0412\u0442", L"\u0421\u0440", L"\u0427\u0442", L"\u041f\u0442", L"\u0421\u0431"
-};
-
-const char* g_MemorySizeEn = "MB";
-const wchar_t* g_MemorySizeRu = L"\u041C\u0411";
 
 const sf::IntRect g_SpritesBounds[5U] = {
     { 0, 0, 128, 128 },
@@ -48,9 +41,11 @@ WidgetStats::WidgetStats()
     m_textureAtlas = nullptr;
     m_spriteIcon = nullptr;
 
+#ifdef _WIN32
     m_winHandles.m_query = NULL;
     m_winHandles.m_counter = NULL;
     m_winHandles.m_memoryStatus.dwLength = sizeof(MEMORYSTATUSEX);
+#endif
 
     m_lastTime = 0U;
     m_lastDay = -1;
@@ -67,10 +62,11 @@ bool WidgetStats::Create()
 {
     if(!m_valid)
     {
+#ifdef _WIN32
         if(PdhOpenQuery(NULL, NULL, &m_winHandles.m_query) == ERROR_SUCCESS)
         {
             PdhAddEnglishCounter(m_winHandles.m_query, L"\\Processor(_Total)\\% Processor Time", NULL, &m_winHandles.m_counter);
-
+#endif
             if(ms_vrOverlay->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlay) == vr::VROverlayError_None)
             {
                 ms_vrOverlay->SetOverlayWidthInMeters(m_overlay, 0.125f);
@@ -102,7 +98,9 @@ bool WidgetStats::Create()
                     }
                 }
             }
+#ifdef _WIN32
         }
+#endif
     }
 
     return m_valid;
@@ -110,11 +108,13 @@ bool WidgetStats::Create()
 
 void WidgetStats::Destroy()
 {
+#ifdef _WIN32
     if(m_winHandles.m_query != NULL)
     {
         PdhCloseQuery(m_winHandles.m_query);
         m_winHandles.m_query = NULL;
     }
+#endif
 
     for(size_t i = 0U; i < ST_Count; i++)
     {
@@ -154,51 +154,36 @@ void WidgetStats::Update()
             {
                 case SM_Watch:
                 {
-                    tm l_tmTime;
-                    localtime_s(&l_tmTime, &m_lastTime);
+                    std::time(&m_lastTime);
+                    std::tm *l_time = std::localtime(&m_lastTime);
 
                     std::string l_string;
-                    if(l_tmTime.tm_hour < 10) l_string.push_back('0');
-                    l_string.append(std::to_string(l_tmTime.tm_hour));
+                    if(l_time->tm_hour < 10) l_string.push_back('0');
+                    l_string.append(std::to_string(l_time->tm_hour));
                     l_string.push_back(':');
-                    if(l_tmTime.tm_min < 10) l_string.push_back('0');
-                    l_string.append(std::to_string(l_tmTime.tm_min));
+                    if(l_time->tm_min < 10) l_string.push_back('0');
+                    l_string.append(std::to_string(l_time->tm_min));
                     l_string.push_back(':');
-                    if(l_tmTime.tm_sec < 10) l_string.push_back('0');
-                    l_string.append(std::to_string(l_tmTime.tm_sec));
+                    if(l_time->tm_sec < 10) l_string.push_back('0');
+                    l_string.append(std::to_string(l_time->tm_sec));
                     m_fontText[ST_Time]->setString(l_string);
 
                     sf::FloatRect l_bounds = m_fontText[ST_Time]->getLocalBounds();
                     sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 40.f);
                     m_fontText[ST_Time]->setPosition(l_position);
 
-                    if(m_lastDay != l_tmTime.tm_yday)
+                    if(m_lastDay != l_time->tm_yday)
                     {
-                        m_lastDay = l_tmTime.tm_yday;
+                        m_lastDay = l_time->tm_yday;
 
-                        sf::String l_sfString;
-                        l_string.assign(" ");
-                        switch(m_language)
-                        {
-                            case LanguageIndex::LI_English:
-                            {
-                                l_sfString = g_WeekDayEn[l_tmTime.tm_wday];
-                                l_string.append(std::to_string(l_tmTime.tm_mon + 1));
-                                l_string.push_back('/');
-                                l_string.append(std::to_string(l_tmTime.tm_mday));
-                            } break;
-                            case LanguageIndex::LI_Russian:
-                            {
-                                l_sfString = g_WeekDayRu[l_tmTime.tm_wday];
-                                l_string.append(std::to_string(l_tmTime.tm_mday));
-                                l_string.push_back('/');
-                                l_string.append(std::to_string(l_tmTime.tm_mon + 1));
-                            } break;
-                        }
+                        l_string.assign(g_WeekDays[l_time->tm_wday]);
+                        l_string.push_back(' ');
+                        l_string.append(std::to_string(l_time->tm_mon + 1));
                         l_string.push_back('/');
-                        l_string.append(std::to_string(1900 + l_tmTime.tm_year));
-                        l_sfString += l_string;
-                        m_fontText[ST_Date]->setString(l_sfString);
+                        l_string.append(std::to_string(l_time->tm_mday));
+                        l_string.push_back('/');
+                        l_string.append(std::to_string(1900 + l_time->tm_year));
+                        m_fontText[ST_Date]->setString(l_string);
 
                         l_bounds = m_fontText[ST_Date]->getLocalBounds();
                         l_position.x = 56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f;
@@ -212,6 +197,7 @@ void WidgetStats::Update()
 
                 case SM_Cpu:
                 {
+#ifdef _WIN32
                     PDH_FMT_COUNTERVALUE l_counterVal;
                     PdhCollectQueryData(m_winHandles.m_query);
                     PdhGetFormattedCounterValue(m_winHandles.m_counter, PDH_FMT_DOUBLE, NULL, &l_counterVal);
@@ -224,6 +210,9 @@ void WidgetStats::Update()
                     l_text.append(std::to_string(static_cast<int>(l_fractPart*100.0)));
                     l_text.push_back('%');
                     m_fontText[ST_Cpu]->setString(l_text);
+#elif __linux__
+                    m_fontText[ST_Cpu]->setString("TODO");
+#endif
 
                     const sf::FloatRect l_bounds = m_fontText[ST_Cpu]->getLocalBounds();
                     const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 15.f);
@@ -234,25 +223,18 @@ void WidgetStats::Update()
 
                 case SM_Ram:
                 {
+#ifdef _WIN32
                     GlobalMemoryStatusEx(&m_winHandles.m_memoryStatus);
 
                     std::string l_text;
                     l_text.append(std::to_string((m_winHandles.m_memoryStatus.ullTotalPhys - m_winHandles.m_memoryStatus.ullAvailPhys) / 1048576U));
                     l_text.push_back('/');
                     l_text.append(std::to_string(m_winHandles.m_memoryStatus.ullTotalPhys / 1048576U));
-                    l_text.push_back(' ');
-
-                    sf::String l_sfString(l_text);
-                    switch(m_language)
-                    {
-                        case LanguageIndex::LI_English:
-                            l_sfString += g_MemorySizeEn;
-                            break;
-                        case LanguageIndex::LI_Russian:
-                            l_sfString += g_MemorySizeRu;
-                            break;
-                    }
-                    m_fontText[ST_Ram]->setString(l_sfString);
+                    l_text.append(" MB");
+                    m_fontText[ST_Ram]->setString(l_text);
+#elif __linux__
+                    m_fontText[ST_Ram]->setString("TODO");
+#endif
 
                     const sf::FloatRect l_bounds = m_fontText[ST_Ram]->getLocalBounds();
                     const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
@@ -401,7 +383,7 @@ void  WidgetStats::OnButtonPress(unsigned char f_hand, uint32_t f_button)
             {
                 case vr::k_EButton_Grip:
                 {
-                    const ULONGLONG l_tick = GetTickCount64();
+                    const unsigned long long l_tick = GetTickCount64();
                     if((l_tick - m_lastPressTick) <= 500U)
                     {
                         m_visible = true;

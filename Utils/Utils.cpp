@@ -84,7 +84,11 @@ void ExtractScreenCaptureImage(const SL::Screen_Capture::Image &f_img, unsigned 
     }
 }
 
-void SendWinAPIMessage(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+#ifdef __linux__
+unsigned long long GetTickCount64()
 {
-    if(SendMessage(hWnd, Msg, wParam, lParam)) PostMessage(hWnd, Msg, wParam, lParam);
+    struct timespec l_ts;
+    clock_gettime(CLOCK_MONOTONIC, &l_ts);
+    return (uint64_t)(l_ts.tv_nsec / 1000000) + ((uint64_t)l_ts.tv_sec * 1000ull);
 }
+#endif
