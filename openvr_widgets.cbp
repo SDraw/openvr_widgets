@@ -27,21 +27,22 @@
 				</Compiler>
 				<Linker>
 					<Add option="-m64" />
-					<Add library="libscreen_capture_lite" />
-					<Add library="libsfml-graphics-s" />
-					<Add library="libsfml-window-s" />
-					<Add library="libsfml-system-s" />
-					<Add library="vendor/openvr/bin/linux64/libopenvr_api.so" />
-					<Add library="libudev" />
-					<Add library="libpthread" />
-					<Add library="libGL" />
-					<Add library="libX11" />
-					<Add library="libXi" />
-					<Add library="libXrandr" />
-					<Add library="libXinerama" />
-					<Add library="libXext" />
-					<Add library="libXfixes" />
-					<Add library="libfreetype" />
+					<Add option="-Wl,-rpath=./" />
+					<Add library="screen_capture_lite" />
+					<Add library="sfml-graphics-s" />
+					<Add library="sfml-window-s" />
+					<Add library="sfml-system-s" />
+					<Add library="openvr_api" />
+					<Add library="udev" />
+					<Add library="pthread" />
+					<Add library="GL" />
+					<Add library="X11" />
+					<Add library="Xi" />
+					<Add library="Xrandr" />
+					<Add library="Xinerama" />
+					<Add library="Xext" />
+					<Add library="Xfixes" />
+					<Add library="freetype" />
 					<Add directory="vendor/openvr/lib/linux64" />
 					<Add directory="vendor/screen_capture_lite/lib/linux64" />
 					<Add directory="vendor/sfml/lib/linux64" />
@@ -69,21 +70,22 @@
 				<Linker>
 					<Add option="-s" />
 					<Add option="-m64" />
-					<Add library="libscreen_capture_lite" />
-					<Add library="libsfml-graphics-s" />
-					<Add library="libsfml-window-s" />
-					<Add library="libsfml-system-s" />
-					<Add library="vendor/openvr/bin/linux64/libopenvr_api.so" />
-					<Add library="libudev" />
-					<Add library="libpthread" />
-					<Add library="libGL" />
-					<Add library="libX11" />
-					<Add library="libXi" />
-					<Add library="libXrandr" />
-					<Add library="libXinerama" />
-					<Add library="libXext" />
-					<Add library="libXfixes" />
-					<Add library="libfreetype" />
+					<Add option="-Wl,-rpath=./" />
+					<Add library="screen_capture_lite" />
+					<Add library="sfml-graphics-s" />
+					<Add library="sfml-window-s" />
+					<Add library="sfml-system-s" />
+					<Add library="openvr_api" />
+					<Add library="udev" />
+					<Add library="pthread" />
+					<Add library="GL" />
+					<Add library="X11" />
+					<Add library="Xi" />
+					<Add library="Xrandr" />
+					<Add library="Xinerama" />
+					<Add library="Xext" />
+					<Add library="Xfixes" />
+					<Add library="freetype" />
 					<Add directory="vendor/openvr/lib/linux64" />
 					<Add directory="vendor/screen_capture_lite/lib/linux64" />
 					<Add directory="vendor/sfml/lib/linux64" />
