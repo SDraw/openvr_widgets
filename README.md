@@ -1,7 +1,7 @@
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I0XK1A)
 # OpenVR Widgets [![Build status](https://ci.appveyor.com/api/projects/status/ctb2t0bawyus9x90?svg=true)](https://ci.appveyor.com/project/SDraw/openvr-widgets)
 Set of simple overlay widgets for usage in SteamVR environment.  
-Application supports Windows 7, 8, 8.1 and 10.
+Application supports Windows 7, 8, 8.1, 10 and Linux (in experimental stage).
 
 # Installation
 * Grab latest [release](../../releases/latest) for your platform.
@@ -13,7 +13,6 @@ Application supports Windows 7, 8, 8.1 and 10.
 Editing `settings.xml` allows to make few own changes to widgets.  
 List of global settings:
 * **update_rate** - update rate in milliseconds. Default value is 11, that corresponds to 90 FPS.
-* **language** - applied language to widgets. Available values: en, ru. Default value is `en`.
 * **gui_font** - font that will be used for text. Default value is `fonts/Hack-Regular.ttf`. Refer to [Hack font repository](../../../../source-foundry/Hack).
 
 # Stats overlay widget
@@ -35,7 +34,7 @@ List of global settings:
     * **Right:** Cycle window to right.
     * **Update:** Update list of windows. Helpful when new window has appeared or old has been destroyed.
     * **FPS:** Changes captured FPS rate.
-  * **Interaction:** You can interact with captured window using trigger as click and touchpad as scroll. Note: Not all active and non-active windows accept click and scroll messages sent via Windows API.
+  * **Interaction:** You can interact with captured window using trigger as click and touchpad as scroll. Note: Not all active and non-active windows accept click and scroll messages sent via Windows API. Input interaction on Linux isn't implemented yet.
   
 # Keyboard overlay widget
 * **Activation:** Press `Add keyboard widget` in dashboard menu `OpenVR Widgets - Settings`.
@@ -44,4 +43,4 @@ List of global settings:
   * **Pin/unpin:** Attach widget to left hand and make it visible outside SteamVR dashboard.
   * **Close:** Close widget.
 * **Interaction:** Point to desired key and press trigger button.
-* **Notes:** Widget is in experimental state and can be changed in future.
+* **Notes:** Widget is in experimental state and can be changed in future. Input on Linux isn't implemented yet.
