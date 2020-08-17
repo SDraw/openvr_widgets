@@ -40,6 +40,10 @@ class WidgetStats final : public Widget
         PDH_HCOUNTER m_counter;
         MEMORYSTATUSEX m_memoryStatus;
     } m_winHandles;
+#elif __linux__
+    int m_memoryTotal;
+    size_t m_cpuTickIdle;
+    size_t m_cpuTickTotal;
 #endif
 
     unsigned long long m_lastPressTick;

@@ -45,6 +45,10 @@ WidgetStats::WidgetStats()
     m_winHandles.m_query = NULL;
     m_winHandles.m_counter = NULL;
     m_winHandles.m_memoryStatus.dwLength = sizeof(MEMORYSTATUSEX);
+#elif __linux__
+    m_memoryTotal = -1;
+    m_cpuTickIdle = 0U;
+    m_cpuTickTotal = 0U;
 #endif
 
     m_lastTime = 0U;
@@ -66,6 +70,18 @@ bool WidgetStats::Create()
         if(PdhOpenQuery(NULL, NULL, &m_winHandles.m_query) == ERROR_SUCCESS)
         {
             PdhAddEnglishCounter(m_winHandles.m_query, L"\\Processor(_Total)\\% Processor Time", NULL, &m_winHandles.m_counter);
+#elif __linux__
+            std::ifstream l_memInfo("proc/meminfo",std::ios_base::in);
+            std::string l_line;
+            while(std::getline(l_memInfo,l_line))
+            {
+                if(sscanf(l_line.c_str(), "MemTotal: %d kB", &m_memoryTotal) == 1)
+                {
+                    m_memoryTotal /= 1024; // Round to MB
+                    break;
+                }
+            }
+            l_memInfo.close();
 #endif
             if(ms_vrOverlay->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlay) == vr::VROverlayError_None)
             {
@@ -197,22 +213,42 @@ void WidgetStats::Update()
 
                 case SM_Cpu:
                 {
+                    std::string l_text;
 #ifdef _WIN32
                     PDH_FMT_COUNTERVALUE l_counterVal;
                     PdhCollectQueryData(m_winHandles.m_query);
                     PdhGetFormattedCounterValue(m_winHandles.m_counter, PDH_FMT_DOUBLE, NULL, &l_counterVal);
 
-                    std::string l_text;
                     double l_intPart = 0.f;
                     double l_fractPart = std::modf(l_counterVal.doubleValue, &l_intPart);
                     l_text.append(std::to_string(static_cast<int>(l_intPart)));
                     l_text.push_back('.');
                     l_text.append(std::to_string(static_cast<int>(l_fractPart*100.0)));
+#elif __linux__
+                    std::ifstream l_stats("/proc/stat");
+                    l_stats.ignore(5U, ' ');
+                    std::vector<size_t> l_ticks;
+                    for(size_t l_tick; l_stats >> l_tick;) l_ticks.push_back(l_tick);
+                    l_stats.close();
+
+                    size_t l_tickTotal = 0U;
+                    for(auto &l_iter : l_ticks) l_tickTotal += l_iter;
+
+                    float l_resultIdle = static_cast<float>(l_ticks[3U] - m_cpuTickIdle);
+                    float l_resultTotal = static_cast<float>(l_tickTotal - m_cpuTickTotal);
+
+                    m_cpuTickIdle = l_ticks[3U];
+                    m_cpuTickTotal = l_tickTotal;
+                    float l_usage = 100.f*(1.f - l_resultIdle / l_resultTotal);
+
+                    float l_intPart = 0.f;
+                    float l_fractPart = std::modf(l_usage, &l_intPart);
+                    l_text.append(std::to_string(static_cast<int>(l_intPart)));
+                    l_text.push_back('.');
+                    l_text.append(std::to_string(static_cast<int>(l_fractPart*100.f)));
+#endif
                     l_text.push_back('%');
                     m_fontText[ST_Cpu]->setString(l_text);
-#elif __linux__
-                    m_fontText[ST_Cpu]->setString("TODO");
-#endif
 
                     const sf::FloatRect l_bounds = m_fontText[ST_Cpu]->getLocalBounds();
                     const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 15.f);
@@ -223,18 +259,40 @@ void WidgetStats::Update()
 
                 case SM_Ram:
                 {
-#ifdef _WIN32
-                    GlobalMemoryStatusEx(&m_winHandles.m_memoryStatus);
-
                     std::string l_text;
-                    l_text.append(std::to_string((m_winHandles.m_memoryStatus.ullTotalPhys - m_winHandles.m_memoryStatus.ullAvailPhys) / 1048576U));
-                    l_text.push_back('/');
-                    l_text.append(std::to_string(m_winHandles.m_memoryStatus.ullTotalPhys / 1048576U));
+#ifdef _WIN32
+                    if(GlobalMemoryStatusEx(&m_winHandles.m_memoryStatus))
+                    {
+                        l_text.append(std::to_string((m_winHandles.m_memoryStatus.ullTotalPhys - m_winHandles.m_memoryStatus.ullAvailPhys) / 1048576U));
+                        l_text.push_back('/');
+                        l_text.append(std::to_string(m_winHandles.m_memoryStatus.ullTotalPhys / 1048576U));
+                    }
+                    else l_text.assign("*/*");
+#elif __linux__
+                    int l_memAvailable = -1;
+                    std::ifstream l_memInfo("proc/meminfo");
+                    std::string l_line;
+                    while(std::getline(l_memInfo,l_line))
+                    {
+                        if(sscanf(l_line.c_str(), "MemAvailable: %d kB", &l_memAvailable) == 1)
+                        {
+                            l_memAvailable /= 1024; // Round to MB
+                            break;
+                        }
+                    }
+                    l_memInfo.close();
+
+                    if(m_memoryTotal != -1)
+                    {
+                        if(l_memAvailable != -1) l_text.append(std::to_string(m_memoryTotal - l_memAvailable));
+                        else l_text.push_back('*');
+                        l_text.push_back('/');
+                        l_text.append(std::to_string(m_memoryTotal));
+                    }
+                    else l_text.assign("*/*");
+#endif
                     l_text.append(" MB");
                     m_fontText[ST_Ram]->setString(l_text);
-#elif __linux__
-                    m_fontText[ST_Ram]->setString("TODO");
-#endif
 
                     const sf::FloatRect l_bounds = m_fontText[ST_Ram]->getLocalBounds();
                     const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);

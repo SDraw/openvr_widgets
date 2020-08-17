@@ -14,6 +14,7 @@
 
 #ifdef __linux__
 #include <iostream>
+#include <fstream>
 #include <unistd.h>
 #include <limits.h>
 #endif
