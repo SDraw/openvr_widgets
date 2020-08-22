@@ -15,6 +15,7 @@
 #ifdef __linux__
 #include <iostream>
 #include <fstream>
+#include <numeric>
 #include <unistd.h>
 #include <limits.h>
 #endif
@@ -38,3 +39,7 @@
 #include "glm/gtc/quaternion.hpp"
 
 #include "pugixml.hpp"
+
+#ifdef __linux__
+#include <X11/Xlib.h>
+#endif

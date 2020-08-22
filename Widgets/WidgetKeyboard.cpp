@@ -6,9 +6,8 @@
 #include "Utils/Transformation.h"
 
 #include "Core/GlobalSettings.h"
-#include "Core/VRTransform.h"
+#include "Core/VRDevicesStates.h"
 #include "Gui/GuiStructures.h"
-#include "Utils/GlobalStructures.h"
 #include "Utils/Utils.h"
 
 extern const float g_PiHalf;
@@ -153,13 +152,16 @@ bool WidgetKeyboard::Create()
             ms_vrOverlay->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Main", &m_overlay);
             if(m_overlay != vr::k_ulOverlayHandleInvalid)
             {
-                // Create overlay in front of camera
-                glm::vec3 l_initPos(VRTransform::GetHmdPosition());
-                l_initPos += (VRTransform::GetHmdRotation()*g_AxisZN)*0.5f;
-                m_transform->SetPosition(l_initPos);
+                // Create overlay in front of user
+                glm::vec3 l_hmdPos;
+                glm::quat l_hmdRot;
+                VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_Hmd,l_hmdPos);
+                VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_Hmd, l_hmdRot);
+                glm::vec3 l_pos = l_hmdPos + (l_hmdRot*g_AxisZN)*0.5f;
+                m_transform->SetPosition(l_pos);
 
                 glm::quat l_rot;
-                GetRotationToPoint(VRTransform::GetHmdPosition(), l_initPos, VRTransform::GetHmdRotation(), l_rot);
+                GetRotationToPoint(l_hmdPos, l_pos, l_hmdRot, l_rot);
                 m_transform->SetRotation(l_rot);
 
                 ms_vrOverlay->SetOverlayInputMethod(m_overlay, vr::VROverlayInputMethod_Mouse);
@@ -311,9 +313,14 @@ void WidgetKeyboard::Update()
 
         if(m_activePin)
         {
-            const glm::quat l_rot = glm::rotate(VRTransform::GetLeftHandRotation(), -g_PiHalf, g_AxisX);
+            glm::quat l_handRot;
+            VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_LeftController, l_handRot);
+            const glm::quat l_rot = glm::rotate(l_handRot, -g_PiHalf, g_AxisX);
             m_transform->SetRotation(l_rot);
-            m_transform->SetPosition(VRTransform::GetLeftHandPosition());
+
+            glm::vec3 l_handPos;
+            VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_LeftController, l_handPos);
+            m_transform->SetPosition(l_handPos);
         }
         m_transform->Update();
         ms_vrOverlay->SetOverlayTransformAbsolute(m_overlay, vr::TrackingUniverseRawAndUncalibrated, &m_transform->GetMatrixVR());
@@ -333,30 +340,32 @@ void WidgetKeyboard::Update()
     }
 }
 
-void WidgetKeyboard::OnHandDeactivated(unsigned char f_hand)
+void WidgetKeyboard::OnHandDeactivated(size_t f_hand)
 {
     Widget::OnHandDeactivated(f_hand);
 
     if(m_valid)
     {
-        if((f_hand == VRHandIndex::VRHI_Left) && m_activeMove) m_activeMove = false;
+        if((f_hand == VRDeviceIndex::VDI_LeftController) && m_activeMove) m_activeMove = false;
     }
 }
 
-void WidgetKeyboard::OnButtonPress(unsigned char f_hand, uint32_t f_button)
+void WidgetKeyboard::OnButtonPress(size_t f_hand, uint32_t f_button)
 {
     Widget::OnButtonPress(f_hand, f_button);
 
     if(m_valid && !m_activeDashboard && m_visible)
     {
-        if((f_hand == VRHandIndex::VRHI_Left) && (f_button == vr::k_EButton_SteamVR_Trigger))
+        if((f_hand == VRDeviceIndex::VDI_LeftController) && (f_button == vr::k_EButton_SteamVR_Trigger))
         {
             const unsigned long long l_tick = GetTickCount64();
             if(l_tick - m_lastTriggerTick < 500U)
             {
                 if(!m_activeMove)
                 {
-                    m_activeMove = (glm::distance(m_transform->GetPosition(), VRTransform::GetLeftHandPosition()) <= 0.1f);
+                    glm::vec3 l_handPos;
+                    VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_LeftController, l_handPos);
+                    m_activeMove = (glm::distance(m_transform->GetPosition(), l_handPos) <= 0.1f);
                 }
                 else m_activeMove = false;
             }

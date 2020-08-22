@@ -18,7 +18,7 @@ List of global settings:
 # Stats overlay widget
 * **Activation:** Double press on grip button of right hand controller.
 * **Behaviour:** Follows right hand controller, transparency changes according to view angle on controller.
-* **Features:** Shows current system time, CPU load, RAM usage, current FPS in game and VR compositor, controllers charge. Cycle through stats with trigger button while overlay is visible.
+* **Features:** Shows current system time, CPU load, RAM usage, current FPS in game and VR compositor, controllers charge, trackers charge. Cycle through stats with trigger button while overlay is visible.
 * **Deactivation:** Release grip button of right hand controller.
   
 # Windows capture overlay widget

@@ -10,12 +10,12 @@ class Core final
     vr::IVRCompositor *m_vrCompositor;
     vr::IVRDebug *m_vrDebug;
     vr::VREvent_t m_event;
-    vr::TrackedDeviceIndex_t m_leftHand;
-    vr::TrackedDeviceIndex_t m_rightHand;
+    std::vector<vr::TrackedDeviceIndex_t> m_deviceIndex;
 
     bool m_active;
     sf::Context *m_context;
     std::chrono::milliseconds m_threadDelay;
+    unsigned long long m_systemTick;
     unsigned long long m_powerTick;
 
     ConfigManager *m_configManager;

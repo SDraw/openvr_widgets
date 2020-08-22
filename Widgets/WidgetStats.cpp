@@ -4,8 +4,7 @@
 #include "Utils/Transformation.h"
 
 #include "Core/GlobalSettings.h"
-#include "Core/VRTransform.h"
-#include "Utils/GlobalStructures.h"
+#include "Core/VRDevicesStates.h"
 #include "Utils/Utils.h"
 
 extern const float g_Pi;
@@ -25,12 +24,13 @@ const char* g_WeekDays[]
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
 };
 
-const sf::IntRect g_SpritesBounds[5U] = {
+const sf::IntRect g_SpritesBounds[] = {
     { 0, 0, 128, 128 },
     { 128, 0, 128, 128 },
     { 0, 128, 128, 128 },
     { 128, 128, 128, 128 },
-    { 256, 0, 128, 128 }
+    { 256, 0, 128, 128 },
+    { 384, 0, 128, 128 }
 };
 
 WidgetStats::WidgetStats()
@@ -51,7 +51,7 @@ WidgetStats::WidgetStats()
     m_cpuTickTotal = 0U;
 #endif
 
-    m_lastTime = 0U;
+    m_lastSecond = -1;
     m_lastDay = -1;
     m_lastPressTick = 0U;
 
@@ -71,55 +71,56 @@ bool WidgetStats::Create()
         {
             PdhAddEnglishCounter(m_winHandles.m_query, L"\\Processor(_Total)\\% Processor Time", NULL, &m_winHandles.m_counter);
 #elif __linux__
-            std::ifstream l_memInfo("proc/meminfo",std::ios_base::in);
-            std::string l_line;
-            while(std::getline(l_memInfo,l_line))
+        std::ifstream l_memInfo("/proc/meminfo",std::ios_base::in);
+        std::string l_line;
+        while(std::getline(l_memInfo,l_line))
+        {
+            if(sscanf(l_line.c_str(), "MemTotal: %d kB", &m_memoryTotal) == 1)
             {
-                if(sscanf(l_line.c_str(), "MemTotal: %d kB", &m_memoryTotal) == 1)
-                {
-                    m_memoryTotal /= 1024; // Round to MB
-                    break;
-                }
+                m_memoryTotal /= 1024; // Round to MB
+                break;
             }
-            l_memInfo.close();
+        }
+        l_memInfo.close();
 #endif
-            if(ms_vrOverlay->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlay) == vr::VROverlayError_None)
+        if(ms_vrOverlay->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlay) == vr::VROverlayError_None)
+        {
+            ms_vrOverlay->SetOverlayWidthInMeters(m_overlay, 0.125f);
+            ms_vrOverlay->SetOverlayFlag(m_overlay, vr::VROverlayFlags_SortWithNonSceneOverlays, true);
+
+            m_renderTexture = new sf::RenderTexture();
+            if(m_renderTexture->create(static_cast<unsigned int>(g_RenderTargetSize.x), static_cast<unsigned int>(g_RenderTargetSize.y)))
             {
-                ms_vrOverlay->SetOverlayWidthInMeters(m_overlay, 0.125f);
-                ms_vrOverlay->SetOverlayFlag(m_overlay, vr::VROverlayFlags_SortWithNonSceneOverlays, true);
-
-                m_renderTexture = new sf::RenderTexture();
-                if(m_renderTexture->create(static_cast<unsigned int>(g_RenderTargetSize.x), static_cast<unsigned int>(g_RenderTargetSize.y)))
+                m_font = new sf::Font();
+                if(m_font->loadFromFile(GlobalSettings::GetGuiFont()))
                 {
-                    m_font = new sf::Font();
-                    if(m_font->loadFromFile(GlobalSettings::GetGuiFont()))
-                    {
-                        m_fontText[ST_Time] = new sf::Text("00:00:00", *m_font, 72U);
-                        m_fontText[ST_Date] = new sf::Text("Sun 0/0/0", *m_font, 36U);
-                        m_fontText[ST_Cpu] = new sf::Text("0.00 %", *m_font, 64U);
-                        m_fontText[ST_Ram] = new sf::Text("0/0", *m_font, 40U);
-                        m_fontText[ST_Frame] = new sf::Text("0 | 0 FPS", *m_font, 42U);
-                        m_fontText[ST_Power] = new sf::Text("0.00 % | 0.00 %", *m_font, 42U);
+                    m_fontText[ST_Time] = new sf::Text("00:00:00", *m_font, 72U);
+                    m_fontText[ST_Date] = new sf::Text("Sun 0/0/0", *m_font, 36U);
+                    m_fontText[ST_Cpu] = new sf::Text("0.00 %", *m_font, 64U);
+                    m_fontText[ST_Ram] = new sf::Text("0/0", *m_font, 40U);
+                    m_fontText[ST_Frame] = new sf::Text("0 | 0 FPS", *m_font, 42U);
+                    m_fontText[ST_ControllerPower] = new sf::Text("0.00 % | 0.00 %", *m_font, 42U);
+                    m_fontText[ST_TrackerPower] = new sf::Text(" 0.00% | 0.00 % | 0.00 %", *m_font, 24U);
 
-                        m_textureAtlas = new sf::Texture;
-                        if(!m_textureAtlas->loadFromFile("icons/atlas_stats.png")) m_textureAtlas->loadFromMemory(g_DummyTextureData, 16U);
+                    m_textureAtlas = new sf::Texture;
+                    if(!m_textureAtlas->loadFromFile("icons/atlas_stats.png")) m_textureAtlas->loadFromMemory(g_DummyTextureData, 16U);
 
-                        m_spriteIcon = new sf::Sprite(*m_textureAtlas);
-                        m_spriteIcon->setScale(0.75f, 0.75f);
-                        m_spriteIcon->setPosition(16.f, 16.f);
-                        m_spriteIcon->setTextureRect(g_SpritesBounds[SM_Watch]);
+                    m_spriteIcon = new sf::Sprite(*m_textureAtlas);
+                    m_spriteIcon->setScale(0.75f, 0.75f);
+                    m_spriteIcon->setPosition(16.f, 16.f);
+                    m_spriteIcon->setTextureRect(g_SpritesBounds[SM_Watch]);
 
-                        m_texture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
-                        m_valid = true;
-                    }
+                    m_texture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
+                    m_valid = true;
                 }
             }
+        }
 #ifdef _WIN32
         }
 #endif
     }
 
-    return m_valid;
+return m_valid;
 }
 
 void WidgetStats::Destroy()
@@ -158,10 +159,11 @@ void WidgetStats::Update()
 {
     if(m_valid && m_visible)
     {
-        const std::time_t l_time = std::time(nullptr);
-        if(m_lastTime != l_time || m_forceUpdate)
+        std::time(&m_time);
+        std::tm *l_time = std::localtime(&m_time);
+
+        if((m_lastSecond != l_time->tm_sec) || m_forceUpdate)
         {
-            m_lastTime = l_time;
             m_renderTexture->setActive(true);
             m_renderTexture->clear(g_ClearColor);
             m_renderTexture->draw(*m_spriteIcon);
@@ -170,19 +172,16 @@ void WidgetStats::Update()
             {
                 case SM_Watch:
                 {
-                    std::time(&m_lastTime);
-                    std::tm *l_time = std::localtime(&m_lastTime);
-
-                    std::string l_string;
-                    if(l_time->tm_hour < 10) l_string.push_back('0');
-                    l_string.append(std::to_string(l_time->tm_hour));
-                    l_string.push_back(':');
-                    if(l_time->tm_min < 10) l_string.push_back('0');
-                    l_string.append(std::to_string(l_time->tm_min));
-                    l_string.push_back(':');
-                    if(l_time->tm_sec < 10) l_string.push_back('0');
-                    l_string.append(std::to_string(l_time->tm_sec));
-                    m_fontText[ST_Time]->setString(l_string);
+                    std::string l_text;
+                    if(l_time->tm_hour < 10) l_text.push_back('0');
+                    l_text.append(std::to_string(l_time->tm_hour));
+                    l_text.push_back(':');
+                    if(l_time->tm_min < 10) l_text.push_back('0');
+                    l_text.append(std::to_string(l_time->tm_min));
+                    l_text.push_back(':');
+                    if(l_time->tm_sec < 10) l_text.push_back('0');
+                    l_text.append(std::to_string(l_time->tm_sec));
+                    m_fontText[ST_Time]->setString(l_text);
 
                     sf::FloatRect l_bounds = m_fontText[ST_Time]->getLocalBounds();
                     sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 40.f);
@@ -192,14 +191,14 @@ void WidgetStats::Update()
                     {
                         m_lastDay = l_time->tm_yday;
 
-                        l_string.assign(g_WeekDays[l_time->tm_wday]);
-                        l_string.push_back(' ');
-                        l_string.append(std::to_string(l_time->tm_mon + 1));
-                        l_string.push_back('/');
-                        l_string.append(std::to_string(l_time->tm_mday));
-                        l_string.push_back('/');
-                        l_string.append(std::to_string(1900 + l_time->tm_year));
-                        m_fontText[ST_Date]->setString(l_string);
+                        l_text.assign(g_WeekDays[l_time->tm_wday]);
+                        l_text.push_back(' ');
+                        l_text.append(std::to_string(l_time->tm_mon + 1));
+                        l_text.push_back('/');
+                        l_text.append(std::to_string(l_time->tm_mday));
+                        l_text.push_back('/');
+                        l_text.append(std::to_string(1900 + l_time->tm_year));
+                        m_fontText[ST_Date]->setString(l_text);
 
                         l_bounds = m_fontText[ST_Date]->getLocalBounds();
                         l_position.x = 56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f;
@@ -228,12 +227,10 @@ void WidgetStats::Update()
                     std::ifstream l_stats("/proc/stat");
                     l_stats.ignore(5U, ' ');
                     std::vector<size_t> l_ticks;
-                    for(size_t l_tick; l_stats >> l_tick;) l_ticks.push_back(l_tick);
+                    for(size_t l_tick = 0U; l_stats >> l_tick;) l_ticks.push_back(l_tick);
                     l_stats.close();
 
-                    size_t l_tickTotal = 0U;
-                    for(auto &l_iter : l_ticks) l_tickTotal += l_iter;
-
+                    size_t l_tickTotal = std::accumulate(l_ticks.begin(),l_ticks.end(),0);
                     float l_resultIdle = static_cast<float>(l_ticks[3U] - m_cpuTickIdle);
                     float l_resultTotal = static_cast<float>(l_tickTotal - m_cpuTickTotal);
 
@@ -270,7 +267,7 @@ void WidgetStats::Update()
                     else l_text.assign("*/*");
 #elif __linux__
                     int l_memAvailable = -1;
-                    std::ifstream l_memInfo("proc/meminfo");
+                    std::ifstream l_memInfo("/proc/meminfo");
                     std::string l_line;
                     while(std::getline(l_memInfo,l_line))
                     {
@@ -343,54 +340,82 @@ void WidgetStats::Update()
                     m_renderTexture->draw(*m_fontText[ST_Frame]);
                 } break;
 
-                case SM_Power:
+                case SM_ControllerPower:
                 {
                     std::string l_text;
-                    float l_power = VRTransform::GetLeftHandPower();
-                    if(l_power != 0.f)
+                    for(size_t i = VRDeviceIndex::VDI_LeftController; i <= VRDeviceIndex::VDI_RightController; i++)
                     {
-                        float l_intPart = 0.f;
-                        float l_fractPart = std::modf(l_power, &l_intPart);
-                        l_text.append(std::to_string(static_cast<int>(l_intPart)));
-                        l_text.push_back('.');
-                        l_text.append(std::to_string(static_cast<int>(l_fractPart*10.f)));
+                        float l_power = VRDevicesStates::GetDevicePower(i);
+                        if(l_power != 0.f)
+                        {
+                            float l_intPart = 0.f;
+                            float l_fractPart = std::modf(l_power, &l_intPart);
+                            l_text.append(std::to_string(static_cast<int>(l_intPart)));
+                            l_text.push_back('.');
+                            l_text.append(std::to_string(static_cast<int>(l_fractPart*10.f)));
+                            l_text.push_back('%');
+                        }
+                        else l_text.push_back('*');
+
+                        if(i != VRDeviceIndex::VDI_RightController) l_text.append(" | ");
                     }
-                    else l_text.push_back('*');
-                    l_text.append("% | ");
 
-                    l_power = VRTransform::GetRightHandPower();
-                    if(l_power != 0.f)
-                    {
-                        float l_intPart = 0.f;
-                        float l_fractPart = std::modf(l_power, &l_intPart);
-                        l_text.append(std::to_string(static_cast<int>(l_intPart)));
-                        l_text.push_back('.');
-                        l_text.append(std::to_string(static_cast<int>(l_fractPart*10.f)));
-                    }
-                    else l_text.push_back('*');
-                    l_text.push_back('%');
+                    m_fontText[ST_ControllerPower]->setString(l_text);
 
-                    m_fontText[ST_Power]->setString(l_text);
-
-                    const sf::FloatRect l_bounds = m_fontText[ST_Power]->getLocalBounds();
+                    const sf::FloatRect l_bounds = m_fontText[ST_ControllerPower]->getLocalBounds();
                     const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
-                    m_fontText[ST_Power]->setPosition(l_position);
+                    m_fontText[ST_ControllerPower]->setPosition(l_position);
 
-                    m_renderTexture->draw(*m_fontText[ST_Power]);
+                    m_renderTexture->draw(*m_fontText[ST_ControllerPower]);
+                } break;
+
+                case SM_TrackerPower:
+                {
+                    std::string l_text;
+                    for(size_t i = VRDeviceIndex::VDI_FirstTracker; i <= VRDeviceIndex::VDI_ThirdTracker; i++)
+                    {
+                        float l_power = VRDevicesStates::GetDevicePower(i);
+                        if(l_power != 0.f)
+                        {
+                            float l_intPart = 0.f;
+                            float l_fractPart = std::modf(l_power, &l_intPart);
+                            l_text.append(std::to_string(static_cast<int>(l_intPart)));
+                            l_text.push_back('.');
+                            l_text.append(std::to_string(static_cast<int>(l_fractPart*10.f)));
+                            l_text.push_back('%');
+                        }
+                        else l_text.push_back('*');
+
+                        if(i != VRDeviceIndex::VDI_ThirdTracker) l_text.append(" | ");
+                    }
+
+                    m_fontText[ST_TrackerPower]->setString(l_text);
+
+                    const sf::FloatRect l_bounds = m_fontText[ST_TrackerPower]->getLocalBounds();
+                    const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
+                    m_fontText[ST_TrackerPower]->setPosition(l_position);
+
+                    m_renderTexture->draw(*m_fontText[ST_TrackerPower]);
                 } break;
             }
 
             m_renderTexture->display();
             m_renderTexture->setActive(false);
 
+            m_lastSecond = l_time->tm_sec;
             if(m_forceUpdate) m_forceUpdate = false;
         }
 
-        const glm::vec3 &l_hmdPos = VRTransform::GetHmdPosition();
-        const glm::quat &l_hmdRot = VRTransform::GetHmdRotation();
+        glm::vec3 l_hmdPos;
+        glm::quat l_hmdRot;
+        VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_Hmd, l_hmdPos);
+        VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_Hmd, l_hmdRot);
 
-        const glm::quat &l_handRot = VRTransform::GetRightHandRotation();
-        m_transform->SetPosition(VRTransform::GetRightHandPosition());
+        glm::vec3 l_handPos;
+        glm::quat l_handRot;
+        VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_RightController, l_handPos);
+        VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_RightController, l_handRot);
+        m_transform->SetPosition(l_handPos);
         m_transform->Move(l_handRot*g_OverlayOffset);
 
         // Set opacity based on angle between view direction and hmd to hand direction
@@ -415,13 +440,13 @@ void WidgetStats::Update()
     }
 }
 
-void WidgetStats::OnHandDeactivated(unsigned char f_hand)
+void WidgetStats::OnHandDeactivated(size_t f_hand)
 {
     Widget::OnHandDeactivated(f_hand);
 
     if(m_valid && m_visible)
     {
-        if(f_hand == VRHandIndex::VRHI_Right)
+        if(f_hand == VRDeviceIndex::VDI_RightController)
         {
             m_visible = false;
             ms_vrOverlay->HideOverlay(m_overlay);
@@ -429,13 +454,13 @@ void WidgetStats::OnHandDeactivated(unsigned char f_hand)
     }
 }
 
-void  WidgetStats::OnButtonPress(unsigned char f_hand, uint32_t f_button)
+void  WidgetStats::OnButtonPress(size_t f_hand, uint32_t f_button)
 {
     Widget::OnButtonPress(f_hand, f_button);
 
     if(m_valid)
     {
-        if(f_hand == VRHandIndex::VRHI_Right)
+        if(f_hand == VRDeviceIndex::VDI_RightController)
         {
             switch(f_button)
             {
@@ -445,6 +470,7 @@ void  WidgetStats::OnButtonPress(unsigned char f_hand, uint32_t f_button)
                     if((l_tick - m_lastPressTick) <= 500U)
                     {
                         m_visible = true;
+                        m_forceUpdate = true;
                         ms_vrOverlay->ShowOverlay(m_overlay);
                     }
                     m_lastPressTick = l_tick;
@@ -463,13 +489,13 @@ void  WidgetStats::OnButtonPress(unsigned char f_hand, uint32_t f_button)
         }
     }
 }
-void WidgetStats::OnButtonRelease(unsigned char f_hand, uint32_t f_button)
+void WidgetStats::OnButtonRelease(size_t f_hand, uint32_t f_button)
 {
     Widget::OnButtonRelease(f_hand, f_button);
 
     if(m_valid && m_visible)
     {
-        if((f_hand == VRHandIndex::VRHI_Right) && (f_button == vr::k_EButton_Grip))
+        if((f_hand == VRDeviceIndex::VDI_RightController) && (f_button == vr::k_EButton_Grip))
         {
             m_visible = false;
             ms_vrOverlay->HideOverlay(m_overlay);

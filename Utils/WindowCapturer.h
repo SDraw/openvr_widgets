@@ -1,6 +1,6 @@
 #pragma once
 
-class WindowGrabber final
+class WindowCapturer final
 {
     struct CaptureInterfaces
     {
@@ -28,11 +28,11 @@ class WindowGrabber final
     std::chrono::milliseconds m_captureDelay;
     unsigned long long m_lastTick;
 
-    WindowGrabber(const WindowGrabber &that) = delete;
-    WindowGrabber& operator=(const WindowGrabber &that) = delete;
+    WindowCapturer(const WindowCapturer &that) = delete;
+    WindowCapturer& operator=(const WindowCapturer &that) = delete;
 public:
-    WindowGrabber();
-    ~WindowGrabber();
+    WindowCapturer();
+    ~WindowCapturer();
 
     bool StartCapture(size_t f_window);
     void StopCapture();

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "Utils/WindowGrabber.h"
+#include "Utils/WindowCapturer.h"
 
 #include "Core/GlobalSettings.h"
 #include "Utils/TexturePooler.h"
@@ -8,10 +8,10 @@
 
 const SL::Screen_Capture::ImageBGRA g_FillColor = { 0U, 0U, 0U, 255U };
 
-sf::Shader *WindowGrabber::ms_shader = nullptr;
-sf::RenderStates WindowGrabber::ms_renderState;
+sf::Shader *WindowCapturer::ms_shader = nullptr;
+sf::RenderStates WindowCapturer::ms_renderState;
 
-WindowGrabber::WindowGrabber()
+WindowCapturer::WindowCapturer()
 {
     m_interfaces = nullptr;
 
@@ -29,7 +29,7 @@ WindowGrabber::WindowGrabber()
     m_lastTick = 0U;
     m_captureDelay = std::chrono::milliseconds(66U);
 }
-WindowGrabber::~WindowGrabber()
+WindowCapturer::~WindowCapturer()
 {
     m_active = false;
     delete m_interfaces;
@@ -37,7 +37,7 @@ WindowGrabber::~WindowGrabber()
     delete m_sprite;
 }
 
-bool WindowGrabber::StartCapture(size_t f_window)
+bool WindowCapturer::StartCapture(size_t f_window)
 {
     if(!m_active)
     {
@@ -87,7 +87,7 @@ bool WindowGrabber::StartCapture(size_t f_window)
     }
     return m_active;
 }
-void WindowGrabber::StopCapture()
+void WindowCapturer::StopCapture()
 {
     if(m_active)
     {
@@ -100,7 +100,7 @@ void WindowGrabber::StopCapture()
         m_interfaces = nullptr;
     }
 }
-void WindowGrabber::Update()
+void WindowCapturer::Update()
 {
     if(m_active)
     {
@@ -125,7 +125,7 @@ void WindowGrabber::Update()
     }
 }
 
-void WindowGrabber::SetDelay(size_t f_delay)
+void WindowCapturer::SetDelay(size_t f_delay)
 {
     m_captureDelay = std::chrono::milliseconds(f_delay);
     if(m_active)
@@ -136,14 +136,14 @@ void WindowGrabber::SetDelay(size_t f_delay)
     }
 }
 
-void* WindowGrabber::GetTextureHandle() const
+void* WindowCapturer::GetTextureHandle() const
 {
     void *l_result = nullptr;
     if(m_texture) l_result = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
     return l_result;
 }
 
-void WindowGrabber::UpdateWindows()
+void WindowCapturer::UpdateWindows()
 {
     if(!m_active)
     {
@@ -160,24 +160,24 @@ void WindowGrabber::UpdateWindows()
         m_windowsCount = m_windows.size();
     }
 }
-const SL::Screen_Capture::Window* WindowGrabber::GetWindowInfo(size_t f_window) const
+const SL::Screen_Capture::Window* WindowCapturer::GetWindowInfo(size_t f_window) const
 {
     SL::Screen_Capture::Window *l_result = nullptr;
     if(f_window < m_windowsCount) l_result = const_cast<SL::Screen_Capture::Window*>(&m_windows[f_window]);
     return l_result;
 }
-size_t WindowGrabber::GetWindowsCount() const
+size_t WindowCapturer::GetWindowsCount() const
 {
     return m_windowsCount;
 }
 
-std::vector<SL::Screen_Capture::Window> WindowGrabber::GetCapturedWindow()
+std::vector<SL::Screen_Capture::Window> WindowCapturer::GetCapturedWindow()
 {
     std::vector<SL::Screen_Capture::Window> l_windows;
     if(m_activeWindow != std::numeric_limits<size_t>::max()) l_windows.push_back(m_windows[m_activeWindow]);
     return l_windows;
 }
-void WindowGrabber::ProcessCapture(const SL::Screen_Capture::Image &f_img, const SL::Screen_Capture::Window &f_window)
+void WindowCapturer::ProcessCapture(const SL::Screen_Capture::Image &f_img, const SL::Screen_Capture::Window &f_window)
 {
     if(m_active)
     {
@@ -189,7 +189,7 @@ void WindowGrabber::ProcessCapture(const SL::Screen_Capture::Image &f_img, const
     }
 }
 
-void WindowGrabber::RemoveStaticResources()
+void WindowCapturer::RemoveStaticResources()
 {
     if(ms_shader)
     {

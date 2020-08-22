@@ -5,12 +5,11 @@
 #include "Gui/GuiImage.h"
 #include "Gui/GuiText.h"
 #include "Utils/Transformation.h"
-#include "Utils/WindowGrabber.h"
+#include "Utils/WindowCapturer.h"
 
 #include "Core/GlobalSettings.h"
-#include "Core/VRTransform.h"
+#include "Core/VRDevicesStates.h"
 #include "Gui/GuiStructures.h"
-#include "Utils/GlobalStructures.h"
 #include "Utils/Utils.h"
 
 extern const float g_PiHalf;
@@ -56,13 +55,16 @@ const sf::Vector2i g_GuiButtonFpsUV[3U]
     { 0, 256 }
 };
 
-sf::Texture* WidgetWindowCapture::ms_textureAtlas = nullptr;
+sf::Texture *WidgetWindowCapture::ms_textureAtlas = nullptr;
+#ifdef __linux__
+Display *WidgetWindowCapture::ms_display = nullptr;
+#endif
 
 WidgetWindowCapture::WidgetWindowCapture()
 {
     m_overlayControl = vr::k_ulOverlayHandleInvalid;
 
-    m_windowGrabber = nullptr;
+    m_windowCapturer = nullptr;
     m_windowIndex = std::numeric_limits<size_t>::max();
 
     m_guiSystem = nullptr;
@@ -95,6 +97,10 @@ bool WidgetWindowCapture::Create()
     {
         m_overlayWidth = 0.5f;
 
+#ifdef __linux__
+        if(!ms_display) ms_display = XOpenDisplay(nullptr);
+#endif
+
         if(!ms_textureAtlas)
         {
             ms_textureAtlas = new sf::Texture();
@@ -109,13 +115,17 @@ bool WidgetWindowCapture::Create()
         ms_vrOverlay->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Capture - Main", &m_overlay);
         if(m_overlay != vr::k_ulOverlayHandleInvalid)
         {
-            // Create overlay in front of camera
-            glm::vec3 l_pos(VRTransform::GetHmdPosition());
-            l_pos += (VRTransform::GetHmdRotation()*g_AxisZN)*0.5f;
+            // Create overlay in front of user
+            glm::vec3 l_hmdPos;
+            glm::quat l_hmdRot;
+            VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_Hmd, l_hmdPos);
+            VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_Hmd, l_hmdRot);
+
+            glm::vec3 l_pos = l_hmdPos + (l_hmdRot*g_AxisZN)*0.5f;
             m_transform->SetPosition(l_pos);
 
             glm::quat l_rot;
-            GetRotationToPoint(VRTransform::GetHmdPosition(), l_pos, VRTransform::GetHmdRotation(), l_rot);
+            GetRotationToPoint(l_hmdPos, l_pos, l_hmdRot, l_rot);
             m_transform->SetRotation(l_rot);
             m_texture.handle = nullptr;
 
@@ -177,8 +187,8 @@ bool WidgetWindowCapture::Create()
         if(m_valid)
         {
             // Create window grabber and start capture
-            m_windowGrabber = new WindowGrabber();
-            m_windowGrabber->UpdateWindows();
+            m_windowCapturer = new WindowCapturer();
+            m_windowCapturer->UpdateWindows();
             m_windowIndex = 0U;
             StartCapture();
 
@@ -209,8 +219,8 @@ void WidgetWindowCapture::Destroy()
     delete m_transformControl;
     m_transformControl = nullptr;
 
-    delete m_windowGrabber;
-    m_windowGrabber = nullptr;
+    delete m_windowCapturer;
+    m_windowCapturer = nullptr;
 
     Widget::Destroy();
 }
@@ -226,24 +236,13 @@ void WidgetWindowCapture::Update()
             {
                 case vr::VREvent_MouseMove:
                 {
-                    const auto *l_window = m_windowGrabber->GetWindowInfo(m_windowIndex);
-                    if(l_window)
-                    {
-#ifdef _WIN32
-                        if(IsWindow(reinterpret_cast<HWND>(l_window->Handle)))
-                        {
-                            m_mousePosition.x = static_cast<int>(m_event.data.mouse.x);
-                            m_mousePosition.y = l_window->Size.y - static_cast<int>(m_event.data.mouse.y);
-                        }
-#elif __linux__
-                        // Implement in Linux way
-#endif
-                    }
+                    m_mousePosition.x = static_cast<int>(m_event.data.mouse.x);
+                    m_mousePosition.y = static_cast<int>(m_event.data.mouse.y);
                 } break;
 
                 case vr::VREvent_MouseButtonDown:
                 {
-                    const auto *l_window = m_windowGrabber->GetWindowInfo(m_windowIndex);
+                    const auto *l_window = m_windowCapturer->GetWindowInfo(m_windowIndex);
                     if(l_window)
                     {
 #ifdef _WIN32
@@ -272,50 +271,101 @@ void WidgetWindowCapture::Update()
                                 } break;
                             }
 
-                            const int l_posY = l_window->Size.y - m_mousePosition.y;
-                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), WM_MOUSEMOVE, NULL, MAKELPARAM(m_mousePosition.x, l_posY));
-                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), l_buttonData[1], l_buttonData[0], MAKELPARAM(m_mousePosition.x, l_posY));
-                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), l_buttonData[2], NULL, MAKELPARAM(m_mousePosition.x, l_posY));
+                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), WM_MOUSEMOVE, NULL, MAKELPARAM(m_mousePosition.x, m_mousePosition.y));
+                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), l_buttonData[1], l_buttonData[0], MAKELPARAM(m_mousePosition.x, m_mousePosition.y));
+                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), l_buttonData[2], NULL, MAKELPARAM(m_mousePosition.x, m_mousePosition.y));
                         }
 #elif __linux__
-                        // Implement in Linux way
+                        if(ms_display)
+                        {
+                            XEvent l_event = { 0 };
+
+                            switch(m_event.data.mouse.button)
+                            {
+                                case vr::VRMouseButton_Left:
+                                    l_event.xbutton.button = Button1;
+                                    break;
+                                case vr::VRMouseButton_Right:
+                                    l_event.xbutton.button = Button3;
+                                    break;
+                                case vr::VRMouseButton_Middle:
+                                    l_event.xbutton.button = Button2;
+                                    break;
+                            }
+                            l_event.xbutton.same_screen = true;
+                            l_event.xbutton.window = l_window->Handle;
+                            l_event.xbutton.x = m_mousePosition.x;
+                            l_event.xbutton.y = m_mousePosition.y;
+
+                            l_event.type = ButtonPress;
+                            XSendEvent(ms_display, l_window->Handle, true, ButtonPressMask, &l_event);
+                            XFlush(ms_display);
+
+                            l_event.type = ButtonRelease;
+                            XSendEvent(ms_display, l_window->Handle, true, ButtonReleaseMask, &l_event);
+                            XFlush(ms_display);
+                        }
 #endif
                     }
                 } break;
 
                 case vr::VREvent_ScrollDiscrete:
                 {
-                    const auto *l_window = m_windowGrabber->GetWindowInfo(m_windowIndex);
+                    const auto *l_window = m_windowCapturer->GetWindowInfo(m_windowIndex);
                     if(l_window)
                     {
 #ifdef _WIN32
                         if(IsWindow(reinterpret_cast<HWND>(l_window->Handle)))
                         {
-                            const int l_posY = l_window->Size.y - m_mousePosition.y;
-                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), WM_MOUSEMOVE, NULL, MAKELPARAM(m_mousePosition.x, l_posY));
-                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), WM_MOUSEWHEEL, MAKEWPARAM(NULL, m_event.data.scroll.ydelta * WHEEL_DELTA), MAKELPARAM(m_mousePosition.x, l_posY));
+                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), WM_MOUSEMOVE, NULL, MAKELPARAM(m_mousePosition.x, m_mousePosition.y));
+                            SendMessage(reinterpret_cast<HWND>(l_window->Handle), WM_MOUSEWHEEL, MAKEWPARAM(NULL, m_event.data.scroll.ydelta * WHEEL_DELTA), MAKELPARAM(m_mousePosition.x, m_mousePosition.y));
                         }
 #elif __linux__
-                        // Implement in Linux way
-#endif
+                        if(ms_display)
+                        {
+                            XEvent l_event = { 0 };
+
+                            l_event.xbutton.button = (m_event.data.scroll.ydelta < 0.f) ? Button5 : Button4;
+                            l_event.xbutton.same_screen = true;
+                            l_event.xbutton.window = l_window->Handle;
+                            l_event.xbutton.x = m_mousePosition.x;
+                            l_event.xbutton.y = m_mousePosition.y;
+
+                            l_event.type = ButtonPress;
+                            XSendEvent(ms_display, l_window->Handle, true, ButtonPressMask, &l_event);
+                            XFlush(ms_display);
+
+                            l_event.type = ButtonRelease;
+                            XSendEvent(ms_display, l_window->Handle, true, ButtonReleaseMask, &l_event);
+                            XFlush(ms_display);
                     }
-                } break;
-            }
+#endif
+                }
+            } break;
         }
+    }
 
         while(ms_vrOverlay->PollNextOverlayEvent(m_overlayControl, &m_event, sizeof(vr::VREvent_t)))
         {
             switch(m_event.eventType)
             {
                 case vr::VREvent_MouseMove:
+#ifdef _WIN32
                     m_guiSystem->ProcessMove(static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(m_event.data.mouse.y));
+#elif __linux__
+                    m_guiSystem->ProcessMove(static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(g_GuiSystemDefaultSize.y - m_event.data.mouse.y));
+#endif
                     break;
 
                 case vr::VREvent_MouseButtonDown:
                 {
                     if(m_event.data.mouse.button == vr::VRMouseButton_Left)
                     {
+#ifdef _WIN32
                         m_guiSystem->ProcessClick(GuiClick::GC_Left, GuiClickState::GCS_Press, static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(m_event.data.mouse.y));
+#elif __linux__
+                        m_guiSystem->ProcessClick(GuiClick::GC_Left, GuiClickState::GCS_Press, static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(g_GuiSystemDefaultSize.y - m_event.data.mouse.y));
+#endif
                     }
                 } break;
             }
@@ -323,13 +373,20 @@ void WidgetWindowCapture::Update()
 
         if(m_activeMove)
         {
-            const glm::quat l_rot = glm::rotate(VRTransform::GetLeftHandRotation(), -g_PiHalf, g_AxisX);
+            glm::quat l_handRot;
+            VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_LeftController, l_handRot);
+            const glm::quat l_rot = glm::rotate(l_handRot, -g_PiHalf, g_AxisX);
             m_transform->SetRotation(l_rot);
-            m_transform->SetPosition(VRTransform::GetLeftHandPosition());
+
+            glm::vec3 l_handPos;
+            VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_LeftController, l_handPos);
+            m_transform->SetPosition(l_handPos);
         }
         if(m_activeResize)
         {
-            m_overlayWidth = (glm::distance(VRTransform::GetRightHandPosition(), m_transform->GetPosition()) * 2.f);
+            glm::vec3 l_handPos;
+            VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_RightController, l_handPos);
+            m_overlayWidth = (glm::distance(l_handPos, m_transform->GetPosition()) * 2.f);
             m_transformControl->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.072f, 0.f, 0.f));
             ms_vrOverlay->SetOverlayWidthInMeters(m_overlay, m_overlayWidth);
         }
@@ -345,20 +402,20 @@ void WidgetWindowCapture::Update()
             ms_vrOverlay->SetOverlayTexture(m_overlayControl, &m_textureControls);
         }
 
-        if(m_windowGrabber->IsStale())
+        if(m_windowCapturer->IsStale())
         {
             // Window was resized or destroyed
-            m_windowGrabber->StopCapture();
-            m_windowGrabber->UpdateWindows();
+            m_windowCapturer->StopCapture();
+            m_windowCapturer->UpdateWindows();
             m_windowIndex = 0U;
             StartCapture();
         }
-        m_windowGrabber->Update();
+        m_windowCapturer->Update();
         if(m_texture.handle) ms_vrOverlay->SetOverlayTexture(m_overlay, &m_texture);
-    }
+}
 }
 
-void WidgetWindowCapture::OnButtonPress(unsigned char f_hand, uint32_t f_button)
+void WidgetWindowCapture::OnButtonPress(size_t f_hand, uint32_t f_button)
 {
     Widget::OnButtonPress(f_hand, f_button);
 
@@ -366,7 +423,7 @@ void WidgetWindowCapture::OnButtonPress(unsigned char f_hand, uint32_t f_button)
     {
         switch(f_hand)
         {
-            case VRHandIndex::VRHI_Left:
+            case VRDeviceIndex::VDI_LeftController:
             {
                 switch(f_button)
                 {
@@ -379,7 +436,9 @@ void WidgetWindowCapture::OnButtonPress(unsigned char f_hand, uint32_t f_button)
                             {
                                 if(!m_activeMove)
                                 {
-                                    m_activeMove = (glm::distance(VRTransform::GetLeftHandPosition(), m_transform->GetPosition()) < (m_overlayWidth * 0.2f));
+                                    glm::vec3 l_pos;
+                                    VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_LeftController, l_pos);
+                                    m_activeMove = (glm::distance(l_pos, m_transform->GetPosition()) < (m_overlayWidth * 0.2f));
                                 }
                                 else m_activeMove = false;
                             }
@@ -389,14 +448,16 @@ void WidgetWindowCapture::OnButtonPress(unsigned char f_hand, uint32_t f_button)
                 }
             } break;
 
-            case VRHandIndex::VRHI_Right:
+            case VRDeviceIndex::VDI_RightController:
             {
                 if(m_activeMove && (f_button == vr::k_EButton_SteamVR_Trigger))
                 {
                     const unsigned long long l_tick = GetTickCount64();
                     if((l_tick - m_lastRightTriggerTick) < 500U)
                     {
-                        m_activeResize = (glm::distance(VRTransform::GetRightHandPosition(), m_transform->GetPosition()) <= (m_overlayWidth * 0.5f));
+                        glm::vec3 l_pos;
+                        VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_RightController, l_pos);
+                        m_activeResize = (glm::distance(l_pos, m_transform->GetPosition()) <= (m_overlayWidth * 0.5f));
                     }
                     m_lastRightTriggerTick = l_tick;
                 }
@@ -405,13 +466,13 @@ void WidgetWindowCapture::OnButtonPress(unsigned char f_hand, uint32_t f_button)
     }
 }
 
-void WidgetWindowCapture::OnButtonRelease(unsigned char f_hand, uint32_t f_button)
+void WidgetWindowCapture::OnButtonRelease(size_t f_hand, uint32_t f_button)
 {
     Widget::OnButtonRelease(f_hand, f_button);
 
     if(m_valid && m_visible)
     {
-        if((f_hand == VRHandIndex::VRHI_Right) && (f_button == vr::k_EButton_SteamVR_Trigger))
+        if((f_hand == VRDeviceIndex::VDI_RightController) && (f_button == vr::k_EButton_SteamVR_Trigger))
         {
             if(m_activeResize) m_activeResize = false;
         }
@@ -439,10 +500,10 @@ void WidgetWindowCapture::OnDashboardClose()
 
 void WidgetWindowCapture::StartCapture()
 {
-    if(m_windowGrabber->StartCapture(m_windowIndex))
+    if(m_windowCapturer->StartCapture(m_windowIndex))
     {
-        m_texture.handle = m_windowGrabber->GetTextureHandle();
-        const auto *l_window = m_windowGrabber->GetWindowInfo(m_windowIndex);
+        m_texture.handle = m_windowCapturer->GetTextureHandle();
+        const auto *l_window = m_windowCapturer->GetWindowInfo(m_windowIndex);
         if(l_window)
         {
             const vr::HmdVector2_t l_scale = { static_cast<float>(l_window->Size.x), static_cast<float>(l_window->Size.y) };
@@ -478,34 +539,34 @@ void WidgetWindowCapture::OnGuiElementMouseClick(GuiElement *f_guiElement, unsig
 
             case CEI_Previous:
             {
-                const size_t l_windowsCount = m_windowGrabber->GetWindowsCount();
+                const size_t l_windowsCount = m_windowCapturer->GetWindowsCount();
                 if(l_windowsCount > 0U)
                 {
                     m_windowIndex += (l_windowsCount - 1U);
                     m_windowIndex %= l_windowsCount;
 
-                    m_windowGrabber->StopCapture();
+                    m_windowCapturer->StopCapture();
                     StartCapture();
                 }
             } break;
 
             case CEI_Next:
             {
-                const size_t l_windowsCount = m_windowGrabber->GetWindowsCount();
+                const size_t l_windowsCount = m_windowCapturer->GetWindowsCount();
                 if(l_windowsCount > 0U)
                 {
                     m_windowIndex += 1U;
                     m_windowIndex %= l_windowsCount;
 
-                    m_windowGrabber->StopCapture();
+                    m_windowCapturer->StopCapture();
                     StartCapture();
                 }
             } break;
 
             case CEI_Update:
             {
-                m_windowGrabber->StopCapture();
-                m_windowGrabber->UpdateWindows();
+                m_windowCapturer->StopCapture();
+                m_windowCapturer->UpdateWindows();
                 m_windowIndex = 0U;
                 StartCapture();
             } break;
@@ -515,7 +576,7 @@ void WidgetWindowCapture::OnGuiElementMouseClick(GuiElement *f_guiElement, unsig
                 m_fpsMode %= FM_Count;
 
                 m_guiImages[CEI_FPS]->SetUV(g_GuiButtonFpsUV[m_fpsMode], g_GuiButtonsDefaultSize);
-                m_windowGrabber->SetDelay(g_CaptureDelays[m_fpsMode]);
+                m_windowCapturer->SetDelay(g_CaptureDelays[m_fpsMode]);
             } break;
         }
     }
@@ -530,5 +591,13 @@ void WidgetWindowCapture::RemoveStaticResources()
         ms_textureAtlas = nullptr;
     }
 
-    WindowGrabber::RemoveStaticResources();
+#ifdef __linux__
+    if(ms_display)
+    {
+        XCloseDisplay(ms_display);
+        ms_display = nullptr;
+    }
+#endif
+
+    WindowCapturer::RemoveStaticResources();
 }

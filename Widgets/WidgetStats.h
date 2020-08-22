@@ -11,7 +11,8 @@ class WidgetStats final : public Widget
         SM_Cpu,
         SM_Ram,
         SM_Frame,
-        SM_Power,
+        SM_ControllerPower,
+        SM_TrackerPower,
 
         SM_Count
     };
@@ -22,7 +23,8 @@ class WidgetStats final : public Widget
         ST_Cpu,
         ST_Ram,
         ST_Frame,
-        ST_Power,
+        ST_ControllerPower,
+        ST_TrackerPower,
 
         ST_Count
     };
@@ -47,7 +49,8 @@ class WidgetStats final : public Widget
 #endif
 
     unsigned long long m_lastPressTick;
-    std::time_t m_lastTime;
+    std::time_t m_time;
+    int m_lastSecond;
     int m_lastDay;
 
     size_t m_statsMode;
@@ -60,9 +63,9 @@ class WidgetStats final : public Widget
     bool Create();
     void Destroy() override;
     void Update();
-    void OnHandDeactivated(unsigned char f_hand) override;
-    void OnButtonPress(unsigned char f_hand, uint32_t f_button) override;
-    void OnButtonRelease(unsigned char f_hand, uint32_t f_button) override;
+    void OnHandDeactivated(size_t f_hand) override;
+    void OnButtonPress(size_t f_hand, uint32_t f_button) override;
+    void OnButtonRelease(size_t f_hand, uint32_t f_button) override;
 protected:
     WidgetStats();
     ~WidgetStats();

@@ -80,8 +80,8 @@ class WidgetKeyboard : public Widget
     bool Create();
     void Destroy() override;
     void Update();
-    void OnHandDeactivated(unsigned char f_hand) override;
-    void OnButtonPress(unsigned char f_hand, uint32_t f_button) override;
+    void OnHandDeactivated(size_t f_hand) override;
+    void OnButtonPress(size_t f_hand, uint32_t f_button) override;
     void OnDashboardOpen() override;
     void OnDashboardClose() override;
 protected:

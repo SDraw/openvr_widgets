@@ -6,7 +6,7 @@ class GuiElement;
 class GuiImage;
 class GuiText;
 class Transformation;
-class WindowGrabber;
+class WindowCapturer;
 
 class WidgetWindowCapture final : public Widget
 {
@@ -39,8 +39,11 @@ class WidgetWindowCapture final : public Widget
     static sf::Texture *ms_textureAtlas;
     vr::Texture_t m_textureControls;
 
-    WindowGrabber *m_windowGrabber;
+    WindowCapturer *m_windowCapturer;
     size_t m_windowIndex;
+#ifdef __linux__
+    static Display *ms_display;
+#endif
 
     unsigned long long m_lastLeftTriggerTick;
     unsigned long long m_lastRightTriggerTick;
@@ -65,8 +68,8 @@ class WidgetWindowCapture final : public Widget
     bool Create();
     void Destroy() override;
     void Update();
-    void OnButtonPress(unsigned char f_hand, uint32_t f_button) override;
-    void OnButtonRelease(unsigned char  f_hand, uint32_t f_button) override;
+    void OnButtonPress(size_t f_hand, uint32_t f_button) override;
+    void OnButtonRelease(size_t f_hand, uint32_t f_button) override;
     void OnDashboardOpen() override;
     void OnDashboardClose() override;
 public:

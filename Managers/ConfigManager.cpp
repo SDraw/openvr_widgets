@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Utils/GlobalStructures.h"
 
 #include "Managers/ConfigManager.h"
 #include "Core/Core.h"

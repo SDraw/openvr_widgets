@@ -27,10 +27,10 @@ protected:
 
     bool IsClosed() const;
 
-    virtual void OnHandActivated(unsigned char f_hand);
-    virtual void OnHandDeactivated(unsigned char f_hand);
-    virtual void OnButtonPress(unsigned char f_hand, uint32_t f_button);
-    virtual void OnButtonRelease(unsigned char f_hand, uint32_t f_button);
+    virtual void OnHandActivated(size_t f_hand);
+    virtual void OnHandDeactivated(size_t f_hand);
+    virtual void OnButtonPress(size_t f_hand, uint32_t f_button);
+    virtual void OnButtonRelease(size_t f_hand, uint32_t f_button);
     virtual void OnDashboardOpen();
     virtual void OnDashboardClose();
 

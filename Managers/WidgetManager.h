@@ -43,10 +43,10 @@ protected:
 
     void DoPulse();
 
-    void OnHandActivated(unsigned char f_hand);
-    void OnHandDeactivated(unsigned char f_hand);
-    void OnButtonPress(unsigned char f_hand, uint32_t f_button);
-    void OnButtonRelease(unsigned char f_hand, uint32_t f_button);
+    void OnHandActivated(size_t f_hand);
+    void OnHandDeactivated(size_t f_hand);
+    void OnButtonPress(size_t f_hand, uint32_t f_button);
+    void OnButtonRelease(size_t f_hand, uint32_t f_button);
     void OnDashboardOpen();
     void OnDashboardClose();
 

@@ -101,8 +101,8 @@
 		<Unit filename="Core/Core.h" />
 		<Unit filename="Core/GlobalSettings.cpp" />
 		<Unit filename="Core/GlobalSettings.h" />
-		<Unit filename="Core/VRTransform.cpp" />
-		<Unit filename="Core/VRTransform.h" />
+		<Unit filename="Core/VRDevicesStates.cpp" />
+		<Unit filename="Core/VRDevicesStates.h" />
 		<Unit filename="Gui/GuiButton.cpp" />
 		<Unit filename="Gui/GuiButton.h" />
 		<Unit filename="Gui/GuiElement.cpp" />
@@ -119,15 +119,14 @@
 		<Unit filename="Managers/WidgetManager.cpp" />
 		<Unit filename="Managers/WidgetManager.h" />
 		<Unit filename="Utils/GlobalConstants.cpp" />
-		<Unit filename="Utils/GlobalStructures.h" />
 		<Unit filename="Utils/TexturePooler.cpp" />
 		<Unit filename="Utils/TexturePooler.h" />
 		<Unit filename="Utils/Transformation.cpp" />
 		<Unit filename="Utils/Transformation.h" />
 		<Unit filename="Utils/Utils.cpp" />
 		<Unit filename="Utils/Utils.h" />
-		<Unit filename="Utils/WindowGrabber.cpp" />
-		<Unit filename="Utils/WindowGrabber.h" />
+		<Unit filename="Utils/WindowCapturer.cpp" />
+		<Unit filename="Utils/WindowCapturer.h" />
 		<Unit filename="Widgets/Widget.cpp" />
 		<Unit filename="Widgets/Widget.h" />
 		<Unit filename="Widgets/WidgetKeyboard.cpp" />
@@ -141,9 +140,6 @@
 		<Unit filename="stdafx.h">
 			<Option compile="1" />
 		</Unit>
-		<Extensions>
-			<code_completion />
-			<debugger />
-		</Extensions>
+		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

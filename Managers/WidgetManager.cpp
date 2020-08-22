@@ -12,9 +12,6 @@
 #include "Widgets/WidgetKeyboard.h"
 #include "Widgets/WidgetStats.h"
 #include "Widgets/WidgetWindowCapture.h"
-#include "Utils/GlobalStructures.h"
-
-#include "Core/VRTransform.h"
 
 const char *g_ButtonTexts[]
 {
@@ -148,10 +145,19 @@ void WidgetManager::DoPulse()
                                 break;
                         }
                         const unsigned char l_state = ((m_overlayEvent.eventType == vr::VREvent_MouseButtonDown) ? GuiClickState::GCS_Press : GuiClickState::GCS_Release);
+#ifdef _WIN32
                         m_guiSystem->ProcessClick(l_button, l_state, static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(m_overlayEvent.data.mouse.y));
+#elif __linux__
+                        m_guiSystem->ProcessClick(l_button, l_state, static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(g_GuiSize.y - m_overlayEvent.data.mouse.y));
+#endif
                     } break;
                     case vr::VREvent_MouseMove:
+#ifdef _WIN32
                         m_guiSystem->ProcessMove(static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(m_overlayEvent.data.mouse.y));
+#elif __linux__
+                        m_guiSystem->ProcessMove(static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(g_GuiSize.y - m_overlayEvent.data.mouse.y));
+#endif
+
                         break;
                 }
             }
@@ -177,26 +183,26 @@ void WidgetManager::DoPulse()
     }
 }
 
-void WidgetManager::OnHandActivated(unsigned char f_hand)
+void WidgetManager::OnHandActivated(size_t f_hand)
 {
     // Update widgets
     for(auto l_iter : m_constantWidgets) l_iter.second->OnHandActivated(f_hand);
     for(auto l_widget : m_widgets) l_widget->OnHandActivated(f_hand);
 }
-void WidgetManager::OnHandDeactivated(unsigned char f_hand)
+void WidgetManager::OnHandDeactivated(size_t f_hand)
 {
     // Update widgets
     for(auto l_iter : m_constantWidgets) l_iter.second->OnHandDeactivated(f_hand);
     for(auto l_widget : m_widgets) l_widget->OnHandDeactivated(f_hand);
 }
 
-void WidgetManager::OnButtonPress(unsigned char f_hand, uint32_t f_button)
+void WidgetManager::OnButtonPress(size_t f_hand, uint32_t f_button)
 {
     // Update widgets
     for(auto l_iter : m_constantWidgets) l_iter.second->OnButtonPress(f_hand, f_button);
     for(auto l_widget : m_widgets) l_widget->OnButtonPress(f_hand, f_button);
 }
-void WidgetManager::OnButtonRelease(unsigned char f_hand, uint32_t f_button)
+void WidgetManager::OnButtonRelease(size_t f_hand, uint32_t f_button)
 {
     // Update widgets
     for(auto l_iter : m_constantWidgets) l_iter.second->OnButtonRelease(f_hand, f_button);

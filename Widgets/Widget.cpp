@@ -3,8 +3,6 @@
 #include "Widgets/Widget.h"
 #include "Utils/Transformation.h"
 
-#include "Utils/GlobalStructures.h"
-
 vr::IVROverlay *Widget::ms_vrOverlay = nullptr;
 vr::IVRCompositor *Widget::ms_vrCompositor = nullptr;
 
@@ -48,16 +46,16 @@ bool Widget::IsClosed() const
     return m_closed;
 }
 
-void Widget::OnHandActivated(unsigned char f_hand)
+void Widget::OnHandActivated(size_t f_hand)
 {
 }
-void Widget::OnHandDeactivated(unsigned char f_hand)
+void Widget::OnHandDeactivated(size_t f_hand)
 {
 }
-void Widget::OnButtonPress(unsigned char f_hand, uint32_t f_button)
+void Widget::OnButtonPress(size_t f_hand, uint32_t f_button)
 {
 }
-void Widget::OnButtonRelease(unsigned char f_hand, uint32_t f_button)
+void Widget::OnButtonRelease(size_t f_hand, uint32_t f_button)
 {
 }
 

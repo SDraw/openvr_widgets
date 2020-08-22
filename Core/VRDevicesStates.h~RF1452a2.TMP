@@ -1,5 +1,5 @@
 #pragma once
-class VRTransform final
+class VRDevicesStates final
 {
     static glm::vec3 ms_hmdPos;
     static glm::quat ms_hmdRot;
@@ -14,20 +14,32 @@ class VRTransform final
     static glm::quat ms_rightHandRot;
     static glm::mat4 ms_rightHandMat;
     static float ms_rightHandPower;
+
+    static float ms_firstTrackerPower();
+    static float ms_secondTrackerPower();
+    static float ms_thirdTrackerPower();
 public:
+    enum VRDeviceController : unsigned char
+    {
+        VDC_LeftController = 0U,
+        VDC_RightController
+    };
+    enum VRDeviceTracker : unsigned char
+    {
+        VDT_FirstTracker = 0U,
+        VDT_SecondTracker,
+        VDT_ThirdTracker
+    };
+
     static inline const glm::vec3& GetHmdPosition() { return ms_hmdPos; }
     static inline const glm::quat& GetHmdRotation() { return ms_hmdRot; }
     static inline const glm::mat4& GetHmdMatrix() { return ms_hmdMat; }
 
-    static inline const glm::vec3& GetLeftHandPosition() { return ms_leftHandPos; }
-    static inline const glm::quat& GetLeftHandRotation() { return ms_leftHandRot; }
-    static inline const glm::mat4& GetLeftHandMatrix() { return ms_leftHandMat; }
-    static inline const float GetLeftHandPower() { return ms_leftHandPower; }
+    static const glm::vec3& GetControllerPosition(VRDeviceController f_controller);
+    static const glm::quat& GetControllerRotation(VRDeviceController f_controller);
+    static const glm::mat4& GetControllerMatrix(VRDeviceController f_controller);
+    static const float GetControllerPower(VRDeviceController f_controller);
 
-    static inline const glm::vec3& GetRightHandPosition() { return ms_rightHandPos; }
-    static inline const glm::quat& GetRightHandRotation() { return ms_rightHandRot; }
-    static inline const glm::mat4& GetRightHandMatrix() { return ms_rightHandMat; }
-    static inline const float GetRightHandPower() { return ms_rightHandPower; }
 protected:
     static void SetHmdTransformation(const vr::HmdMatrix34_t &f_mat);
 
@@ -36,6 +48,8 @@ protected:
 
     static void SetRightHandTransformation(const vr::HmdMatrix34_t &f_mat);
     static void SetRightHandPower(float f_pow);
+
+    static void SetTrackerPower()
 
     friend class Core;
 };
