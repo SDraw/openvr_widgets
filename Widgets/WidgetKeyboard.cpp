@@ -149,7 +149,7 @@ bool WidgetKeyboard::Create()
 
             std::string l_overlayKeyFull(l_overlayKeyPart);
             l_overlayKeyFull.append(".main");
-            ms_vrOverlay->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Main", &m_overlay);
+            vr::VROverlay()->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Main", &m_overlay);
             if(m_overlay != vr::k_ulOverlayHandleInvalid)
             {
                 // Create overlay in front of user
@@ -164,35 +164,35 @@ bool WidgetKeyboard::Create()
                 GetRotationToPoint(l_hmdPos, l_pos, l_hmdRot, l_rot);
                 m_transform->SetRotation(l_rot);
 
-                ms_vrOverlay->SetOverlayInputMethod(m_overlay, vr::VROverlayInputMethod_Mouse);
-                ms_vrOverlay->SetOverlayWidthInMeters(m_overlay, 1.0f);
+                vr::VROverlay()->SetOverlayInputMethod(m_overlay, vr::VROverlayInputMethod_Mouse);
+                vr::VROverlay()->SetOverlayWidthInMeters(m_overlay, 1.0f);
 
                 const vr::HmdVector2_t l_mouseScale = { 1024.f, 512.f };
-                ms_vrOverlay->SetOverlayMouseScale(m_overlay, &l_mouseScale);
-                ms_vrOverlay->SetOverlayWidthInMeters(m_overlay, 0.5f);
+                vr::VROverlay()->SetOverlayMouseScale(m_overlay, &l_mouseScale);
+                vr::VROverlay()->SetOverlayWidthInMeters(m_overlay, 0.5f);
 
                 m_texture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_guiSystem->GetRenderTextureHandle()));
-                ms_vrOverlay->ShowOverlay(m_overlay);
+                vr::VROverlay()->ShowOverlay(m_overlay);
             }
 
             l_overlayKeyFull.assign(l_overlayKeyPart);
             l_overlayKeyFull.append(".pin");
-            ms_vrOverlay->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Pin", &m_overlayControls[CI_Pin]);
+            vr::VROverlay()->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Pin", &m_overlayControls[CI_Pin]);
             if(m_overlayControls[CI_Pin] != vr::k_ulOverlayHandleInvalid)
             {
                 m_transformControls[CI_Pin]->SetPosition(glm::vec3(0.285f, 0.03f, 0.f));
                 vr::VRTextureBounds_t l_bounds = { 0.f, 1.f, 0.5f, 0.5f };
-                ms_vrOverlay->SetOverlayTextureBounds(m_overlayControls[CI_Pin], &l_bounds);
+                vr::VROverlay()->SetOverlayTextureBounds(m_overlayControls[CI_Pin], &l_bounds);
             }
 
             l_overlayKeyFull.assign(l_overlayKeyPart);
             l_overlayKeyFull.append(".close");
-            ms_vrOverlay->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Close", &m_overlayControls[CI_Close]);
+            vr::VROverlay()->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Close", &m_overlayControls[CI_Close]);
             if(m_overlayControls[CI_Close] != vr::k_ulOverlayHandleInvalid)
             {
                 m_transformControls[CI_Close]->SetPosition(glm::vec3(0.285f, -0.03f, 0.f));
                 vr::VRTextureBounds_t l_bounds = { 0.f, 0.5f, 0.5f, 0.f };
-                ms_vrOverlay->SetOverlayTextureBounds(m_overlayControls[CI_Close], &l_bounds);
+                vr::VROverlay()->SetOverlayTextureBounds(m_overlayControls[CI_Close], &l_bounds);
             }
 
             m_valid = (m_overlay != vr::k_ulOverlayHandleInvalid);
@@ -200,8 +200,8 @@ bool WidgetKeyboard::Create()
             {
                 if(m_overlayControls[i] != vr::k_ulOverlayHandleInvalid)
                 {
-                    ms_vrOverlay->SetOverlayWidthInMeters(m_overlayControls[i], 0.05f);
-                    ms_vrOverlay->SetOverlayInputMethod(m_overlayControls[i], vr::VROverlayInputMethod::VROverlayInputMethod_Mouse);
+                    vr::VROverlay()->SetOverlayWidthInMeters(m_overlayControls[i], 0.05f);
+                    vr::VROverlay()->SetOverlayInputMethod(m_overlayControls[i], vr::VROverlayInputMethod::VROverlayInputMethod_Mouse);
                 }
                 else
                 {
@@ -238,8 +238,8 @@ void WidgetKeyboard::Destroy()
     {
         if(m_overlayControls[i] != vr::k_ulOverlayHandleInvalid)
         {
-            ms_vrOverlay->ClearOverlayTexture(m_overlayControls[i]);
-            ms_vrOverlay->DestroyOverlay(m_overlayControls[i]);
+            vr::VROverlay()->ClearOverlayTexture(m_overlayControls[i]);
+            vr::VROverlay()->DestroyOverlay(m_overlayControls[i]);
             m_overlayControls[i] = vr::k_ulOverlayHandleInvalid;
         }
         delete m_transformControls[i];
@@ -256,7 +256,7 @@ void WidgetKeyboard::Update()
 {
     if(m_valid && m_visible)
     {
-        while(ms_vrOverlay->PollNextOverlayEvent(m_overlay, &m_event, sizeof(vr::VREvent_t)))
+        while(vr::VROverlay()->PollNextOverlayEvent(m_overlay, &m_event, sizeof(vr::VREvent_t)))
         {
             switch(m_event.eventType)
             {
@@ -284,7 +284,7 @@ void WidgetKeyboard::Update()
             }
         }
 
-        while(ms_vrOverlay->PollNextOverlayEvent(m_overlayControls[CI_Pin], &m_event, sizeof(vr::VREvent_t)))
+        while(vr::VROverlay()->PollNextOverlayEvent(m_overlayControls[CI_Pin], &m_event, sizeof(vr::VREvent_t)))
         {
             switch(m_event.eventType)
             {
@@ -296,12 +296,12 @@ void WidgetKeyboard::Update()
                     vr::VRTextureBounds_t l_bounds;
                     if(m_activePin) l_bounds = { 0.5f, 1.0f, 1.0f, 0.5f };
                     else l_bounds = { 0.f, 1.f, 0.5f, 0.5f };
-                    ms_vrOverlay->SetOverlayTextureBounds(m_overlayControls[CI_Pin], &l_bounds);
+                    vr::VROverlay()->SetOverlayTextureBounds(m_overlayControls[CI_Pin], &l_bounds);
                 } break;
             }
         }
 
-        while(ms_vrOverlay->PollNextOverlayEvent(m_overlayControls[CI_Close], &m_event, sizeof(vr::VREvent_t)))
+        while(vr::VROverlay()->PollNextOverlayEvent(m_overlayControls[CI_Close], &m_event, sizeof(vr::VREvent_t)))
         {
             switch(m_event.eventType)
             {
@@ -323,18 +323,18 @@ void WidgetKeyboard::Update()
             m_transform->SetPosition(l_handPos);
         }
         m_transform->Update();
-        ms_vrOverlay->SetOverlayTransformAbsolute(m_overlay, vr::TrackingUniverseRawAndUncalibrated, &m_transform->GetMatrixVR());
+        vr::VROverlay()->SetOverlayTransformAbsolute(m_overlay, vr::TrackingUniverseRawAndUncalibrated, &m_transform->GetMatrixVR());
 
         m_guiSystem->Update();
-        ms_vrOverlay->SetOverlayTexture(m_overlay, &m_texture);
+        vr::VROverlay()->SetOverlayTexture(m_overlay, &m_texture);
 
         if(m_activeDashboard)
         {
             for(size_t i = 0U; i < CI_Count; i++)
             {
                 m_transformControls[i]->Update(m_transform);
-                ms_vrOverlay->SetOverlayTransformAbsolute(m_overlayControls[i], vr::TrackingUniverseRawAndUncalibrated, &m_transformControls[i]->GetMatrixVR());
-                ms_vrOverlay->SetOverlayTexture(m_overlayControls[i], &ms_textureControls);
+                vr::VROverlay()->SetOverlayTransformAbsolute(m_overlayControls[i], vr::TrackingUniverseRawAndUncalibrated, &m_transformControls[i]->GetMatrixVR());
+                vr::VROverlay()->SetOverlayTexture(m_overlayControls[i], &ms_textureControls);
             }
         }
     }
@@ -382,8 +382,8 @@ void WidgetKeyboard::OnDashboardOpen()
     {
         m_activeDashboard = true;
 
-        for(size_t i = 0U; i < CI_Count; i++) ms_vrOverlay->ShowOverlay(m_overlayControls[i]);
-        if(!m_activePin) ms_vrOverlay->ShowOverlay(m_overlay);
+        for(size_t i = 0U; i < CI_Count; i++) vr::VROverlay()->ShowOverlay(m_overlayControls[i]);
+        if(!m_activePin) vr::VROverlay()->ShowOverlay(m_overlay);
     }
 }
 void WidgetKeyboard::OnDashboardClose()
@@ -393,8 +393,8 @@ void WidgetKeyboard::OnDashboardClose()
     if(m_valid)
     {
         m_activeDashboard = false;
-        for(size_t i = 0U; i < CI_Count; i++) ms_vrOverlay->HideOverlay(m_overlayControls[i]);
-        if(!m_activePin) ms_vrOverlay->HideOverlay(m_overlay);
+        for(size_t i = 0U; i < CI_Count; i++) vr::VROverlay()->HideOverlay(m_overlayControls[i]);
+        if(!m_activePin) vr::VROverlay()->HideOverlay(m_overlay);
     }
 }
 

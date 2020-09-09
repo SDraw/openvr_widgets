@@ -83,10 +83,10 @@ bool WidgetStats::Create()
         }
         l_memInfo.close();
 #endif
-        if(ms_vrOverlay->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlay) == vr::VROverlayError_None)
+        if(vr::VROverlay()->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlay) == vr::VROverlayError_None)
         {
-            ms_vrOverlay->SetOverlayWidthInMeters(m_overlay, 0.125f);
-            ms_vrOverlay->SetOverlayFlag(m_overlay, vr::VROverlayFlags_SortWithNonSceneOverlays, true);
+            vr::VROverlay()->SetOverlayWidthInMeters(m_overlay, 0.125f);
+            vr::VROverlay()->SetOverlayFlag(m_overlay, vr::VROverlayFlags_SortWithNonSceneOverlays, true);
 
             m_renderTexture = new sf::RenderTexture();
             if(m_renderTexture->create(static_cast<unsigned int>(g_RenderTargetSize.x), static_cast<unsigned int>(g_RenderTargetSize.y)))
@@ -303,9 +303,9 @@ void WidgetStats::Update()
                     std::string l_text;
                     vr::Compositor_FrameTiming l_frameTiming[2U];
                     for(size_t i = 0U; i < 2U; i++) l_frameTiming[i].m_nSize = sizeof(vr::Compositor_FrameTiming);
-                    if(ms_vrCompositor->GetFrameTiming(&l_frameTiming[0U]))
+                    if(vr::VRCompositor()->GetFrameTiming(&l_frameTiming[0U]))
                     {
-                        if(ms_vrCompositor->GetFrameTiming(&l_frameTiming[1U], 1U))
+                        if(vr::VRCompositor()->GetFrameTiming(&l_frameTiming[1U], 1U))
                         {
                             if(l_frameTiming[0U].m_nFrameIndex != l_frameTiming[1U].m_nFrameIndex)
                             {
@@ -427,7 +427,7 @@ void WidgetStats::Update()
         l_opacity = glm::acos(l_opacity);
         l_opacity = glm::clamp(l_opacity, g_ViewAngleRange.y, g_ViewAngleRange.x);
         l_opacity = 1.f - ((l_opacity - g_ViewAngleRange.y) / g_ViewAngleRangeDiff);
-        ms_vrOverlay->SetOverlayAlpha(m_overlay, l_opacity);
+        vr::VROverlay()->SetOverlayAlpha(m_overlay, l_opacity);
 
         // Set rotation based on direction to HMD
         glm::quat l_rot;
@@ -435,8 +435,8 @@ void WidgetStats::Update()
         m_transform->SetRotation(l_rot);
 
         m_transform->Update();
-        ms_vrOverlay->SetOverlayTransformAbsolute(m_overlay, vr::TrackingUniverseRawAndUncalibrated, &m_transform->GetMatrixVR());
-        ms_vrOverlay->SetOverlayTexture(m_overlay, &m_texture);
+        vr::VROverlay()->SetOverlayTransformAbsolute(m_overlay, vr::TrackingUniverseRawAndUncalibrated, &m_transform->GetMatrixVR());
+        vr::VROverlay()->SetOverlayTexture(m_overlay, &m_texture);
     }
 }
 
@@ -449,7 +449,7 @@ void WidgetStats::OnHandDeactivated(size_t f_hand)
         if(f_hand == VRDeviceIndex::VDI_RightController)
         {
             m_visible = false;
-            ms_vrOverlay->HideOverlay(m_overlay);
+            vr::VROverlay()->HideOverlay(m_overlay);
         }
     }
 }
@@ -471,7 +471,7 @@ void  WidgetStats::OnButtonPress(size_t f_hand, uint32_t f_button)
                     {
                         m_visible = true;
                         m_forceUpdate = true;
-                        ms_vrOverlay->ShowOverlay(m_overlay);
+                        vr::VROverlay()->ShowOverlay(m_overlay);
                     }
                     m_lastPressTick = l_tick;
                 } break;
@@ -498,7 +498,7 @@ void WidgetStats::OnButtonRelease(size_t f_hand, uint32_t f_button)
         if((f_hand == VRDeviceIndex::VDI_RightController) && (f_button == vr::k_EButton_Grip))
         {
             m_visible = false;
-            ms_vrOverlay->HideOverlay(m_overlay);
+            vr::VROverlay()->HideOverlay(m_overlay);
         }
     }
 }

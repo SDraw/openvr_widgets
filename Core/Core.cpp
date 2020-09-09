@@ -14,9 +14,6 @@ const unsigned long long g_PowerUpdateInterval = 30000U;
 Core::Core()
 {
     m_vrSystem = nullptr;
-    m_vrOverlay = nullptr;
-    m_vrCompositor = nullptr;
-    m_vrDebug = nullptr;
     m_event = { 0 };
     m_deviceIndex.assign(VRDeviceIndex::VDI_Max, vr::k_unTrackedDeviceIndexInvalid);
 
@@ -48,9 +45,6 @@ void Core::Cleanup()
     {
         vr::VR_Shutdown();
         m_vrSystem = nullptr;
-        m_vrOverlay = nullptr;
-        m_vrCompositor = nullptr;
-        m_vrDebug = nullptr;
     }
 }
 
@@ -65,10 +59,6 @@ bool Core::Initialize()
 
             if(l_initError == vr::VRInitError_None)
             {
-                m_vrOverlay = vr::VROverlay();
-                m_vrCompositor = vr::VRCompositor();
-                m_vrDebug = vr::VRDebug();
-
                 // Find devices
                 m_deviceIndex[VRDeviceIndex::VDI_Hmd] = 0U; // Always has been
                 m_deviceIndex[VRDeviceIndex::VDI_LeftController] = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);
@@ -104,7 +94,7 @@ bool Core::Initialize()
                     m_widgetManager = new WidgetManager(this);
                     if(m_deviceIndex[VRDeviceIndex::VDI_LeftController] != vr::k_unTrackedDeviceIndexInvalid) m_widgetManager->OnHandActivated(VRDeviceIndex::VDI_LeftController);
                     if(m_deviceIndex[VRDeviceIndex::VDI_RightController] != vr::k_unTrackedDeviceIndexInvalid) m_widgetManager->OnHandActivated(VRDeviceIndex::VDI_RightController);
-                    if(m_vrOverlay->IsDashboardVisible()) m_widgetManager->OnDashboardOpen();
+                    if(vr::VROverlay()->IsDashboardVisible()) m_widgetManager->OnDashboardOpen();
 
                     m_active = true;
                 }
@@ -324,7 +314,7 @@ void Core::SendMessageToDeviceWithProperty(uint64_t f_value, const char *f_messa
                 if(m_vrSystem->GetUint64TrackedDeviceProperty(i, vr::Prop_VendorSpecific_Reserved_Start) == f_value)
                 {
                     char l_response[32U];
-                    m_vrDebug->DriverDebugRequest(i, f_message, l_response, 32U);
+                    vr::VRDebug()->DriverDebugRequest(i, f_message, l_response, 32U);
                     break;
                 }
             }

@@ -67,31 +67,30 @@ WidgetManager::WidgetManager(Core *f_core)
         }
     }
 
-    m_core->GetVROverlay()->CreateDashboardOverlay("ovrw.settings", "OpenVR Widgets Settings", &m_overlayDashboard, &m_overlayDashboardThumbnail);
+    vr::VROverlay()->CreateDashboardOverlay("ovrw.settings", "OpenVR Widgets Settings", &m_overlayDashboard, &m_overlayDashboardThumbnail);
     if((m_overlayDashboard != vr::k_ulOverlayHandleInvalid) && (m_overlayDashboardThumbnail != vr::k_ulOverlayHandleInvalid))
     {
         std::string l_iconPath(m_core->GetConfigManager()->GetDirectory());
         l_iconPath.append("\\icons\\dashboard_icon.png");
-        m_core->GetVROverlay()->SetOverlayFromFile(m_overlayDashboardThumbnail, l_iconPath.c_str());
+        vr::VROverlay()->SetOverlayFromFile(m_overlayDashboardThumbnail, l_iconPath.c_str());
 
-        m_core->GetVROverlay()->SetOverlayInputMethod(m_overlayDashboard, vr::VROverlayInputMethod_Mouse);
-        m_core->GetVROverlay()->SetOverlayWidthInMeters(m_overlayDashboard, 1.0f);
+        vr::VROverlay()->SetOverlayInputMethod(m_overlayDashboard, vr::VROverlayInputMethod_Mouse);
+        vr::VROverlay()->SetOverlayWidthInMeters(m_overlayDashboard, 1.0f);
 
         const vr::HmdVector2_t l_mouseScale = { 512.f, 512.f };
-        m_core->GetVROverlay()->SetOverlayMouseScale(m_overlayDashboard, &l_mouseScale);
+        vr::VROverlay()->SetOverlayMouseScale(m_overlayDashboard, &l_mouseScale);
 
         m_textureDashboard.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_guiSystem->GetRenderTextureHandle()));
         m_textureDashboard.eType = vr::TextureType_OpenGL;
         m_textureDashboard.eColorSpace = vr::ColorSpace_Gamma;
-        m_core->GetVROverlay()->SetOverlayTexture(m_overlayDashboard, &m_textureDashboard);
+        vr::VROverlay()->SetOverlayTexture(m_overlayDashboard, &m_textureDashboard);
     }
 
     // Init constant overlays
-    Widget::SetInterfaces(m_core->GetVROverlay(), m_core->GetVRCompositor());
     m_constantWidgets.emplace(ConstantWidgetIndex::CWI_Stats, new WidgetStats());
     for(auto l_iter : m_constantWidgets) l_iter.second->Create();
 
-    m_activeDashboard = m_core->GetVROverlay()->IsDashboardVisible();
+    m_activeDashboard = vr::VROverlay()->IsDashboardVisible();
     if(m_activeDashboard) OnDashboardOpen();
 }
 WidgetManager::~WidgetManager()
@@ -116,16 +115,15 @@ WidgetManager::~WidgetManager()
 
     WidgetWindowCapture::RemoveStaticResources();
     WidgetKeyboard::RemoveStaticResources();
-    Widget::SetInterfaces(nullptr, nullptr);
 }
 
 void WidgetManager::DoPulse()
 {
     if(m_overlayDashboard != vr::k_ulOverlayHandleInvalid)
     {
-        if(m_activeDashboard && m_core->GetVROverlay()->IsOverlayVisible(m_overlayDashboard))
+        if(m_activeDashboard && vr::VROverlay()->IsOverlayVisible(m_overlayDashboard))
         {
-            while(m_core->GetVROverlay()->PollNextOverlayEvent(m_overlayDashboard, &m_overlayEvent, sizeof(vr::VREvent_t)))
+            while(vr::VROverlay()->PollNextOverlayEvent(m_overlayDashboard, &m_overlayEvent, sizeof(vr::VREvent_t)))
             {
                 switch(m_overlayEvent.eventType)
                 {
@@ -163,7 +161,7 @@ void WidgetManager::DoPulse()
             }
 
             m_guiSystem->Update();
-            m_core->GetVROverlay()->SetOverlayTexture(m_overlayDashboard, &m_textureDashboard);
+            vr::VROverlay()->SetOverlayTexture(m_overlayDashboard, &m_textureDashboard);
         }
     }
 

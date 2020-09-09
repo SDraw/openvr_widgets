@@ -3,9 +3,6 @@
 #include "Widgets/Widget.h"
 #include "Utils/Transformation.h"
 
-vr::IVROverlay *Widget::ms_vrOverlay = nullptr;
-vr::IVRCompositor *Widget::ms_vrCompositor = nullptr;
-
 Widget::Widget()
 {
     m_overlay = vr::k_ulOverlayHandleInvalid;
@@ -29,9 +26,9 @@ void Widget::Destroy()
 {
     if(m_overlay != vr::k_ulOverlayHandleInvalid)
     {
-        ms_vrOverlay->HideOverlay(m_overlay);
-        ms_vrOverlay->ClearOverlayTexture(m_overlay);
-        ms_vrOverlay->DestroyOverlay(m_overlay);
+        vr::VROverlay()->HideOverlay(m_overlay);
+        vr::VROverlay()->ClearOverlayTexture(m_overlay);
+        vr::VROverlay()->DestroyOverlay(m_overlay);
         m_overlay = vr::k_ulOverlayHandleInvalid;
     }
 
@@ -66,10 +63,4 @@ void Widget::OnDashboardOpen()
 void Widget::OnDashboardClose()
 {
     if(m_valid) m_activeDashboard = false;
-}
-
-void Widget::SetInterfaces(vr::IVROverlay *f_overlay, vr::IVRCompositor *f_compositor)
-{
-    ms_vrOverlay = f_overlay;
-    ms_vrCompositor = f_compositor;
 }

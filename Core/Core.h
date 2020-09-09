@@ -6,9 +6,6 @@ class WidgetManager;
 class Core final
 {
     vr::IVRSystem *m_vrSystem;
-    vr::IVROverlay *m_vrOverlay;
-    vr::IVRCompositor *m_vrCompositor;
-    vr::IVRDebug *m_vrDebug;
     vr::VREvent_t m_event;
     std::vector<vr::TrackedDeviceIndex_t> m_deviceIndex;
 
@@ -34,9 +31,6 @@ public:
     bool DoPulse();
 
     inline vr::IVRSystem* GetVRSystem() const { return m_vrSystem; }
-    inline vr::IVROverlay* GetVROverlay() const { return m_vrOverlay; }
-    inline vr::IVRCompositor* GetVRCompositor() const { return m_vrCompositor; }
-
     inline WidgetManager* GetWidgetManager() const { return m_widgetManager; }
     inline ConfigManager* GetConfigManager() const { return m_configManager; }
 
