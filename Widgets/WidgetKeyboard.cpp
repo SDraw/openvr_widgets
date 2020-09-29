@@ -51,7 +51,7 @@ const unsigned short g_keyCodes[]
     // Implement in Linux way
 #endif
 };
-const char *g_KeyNames[]
+const char *g_keyNames[]
 {
     "Esc", "PrtSc", "Pause",
         "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
@@ -124,7 +124,7 @@ bool WidgetKeyboard::Create()
                 m_guiButtons[i]->SetPosition(l_buttonPosition);
                 m_guiButtons[i]->SetSize(g_buttonSize);
                 m_guiButtons[i]->SetSelectionColor(g_hoverColor);
-                m_guiButtons[i]->SetText(g_KeyNames[i]);
+                m_guiButtons[i]->SetText(g_keyNames[i]);
                 m_guiButtons[i]->SetTextSize(24U);
                 m_guiButtons[i]->SetVisibility(true);
                 m_guiButtons[i]->SetClickCallback(l_clickCallback);

@@ -14,10 +14,10 @@ extern const glm::vec3 g_axisZN;
 extern const sf::Color g_clearColor;
 extern const unsigned char g_dummyTextureData[];
 
-const sf::Vector2f g_RenderTargetSize(512.f, 128.f);
-const glm::vec3 g_OverlayOffset(0.f, 0.05f, 0.f);
-const glm::vec2 g_ViewAngleRange(g_pi / 6.f, g_pi / 12.f);
-const float g_ViewAngleRangeDiff = (g_ViewAngleRange.x - g_ViewAngleRange.y);
+const sf::Vector2f g_renderTargetSize(512.f, 128.f);
+const glm::vec3 g_overlayOffset(0.f, 0.05f, 0.f);
+const glm::vec2 g_viewAngleRange(g_pi / 6.f, g_pi / 12.f);
+const float g_viewAngleRangeDiff = (g_viewAngleRange.x - g_viewAngleRange.y);
 
 const char* g_WeekDays[]
 {
@@ -92,7 +92,7 @@ bool WidgetStats::Create()
         }
 
         m_renderTexture = new sf::RenderTexture();
-        if(m_renderTexture->create(static_cast<unsigned int>(g_RenderTargetSize.x), static_cast<unsigned int>(g_RenderTargetSize.y)))
+        if(m_renderTexture->create(static_cast<unsigned int>(g_renderTargetSize.x), static_cast<unsigned int>(g_renderTargetSize.y)))
         {
             m_texture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
 
@@ -186,7 +186,7 @@ void WidgetStats::Update()
                     m_fontText[ST_Time]->setString(l_text);
 
                     sf::FloatRect l_bounds = m_fontText[ST_Time]->getLocalBounds();
-                    sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 40.f);
+                    sf::Vector2f l_position(56.f + (g_renderTargetSize.x - l_bounds.width) * 0.5f, (g_renderTargetSize.y - l_bounds.height) * 0.5f - 40.f);
                     m_fontText[ST_Time]->setPosition(l_position);
 
                     if(m_lastDay != l_time->tm_yday)
@@ -203,8 +203,8 @@ void WidgetStats::Update()
                         m_fontText[ST_Date]->setString(l_text);
 
                         l_bounds = m_fontText[ST_Date]->getLocalBounds();
-                        l_position.x = 56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f;
-                        l_position.y = (g_RenderTargetSize.y - l_bounds.height) * 0.5f + 30.f;
+                        l_position.x = 56.f + (g_renderTargetSize.x - l_bounds.width) * 0.5f;
+                        l_position.y = (g_renderTargetSize.y - l_bounds.height) * 0.5f + 30.f;
                         m_fontText[ST_Date]->setPosition(l_position);
                     }
 
@@ -250,7 +250,7 @@ void WidgetStats::Update()
                     m_fontText[ST_Cpu]->setString(l_text);
 
                     const sf::FloatRect l_bounds = m_fontText[ST_Cpu]->getLocalBounds();
-                    const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 15.f);
+                    const sf::Vector2f l_position(56.f + (g_renderTargetSize.x - l_bounds.width) * 0.5f, (g_renderTargetSize.y - l_bounds.height) * 0.5f - 15.f);
                     m_fontText[ST_Cpu]->setPosition(l_position);
 
                     m_renderTexture->draw(*m_fontText[ST_Cpu]);
@@ -294,7 +294,7 @@ void WidgetStats::Update()
                     m_fontText[ST_Ram]->setString(l_text);
 
                     const sf::FloatRect l_bounds = m_fontText[ST_Ram]->getLocalBounds();
-                    const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
+                    const sf::Vector2f l_position(56.f + (g_renderTargetSize.x - l_bounds.width) * 0.5f, (g_renderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
                     m_fontText[ST_Ram]->setPosition(l_position);
 
                     m_renderTexture->draw(*m_fontText[ST_Ram]);
@@ -336,7 +336,7 @@ void WidgetStats::Update()
                     m_fontText[ST_Frame]->setString(l_text);
 
                     const sf::FloatRect l_bounds = m_fontText[ST_Frame]->getLocalBounds();
-                    const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
+                    const sf::Vector2f l_position(56.f + (g_renderTargetSize.x - l_bounds.width) * 0.5f, (g_renderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
                     m_fontText[ST_Frame]->setPosition(l_position);
 
                     m_renderTexture->draw(*m_fontText[ST_Frame]);
@@ -365,7 +365,7 @@ void WidgetStats::Update()
                     m_fontText[ST_ControllerPower]->setString(l_text);
 
                     const sf::FloatRect l_bounds = m_fontText[ST_ControllerPower]->getLocalBounds();
-                    const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
+                    const sf::Vector2f l_position(56.f + (g_renderTargetSize.x - l_bounds.width) * 0.5f, (g_renderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
                     m_fontText[ST_ControllerPower]->setPosition(l_position);
 
                     m_renderTexture->draw(*m_fontText[ST_ControllerPower]);
@@ -394,7 +394,7 @@ void WidgetStats::Update()
                     m_fontText[ST_TrackerPower]->setString(l_text);
 
                     const sf::FloatRect l_bounds = m_fontText[ST_TrackerPower]->getLocalBounds();
-                    const sf::Vector2f l_position(56.f + (g_RenderTargetSize.x - l_bounds.width) * 0.5f, (g_RenderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
+                    const sf::Vector2f l_position(56.f + (g_renderTargetSize.x - l_bounds.width) * 0.5f, (g_renderTargetSize.y - l_bounds.height) * 0.5f - 5.f);
                     m_fontText[ST_TrackerPower]->setPosition(l_position);
 
                     m_renderTexture->draw(*m_fontText[ST_TrackerPower]);
@@ -418,7 +418,7 @@ void WidgetStats::Update()
         VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_RightController, l_handPos);
         VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_RightController, l_handRot);
         m_transform->SetPosition(l_handPos);
-        m_transform->Move(l_handRot*g_OverlayOffset);
+        m_transform->Move(l_handRot*g_overlayOffset);
 
         // Set opacity based on angle between view direction and hmd to hand direction
         glm::vec3 l_toHandDir = (m_transform->GetPosition() - l_hmdPos);
@@ -427,8 +427,8 @@ void WidgetStats::Update()
         const glm::vec3 l_viewDir = l_hmdRot*g_axisZN;
         float l_opacity = glm::dot(l_toHandDir, l_viewDir);
         l_opacity = glm::acos(l_opacity);
-        l_opacity = glm::clamp(l_opacity, g_ViewAngleRange.y, g_ViewAngleRange.x);
-        l_opacity = 1.f - ((l_opacity - g_ViewAngleRange.y) / g_ViewAngleRangeDiff);
+        l_opacity = glm::clamp(l_opacity, g_viewAngleRange.y, g_viewAngleRange.x);
+        l_opacity = 1.f - ((l_opacity - g_viewAngleRange.y) / g_viewAngleRangeDiff);
         vr::VROverlay()->SetOverlayAlpha(m_overlay, l_opacity);
 
         // Set rotation based on direction to HMD

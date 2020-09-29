@@ -19,13 +19,13 @@ extern const glm::vec3 g_axisZN;
 extern const sf::Color g_clearColor;
 extern const unsigned char g_dummyTextureData[];
 
-const size_t g_CaptureDelays[3U]
+const size_t g_captureDelays[3U]
 {
     66U, 33U, 16U
 };
-const sf::Vector2u g_GuiSystemDefaultSize(256U, 448U);
-const sf::Vector2i g_GuiButtonsDefaultSize(128, 128);
-const sf::Vector2f g_GuiButtonsInitialPositions[6U]
+const sf::Vector2u g_guiSystemDefaultSize(256U, 448U);
+const sf::Vector2i g_guiButtonsDefaultSize(128, 128);
+const sf::Vector2f g_guiButtonsInitialPositions[6U]
 {
     { 0.f, 64.f },
     { 128.f, 64.f },
@@ -34,7 +34,7 @@ const sf::Vector2f g_GuiButtonsInitialPositions[6U]
     { 0.f, 320.f },
     { 128.f, 320.f }
 };
-const sf::Vector2i g_GuiButtonsInitialUV[6U]
+const sf::Vector2i g_guiButtonsInitialUV[6U]
 {
     { 0, 0 },
     { 256, 0 },
@@ -43,12 +43,12 @@ const sf::Vector2i g_GuiButtonsInitialUV[6U]
     { 128, 128 },
     { 256, 128 },
 };
-const sf::Vector2i g_GuiButtonPinUV[2U]
+const sf::Vector2i g_guiButtonPinUV[2U]
 {
     { 0, 0 },
     { 128, 0 }
 };
-const sf::Vector2i g_GuiButtonFpsUV[3U]
+const sf::Vector2i g_guiButtonFpsUV[3U]
 {
     {256, 128},
     { 384, 128 },
@@ -133,16 +133,16 @@ bool WidgetWindowCapture::Create()
         vr::VROverlay()->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Capture - Control", &m_overlayControl);
         if(m_overlayControl != vr::k_ulOverlayHandleInvalid)
         {
-            m_guiSystem = new GuiSystem(g_GuiSystemDefaultSize);
+            m_guiSystem = new GuiSystem(g_guiSystemDefaultSize);
             m_guiSystem->SetFont(ConfigManager::GetGuiFont());
 
             const auto l_clickCallback = std::bind(&WidgetWindowCapture::OnGuiElementMouseClick, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
             for(size_t i = 0U; i < CEI_Count; i++)
             {
                 m_guiImages[i] = m_guiSystem->CreateImage(ms_textureAtlas);
-                m_guiImages[i]->SetPosition(g_GuiButtonsInitialPositions[i]);
-                m_guiImages[i]->SetSize(sf::Vector2f(g_GuiButtonsDefaultSize));
-                m_guiImages[i]->SetUV(g_GuiButtonsInitialUV[i], g_GuiButtonsDefaultSize);
+                m_guiImages[i]->SetPosition(g_guiButtonsInitialPositions[i]);
+                m_guiImages[i]->SetSize(sf::Vector2f(g_guiButtonsDefaultSize));
+                m_guiImages[i]->SetUV(g_guiButtonsInitialUV[i], g_guiButtonsDefaultSize);
                 m_guiImages[i]->SetUserPointer(reinterpret_cast<void*>(i));
                 m_guiImages[i]->SetClickCallback(l_clickCallback);
             }
@@ -160,8 +160,8 @@ bool WidgetWindowCapture::Create()
             m_transformControl->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.072f, 0.f, 0.f));
 
             vr::HmdVector2_t l_mouseScale;
-            l_mouseScale.v[0U] = static_cast<float>(g_GuiSystemDefaultSize.x);
-            l_mouseScale.v[1U] = static_cast<float>(g_GuiSystemDefaultSize.y);
+            l_mouseScale.v[0U] = static_cast<float>(g_guiSystemDefaultSize.x);
+            l_mouseScale.v[1U] = static_cast<float>(g_guiSystemDefaultSize.y);
             vr::VROverlay()->SetOverlayMouseScale(m_overlayControl, &l_mouseScale);
             vr::VROverlay()->SetOverlayFlag(m_overlayControl, vr::VROverlayFlags_SortWithNonSceneOverlays, true);
             vr::VROverlay()->SetOverlayInputMethod(m_overlayControl, vr::VROverlayInputMethod_Mouse);
@@ -517,7 +517,7 @@ void WidgetWindowCapture::OnGuiElementMouseClick(GuiElement *f_guiElement, unsig
             case CEI_Pin:
             {
                 m_activePin = !m_activePin;
-                m_guiImages[CEI_Pin]->SetUV(g_GuiButtonPinUV[m_activePin ? 1U : 0U], g_GuiButtonsDefaultSize);
+                m_guiImages[CEI_Pin]->SetUV(g_guiButtonPinUV[m_activePin ? 1U : 0U], g_guiButtonsDefaultSize);
             } break;
 
             case CEI_Close:
@@ -562,8 +562,8 @@ void WidgetWindowCapture::OnGuiElementMouseClick(GuiElement *f_guiElement, unsig
                 m_fpsMode += 1U;
                 m_fpsMode %= FM_Count;
 
-                m_guiImages[CEI_FPS]->SetUV(g_GuiButtonFpsUV[m_fpsMode], g_GuiButtonsDefaultSize);
-                m_windowCapturer->SetDelay(g_CaptureDelays[m_fpsMode]);
+                m_guiImages[CEI_FPS]->SetUV(g_guiButtonFpsUV[m_fpsMode], g_guiButtonsDefaultSize);
+                m_windowCapturer->SetDelay(g_captureDelays[m_fpsMode]);
             } break;
         }
     }
