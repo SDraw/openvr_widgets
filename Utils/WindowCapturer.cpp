@@ -2,11 +2,10 @@
 
 #include "Utils/WindowCapturer.h"
 
-#include "Core/GlobalSettings.h"
 #include "Utils/TexturePooler.h"
 #include "Utils/Utils.h"
 
-const SL::Screen_Capture::ImageBGRA g_FillColor = { 0U, 0U, 0U, 255U };
+const SL::Screen_Capture::ImageBGRA g_fillColor = { 0U, 0U, 0U, 255U };
 
 sf::Shader *WindowCapturer::ms_shader = nullptr;
 sf::RenderStates WindowCapturer::ms_renderState;
@@ -45,16 +44,6 @@ bool WindowCapturer::StartCapture(size_t f_window)
         {
             m_activeWindow = f_window;
 
-            if(!ms_shader)
-            {
-                ms_shader = new sf::Shader();
-                if(ms_shader->loadFromFile("shaders/frag_color_swap.glsl", sf::Shader::Fragment))
-                {
-                    ms_shader->setUniform("gTexture0", sf::Shader::CurrentTexture);
-                    ms_renderState = sf::RenderStates(ms_shader);
-                }
-            }
-
             if(m_texture) TexturePooler::DeleteTexture(m_texture);
             m_texture = TexturePooler::CreateTexture(m_windows[m_activeWindow].Size.x, m_windows[m_activeWindow].Size.y);
             m_sprite->setTexture(*m_texture, true);
@@ -62,20 +51,12 @@ bool WindowCapturer::StartCapture(size_t f_window)
             if(m_renderTexture) TexturePooler::DeleteRenderTexture(m_renderTexture);
             m_renderTexture = TexturePooler::CreateRenderTexture(m_windows[m_activeWindow].Size.x, m_windows[m_activeWindow].Size.y);
 
-            m_buffer.assign(static_cast<size_t>(m_windows[m_activeWindow].Size.x*m_windows[m_activeWindow].Size.y), g_FillColor);
+            m_buffer.assign(static_cast<size_t>(m_windows[m_activeWindow].Size.x*m_windows[m_activeWindow].Size.y), g_fillColor);
             m_buffer.shrink_to_fit();
 
             m_interfaces = new CaptureInterfaces();
-            SL::Screen_Capture::WindowCallback l_windowCallback([this]()
-            {
-                return this->GetCapturedWindow();
-            });
-            m_interfaces->m_captureConfiguration = SL::Screen_Capture::CreateCaptureConfiguration(l_windowCallback);
-            SL::Screen_Capture::WindowCaptureCallback l_captureCallback([this](const SL::Screen_Capture::Image &f_img, const SL::Screen_Capture::Window &f_window)
-            {
-                this->ProcessCapture(f_img, f_window);
-            });
-            m_interfaces->m_captureConfiguration->onNewFrame(l_captureCallback);
+            m_interfaces->m_captureConfiguration = SL::Screen_Capture::CreateCaptureConfiguration(static_cast<SL::Screen_Capture::WindowCallback>(std::bind(&WindowCapturer::GetCapturedWindow, this)));
+            m_interfaces->m_captureConfiguration->onNewFrame(std::bind(&WindowCapturer::ProcessCapture, this, std::placeholders::_1, std::placeholders::_2));
             m_interfaces->m_captureInterface = m_interfaces->m_captureConfiguration->start_capturing();
             m_interfaces->m_captureInterface->setFrameChangeInterval(m_captureDelay);
 
@@ -186,6 +167,20 @@ void WindowCapturer::ProcessCapture(const SL::Screen_Capture::Image &f_img, cons
         m_lastTick = GetTickCount64();
         m_bufferUpdated = true;
         m_bufferLock.unlock();
+    }
+}
+
+// Static
+void WindowCapturer::InitStaticResources()
+{
+    if(!ms_shader)
+    {
+        ms_shader = new sf::Shader();
+        if(ms_shader->loadFromFile("shaders/frag_color_swap.glsl", sf::Shader::Fragment))
+        {
+            ms_shader->setUniform("gTexture0", sf::Shader::CurrentTexture);
+            ms_renderState = sf::RenderStates(ms_shader);
+        }
     }
 }
 

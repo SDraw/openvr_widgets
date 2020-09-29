@@ -4,9 +4,7 @@
 #include "Core/Core.h"
 #include "Utils/Utils.h"
 
-#include "Core/GlobalSettings.h"
-
-const std::vector<std::string> g_ConfigSettings
+const std::vector<std::string> g_configSettings
 {
     "update_rate", "gui_font"
 };
@@ -16,16 +14,16 @@ enum ConfigSettingIndex : size_t
     CSI_GuiFont
 };
 
-ConfigManager::ConfigManager(Core *f_core)
+std::string ConfigManager::ms_directory;
+std::string ConfigManager::ms_guiFont("fonts/Hack-Regular.ttf");
+unsigned int ConfigManager::ms_updateDelay = 11U;
+
+ConfigManager::ConfigManager()
 {
-    m_core = f_core;
-    m_settingsFile = new pugi::xml_document();
-    m_updateDelay = 11U; // ~90 FPS by default
-    m_guiFont.assign("fonts/Hack-Regular.ttf");
 }
+
 ConfigManager::~ConfigManager()
 {
-    delete m_settingsFile;
 }
 
 void ConfigManager::Load()
@@ -33,41 +31,51 @@ void ConfigManager::Load()
 #ifdef _WIN32
     char l_path[MAX_PATH];
     GetCurrentDirectoryA(MAX_PATH, l_path);
-    m_directory.assign(l_path);
+    ms_directory.assign(l_path);
 #elif __linux__
     char l_result[PATH_MAX];
-    ssize_t l_count = readlink( "/proc/self/exe", l_result, PATH_MAX );
-    m_directory.assign(l_result,(l_count > 0) ? l_count : 0 );
-    m_directory.assign(m_directory.substr(0,m_directory.find_last_of("/\\")));
+    size_t l_count = readlink( "/proc/self/exe", l_result, PATH_MAX );
+    ms_directory.assign(l_result,(l_count > 0) ? l_count : 0 );
+    ms_directory.assign(ms_directory.substr(0,ms_directory.find_last_of("/\\")));
 #endif
 
-    if(m_settingsFile->load_file("settings.xml"))
+    pugi::xml_document *l_document = new pugi::xml_document();
+    if(l_document->load_file("settings.xml"))
     {
-        const pugi::xml_node l_root = m_settingsFile->child("settings");
+        const pugi::xml_node l_root = l_document->child("settings");
         for(pugi::xml_node l_node = l_root.child("setting"); l_node; l_node = l_node.next_sibling("setting"))
         {
             const pugi::xml_attribute l_attribName = l_node.attribute("name");
             const pugi::xml_attribute l_attribValue = l_node.attribute("value");
             if(l_attribName && l_attribValue)
             {
-                switch(ReadEnumVector(l_attribName.as_string(), g_ConfigSettings))
+                switch(ReadEnumVector(l_attribName.as_string(), g_configSettings))
                 {
                     case ConfigSettingIndex::CSI_UpdateRate:
-                        m_updateDelay = l_attribValue.as_uint(11U);
+                        ms_updateDelay = l_attribValue.as_uint(11U);
                         break;
                     case ConfigSettingIndex::CSI_GuiFont:
-                        m_guiFont.assign(l_attribValue.as_string("fonts/Hack-Regular.ttf"));
+                        ms_guiFont.assign(l_attribValue.as_string("fonts/Hack-Regular.ttf"));
                         break;
                 }
             }
         }
     }
-
-    GlobalSettings::SetDirectory(m_directory);
-    GlobalSettings::SetGuiFont(m_guiFont);
+    delete l_document;
 }
 
-void ConfigManager::Save()
+// Static
+const std::string& ConfigManager::GetDirectory()
 {
-    m_settingsFile->save_file("settings.xml");
+    return ms_directory;
+}
+
+unsigned int ConfigManager::GetUpdateDelay()
+{
+    return ms_updateDelay;
+}
+
+const std::string& ConfigManager::GetGuiFont()
+{
+    return ms_guiFont;
 }

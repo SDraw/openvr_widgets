@@ -20,8 +20,8 @@ int main(void)
     if(l_core->Initialize())
     {
         while(l_core->DoPulse());
-        l_core->Terminate();
     }
+    l_core->Terminate();
     delete l_core;
 
     return EXIT_SUCCESS;

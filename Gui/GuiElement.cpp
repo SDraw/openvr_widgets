@@ -3,17 +3,14 @@
 #include "Gui/GuiElement.h"
 #include "Gui/GuiStructures.h"
 
-const sf::Color g_DefaultColor(255U, 255U, 255U);
-const sf::Color g_DefaultSelectionColor(142U, 205U, 246U);
-
 GuiElement::GuiElement()
 {
     m_userPointer = nullptr;
 
     m_position = sf::Vector2f(0.f, 0.f);
     m_size = sf::Vector2f(0.f, 0.f);
-    m_color = g_DefaultColor;
-    m_selectionColor = g_DefaultSelectionColor;
+    m_color = { 255U, 255U, 255U };
+    m_selectionColor = { 142U, 205U, 246U };
     m_activeHover = false;
     m_visible = true;
     m_update = false;
@@ -35,6 +32,11 @@ void GuiElement::SetPosition(const sf::Vector2f &f_pos)
     }
 }
 
+const sf::Vector2f& GuiElement::GetPosition() const
+{
+    return m_position;
+}
+
 void GuiElement::SetSize(const sf::Vector2f &f_size)
 {
     if(m_size != f_size)
@@ -44,6 +46,11 @@ void GuiElement::SetSize(const sf::Vector2f &f_size)
     }
 }
 
+const sf::Vector2f& GuiElement::GetSize() const
+{
+    return m_size;
+}
+
 void GuiElement::SetVisibility(bool f_state)
 {
     if(m_visible != f_state)
@@ -51,6 +58,11 @@ void GuiElement::SetVisibility(bool f_state)
         m_visible = f_state;
         m_update = true;
     }
+}
+
+bool GuiElement::GetVisibility() const
+{
+    return m_visible;
 }
 
 void GuiElement::SetColor(const sf::Color &f_color)
@@ -68,6 +80,21 @@ void GuiElement::SetSelectionColor(const sf::Color &f_color)
         m_selectionColor = f_color;
         m_update = true;
     }
+}
+
+void GuiElement::SetUserPointer(void *f_pointer)
+{
+    m_userPointer = f_pointer;
+}
+
+void* GuiElement::GetUserPointer() const
+{
+    return m_userPointer;
+}
+
+const std::vector<const sf::Drawable*>& GuiElement::GetDrawables() const
+{
+    return m_drawables;
 }
 
 void GuiElement::SetClickCallback(const std::function<void(GuiElement*, unsigned char, unsigned char, unsigned int, unsigned int)> &f_callback)

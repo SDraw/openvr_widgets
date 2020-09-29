@@ -7,17 +7,17 @@
 #include "Utils/Transformation.h"
 #include "Utils/WindowCapturer.h"
 
-#include "Core/GlobalSettings.h"
 #include "Core/VRDevicesStates.h"
+#include "Managers/ConfigManager.h"
 #include "Gui/GuiStructures.h"
 #include "Utils/Utils.h"
 
-extern const float g_PiHalf;
-extern const glm::ivec2 g_EmptyIVector2;
-extern const glm::vec3 g_AxisX;
-extern const glm::vec3 g_AxisZN;
-extern const sf::Color g_ClearColor;
-extern const unsigned char g_DummyTextureData[];
+extern const float g_piHalf;
+extern const glm::ivec2 g_emptyIVector2;
+extern const glm::vec3 g_axisX;
+extern const glm::vec3 g_axisZN;
+extern const sf::Color g_clearColor;
+extern const unsigned char g_dummyTextureData[];
 
 const size_t g_CaptureDelays[3U]
 {
@@ -81,8 +81,8 @@ WidgetWindowCapture::WidgetWindowCapture()
     m_activePin = false;
 
     m_overlayWidth = 0.f;
-    m_windowSize = g_EmptyIVector2;
-    m_mousePosition = g_EmptyIVector2;
+    m_windowSize = g_emptyIVector2;
+    m_mousePosition = g_emptyIVector2;
     m_transformControl = nullptr;
 
     m_fpsMode = FM_15;
@@ -96,16 +96,6 @@ bool WidgetWindowCapture::Create()
     if(!m_valid)
     {
         m_overlayWidth = 0.5f;
-
-#ifdef __linux__
-        if(!ms_display) ms_display = XOpenDisplay(nullptr);
-#endif
-
-        if(!ms_textureAtlas)
-        {
-            ms_textureAtlas = new sf::Texture();
-            if(!ms_textureAtlas->loadFromFile("icons/atlas_capture.png")) ms_textureAtlas->loadFromMemory(g_DummyTextureData, 16U);
-        }
 
         std::string l_overlayKeyPart("ovrw.capture_");
         l_overlayKeyPart.append(std::to_string(reinterpret_cast<size_t>(this)));
@@ -121,7 +111,7 @@ bool WidgetWindowCapture::Create()
             VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_Hmd, l_hmdPos);
             VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_Hmd, l_hmdRot);
 
-            glm::vec3 l_pos = l_hmdPos + (l_hmdRot*g_AxisZN)*0.5f;
+            glm::vec3 l_pos = l_hmdPos + (l_hmdRot*g_axisZN)*0.5f;
             m_transform->SetPosition(l_pos);
 
             glm::quat l_rot;
@@ -144,12 +134,9 @@ bool WidgetWindowCapture::Create()
         if(m_overlayControl != vr::k_ulOverlayHandleInvalid)
         {
             m_guiSystem = new GuiSystem(g_GuiSystemDefaultSize);
-            m_guiSystem->SetFont(GlobalSettings::GetGuiFont());
+            m_guiSystem->SetFont(ConfigManager::GetGuiFont());
 
-            const std::function<void(GuiElement*, unsigned char, unsigned char, unsigned int, unsigned int)> l_clickCallback([this](GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state, unsigned int, unsigned int)
-            {
-                this->OnGuiElementMouseClick(f_guiElement, f_button, f_state);
-            });
+            const auto l_clickCallback = std::bind(&WidgetWindowCapture::OnGuiElementMouseClick, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
             for(size_t i = 0U; i < CEI_Count; i++)
             {
                 m_guiImages[i] = m_guiSystem->CreateImage(ms_textureAtlas);
@@ -338,12 +325,12 @@ void WidgetWindowCapture::Update()
                             l_event.type = ButtonRelease;
                             XSendEvent(ms_display, l_window->Handle, true, ButtonReleaseMask, &l_event);
                             XFlush(ms_display);
-                    }
+                        }
 #endif
-                }
-            } break;
+                    }
+                } break;
+            }
         }
-    }
 
         while(vr::VROverlay()->PollNextOverlayEvent(m_overlayControl, &m_event, sizeof(vr::VREvent_t)))
         {
@@ -375,7 +362,7 @@ void WidgetWindowCapture::Update()
         {
             glm::quat l_handRot;
             VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_LeftController, l_handRot);
-            const glm::quat l_rot = glm::rotate(l_handRot, -g_PiHalf, g_AxisX);
+            const glm::quat l_rot = glm::rotate(l_handRot, -g_piHalf, g_axisX);
             m_transform->SetRotation(l_rot);
 
             glm::vec3 l_handPos;
@@ -412,7 +399,7 @@ void WidgetWindowCapture::Update()
         }
         m_windowCapturer->Update();
         if(m_texture.handle) vr::VROverlay()->SetOverlayTexture(m_overlay, &m_texture);
-}
+    }
 }
 
 void WidgetWindowCapture::OnButtonPress(size_t f_hand, uint32_t f_button)
@@ -583,6 +570,21 @@ void WidgetWindowCapture::OnGuiElementMouseClick(GuiElement *f_guiElement, unsig
 }
 
 // Static
+void WidgetWindowCapture::InitStaticResources()
+{
+#ifdef __linux__
+    if(!ms_display) ms_display = XOpenDisplay(nullptr);
+#endif
+
+    if(!ms_textureAtlas)
+    {
+        ms_textureAtlas = new sf::Texture();
+        if(!ms_textureAtlas->loadFromFile("icons/atlas_capture.png")) ms_textureAtlas->loadFromMemory(g_dummyTextureData, 16U);
+    }
+
+    WindowCapturer::InitStaticResources();
+}
+
 void WidgetWindowCapture::RemoveStaticResources()
 {
     if(ms_textureAtlas)

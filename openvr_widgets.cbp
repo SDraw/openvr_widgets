@@ -99,8 +99,6 @@
 		<Unit filename="vendor/pugixml/src/pugixml.cpp" />
 		<Unit filename="Core/Core.cpp" />
 		<Unit filename="Core/Core.h" />
-		<Unit filename="Core/GlobalSettings.cpp" />
-		<Unit filename="Core/GlobalSettings.h" />
 		<Unit filename="Core/VRDevicesStates.cpp" />
 		<Unit filename="Core/VRDevicesStates.h" />
 		<Unit filename="Gui/GuiButton.cpp" />

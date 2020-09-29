@@ -66,9 +66,7 @@ class WidgetStats final : public Widget
     void OnHandDeactivated(size_t f_hand) override;
     void OnButtonPress(size_t f_hand, uint32_t f_button) override;
     void OnButtonRelease(size_t f_hand, uint32_t f_button) override;
-protected:
+public:
     WidgetStats();
     ~WidgetStats();
-
-    friend class WidgetManager;
 };

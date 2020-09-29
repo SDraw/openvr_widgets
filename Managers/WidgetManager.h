@@ -3,6 +3,7 @@
 class Core;
 class GuiSystem;
 class GuiElement;
+class GuiButton;
 class Widget;
 
 class WidgetManager final
@@ -30,25 +31,24 @@ class WidgetManager final
     std::vector<Widget*> m_widgets;
 
     GuiSystem *m_guiSystem;
-    GuiElement *m_guiElements[GEI_Max];
+    GuiButton *m_guiElements[GEI_Max];
     bool m_activeDashboard;
 
     WidgetManager(const WidgetManager &that) = delete;
     WidgetManager& operator=(const WidgetManager &that) = delete;
-public:
+
     void OnGuiElementMouseClick(GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state);
-protected:
+public:
     explicit WidgetManager(Core *f_core);
     ~WidgetManager();
 
     void DoPulse();
 
+    // Events for widgets
     void OnHandActivated(size_t f_hand);
     void OnHandDeactivated(size_t f_hand);
     void OnButtonPress(size_t f_hand, uint32_t f_button);
     void OnButtonRelease(size_t f_hand, uint32_t f_button);
     void OnDashboardOpen();
     void OnDashboardClose();
-
-    friend Core;
 };

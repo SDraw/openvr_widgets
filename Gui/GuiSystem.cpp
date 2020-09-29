@@ -6,8 +6,8 @@
 #include "Gui/GuiText.h"
 #include "Utils/TexturePooler.h"
 
-extern const sf::Color g_ClearColor;
-extern const unsigned char g_DummyTextureData[];
+extern const sf::Color g_clearColor;
+extern const unsigned char g_dummyTextureData[];
 
 GuiSystem::GuiSystem(const sf::Vector2u &f_size)
 {
@@ -72,7 +72,7 @@ void GuiSystem::Update()
     {
         if(m_renderTexture->setActive(true))
         {
-            m_renderTexture->clear(g_ClearColor);
+            m_renderTexture->clear(g_clearColor);
 
             for(auto l_element : m_guiElements)
             {

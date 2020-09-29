@@ -156,7 +156,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Core\Core.cpp" />
-    <ClCompile Include="Core\GlobalSettings.cpp" />
     <ClCompile Include="Core\VRDevicesStates.cpp" />
     <ClCompile Include="Gui\GuiButton.cpp" />
     <ClCompile Include="Gui\GuiElement.cpp" />
@@ -190,7 +189,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Core.h" />
-    <ClInclude Include="Core\GlobalSettings.h" />
     <ClInclude Include="Core\VRDevicesStates.h" />
     <ClInclude Include="Gui\GuiButton.h" />
     <ClInclude Include="Gui\GuiElement.h" />

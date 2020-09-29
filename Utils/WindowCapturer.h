@@ -30,6 +30,9 @@ class WindowCapturer final
 
     WindowCapturer(const WindowCapturer &that) = delete;
     WindowCapturer& operator=(const WindowCapturer &that) = delete;
+
+    std::vector<SL::Screen_Capture::Window> GetCapturedWindow();
+    void ProcessCapture(const SL::Screen_Capture::Image &f_img, const SL::Screen_Capture::Window &f_window);
 public:
     WindowCapturer();
     ~WindowCapturer();
@@ -49,11 +52,7 @@ public:
 
     void* GetTextureHandle() const;
 
-    // Internal use only
-    std::vector<SL::Screen_Capture::Window> GetCapturedWindow();
-    void ProcessCapture(const SL::Screen_Capture::Image &f_img, const SL::Screen_Capture::Window &f_window);
-protected:
+    static void InitStaticResources();
     static void RemoveStaticResources();
 
-    friend class WidgetWindowCapture;
 };

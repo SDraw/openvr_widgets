@@ -17,6 +17,9 @@ class GuiButton final : public GuiElement
     // GuiElement
     void Update() override;
 public:
+    explicit GuiButton(const sf::Font *f_font);
+    ~GuiButton();
+
     void SetText(const char *f_string);
     void SetText(const wchar_t *f_string);
     void SetText(const std::string &f_string);
@@ -24,9 +27,4 @@ public:
     void SetTextSize(unsigned int f_size);
 
     void SetBackgroundColor(const sf::Color &f_color);
-protected:
-    explicit GuiButton(const sf::Font *f_font);
-    ~GuiButton();
-
-    friend class GuiSystem;
 };

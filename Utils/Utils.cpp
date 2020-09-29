@@ -2,7 +2,7 @@
 
 #include "Utils/Utils.h"
 
-extern const glm::vec3 g_AxisY;
+extern const glm::vec3 g_axisY;
 
 void ConvertMatrix(const vr::HmdMatrix34_t &f_matVR, glm::mat4 &f_mat)
 {
@@ -26,7 +26,7 @@ void GetRotationToPoint(const glm::vec3 &f_pointA, const glm::vec3 &f_pointB, co
     glm::vec3 l_dir = (f_pointA - f_pointB);
     l_dir = glm::normalize(l_dir);
 
-    const glm::vec3 l_up = f_rotationA*g_AxisY;
+    const glm::vec3 l_up = f_rotationA*g_axisY;
     glm::vec3 l_crossA = glm::cross(l_up, l_dir);
     l_crossA = glm::normalize(l_crossA);
 

@@ -13,7 +13,7 @@
 #include "Widgets/WidgetStats.h"
 #include "Widgets/WidgetWindowCapture.h"
 
-const char *g_ButtonTexts[]
+const char *g_buttonTexts[]
 {
     "Add window capture widget",
         "Add keyboard widget",
@@ -25,11 +25,11 @@ const char *g_ButtonTexts[]
 
 enum ConstantWidgetIndex : size_t
 {
-    CWI_Stats = 0U
+    CWI_Stats = 0U,
 };
 
-const sf::Vector2f g_ButtonSize(320.f, 64.f);
-const sf::Vector2u g_GuiSize(512U, 512U);
+const sf::Vector2f g_buttonSize(320.f, 64.f);
+const sf::Vector2u g_guiSize(512U, 512U);
 
 WidgetManager::WidgetManager(Core *f_core)
 {
@@ -45,23 +45,19 @@ WidgetManager::WidgetManager(Core *f_core)
     for(size_t i = 0U; i < GEI_Max; i++) m_guiElements[i] = nullptr;
 
     // Create settings dashboard overlay
-    m_guiSystem = new GuiSystem(g_GuiSize);
+    m_guiSystem = new GuiSystem(g_guiSize);
     if(m_guiSystem->IsValid())
     {
-        m_guiSystem->SetFont(m_core->GetConfigManager()->GetGuiFont());
+        m_guiSystem->SetFont(ConfigManager::GetGuiFont());
 
-        const std::function<void(GuiElement*, unsigned char, unsigned char, unsigned int, unsigned int)> l_clickCallback([this](GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state, unsigned int, unsigned int)
-        {
-            this->OnGuiElementMouseClick(f_guiElement, f_button, f_state);
-        });
-
+        const auto l_clickCallback = std::bind(&WidgetManager::OnGuiElementMouseClick, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
         for(size_t i = 0U; i < GEI_Max; i++)
         {
             m_guiElements[i] = m_guiSystem->CreateButton();
             m_guiElements[i]->SetPosition(sf::Vector2f(96.f, 16.f + 80.f * static_cast<float>(i)));
-            m_guiElements[i]->SetSize(g_ButtonSize);
-            dynamic_cast<GuiButton*>(m_guiElements[i])->SetTextSize(20U);
-            dynamic_cast<GuiButton*>(m_guiElements[i])->SetText(g_ButtonTexts[i]);
+            m_guiElements[i]->SetSize(g_buttonSize);
+            m_guiElements[i]->SetTextSize(20U);
+            m_guiElements[i]->SetText(g_buttonTexts[i]);
             m_guiElements[i]->SetClickCallback(l_clickCallback);
             m_guiElements[i]->SetUserPointer(reinterpret_cast<void*>(i));
         }
@@ -70,7 +66,7 @@ WidgetManager::WidgetManager(Core *f_core)
     vr::VROverlay()->CreateDashboardOverlay("ovrw.settings", "OpenVR Widgets Settings", &m_overlayDashboard, &m_overlayDashboardThumbnail);
     if((m_overlayDashboard != vr::k_ulOverlayHandleInvalid) && (m_overlayDashboardThumbnail != vr::k_ulOverlayHandleInvalid))
     {
-        std::string l_iconPath(m_core->GetConfigManager()->GetDirectory());
+        std::string l_iconPath(ConfigManager::GetDirectory());
         l_iconPath.append("\\icons\\dashboard_icon.png");
         vr::VROverlay()->SetOverlayFromFile(m_overlayDashboardThumbnail, l_iconPath.c_str());
 
@@ -86,6 +82,10 @@ WidgetManager::WidgetManager(Core *f_core)
         vr::VROverlay()->SetOverlayTexture(m_overlayDashboard, &m_textureDashboard);
     }
 
+    // Init static widget resources
+    WidgetKeyboard::InitStaticResources();
+    WidgetWindowCapture::InitStaticResources();
+
     // Init constant overlays
     m_constantWidgets.emplace(ConstantWidgetIndex::CWI_Stats, new WidgetStats());
     for(auto l_iter : m_constantWidgets) l_iter.second->Create();
@@ -95,7 +95,6 @@ WidgetManager::WidgetManager(Core *f_core)
 }
 WidgetManager::~WidgetManager()
 {
-    // Save settings?
     delete m_guiSystem;
 
     // Destroy active widgets
@@ -113,8 +112,8 @@ WidgetManager::~WidgetManager()
     }
     m_widgets.clear();
 
-    WidgetWindowCapture::RemoveStaticResources();
     WidgetKeyboard::RemoveStaticResources();
+    WidgetWindowCapture::RemoveStaticResources();
 }
 
 void WidgetManager::DoPulse()
@@ -146,14 +145,14 @@ void WidgetManager::DoPulse()
 #ifdef _WIN32
                         m_guiSystem->ProcessClick(l_button, l_state, static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(m_overlayEvent.data.mouse.y));
 #elif __linux__
-                        m_guiSystem->ProcessClick(l_button, l_state, static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(g_GuiSize.y - m_overlayEvent.data.mouse.y));
+                        m_guiSystem->ProcessClick(l_button, l_state, static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(g_guiSize.y - m_overlayEvent.data.mouse.y));
 #endif
                     } break;
                     case vr::VREvent_MouseMove:
 #ifdef _WIN32
                         m_guiSystem->ProcessMove(static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(m_overlayEvent.data.mouse.y));
 #elif __linux__
-                        m_guiSystem->ProcessMove(static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(g_GuiSize.y - m_overlayEvent.data.mouse.y));
+                        m_guiSystem->ProcessMove(static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(g_guiSize.y - m_overlayEvent.data.mouse.y));
 #endif
 
                         break;

@@ -21,9 +21,7 @@ public:
     void Set(const std::wstring &f_string);
     void SetCharactersSize(unsigned int f_size);
     void SetAlignment(unsigned char f_align);
-protected:
+public:
     explicit GuiText(const sf::Font *f_font);
     ~GuiText();
-
-    friend class GuiSystem;
 };

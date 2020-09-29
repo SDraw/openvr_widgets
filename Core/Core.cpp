@@ -9,7 +9,7 @@
 
 SFML_DEFINE_DISCRETE_GPU_PREFERENCE
 
-const unsigned long long g_PowerUpdateInterval = 30000U;
+const unsigned long long g_powerUpdateInterval = 30000U;
 
 Core::Core()
 {
@@ -27,25 +27,6 @@ Core::Core()
 }
 Core::~Core()
 {
-    Cleanup();
-}
-
-void Core::Cleanup()
-{
-    delete m_widgetManager;
-    m_widgetManager = nullptr;
-
-    delete m_configManager;
-    m_configManager = nullptr;
-
-    delete m_context;
-    m_context = nullptr;
-
-    if(m_vrSystem)
-    {
-        vr::VR_Shutdown();
-        m_vrSystem = nullptr;
-    }
 }
 
 bool Core::Initialize()
@@ -59,38 +40,40 @@ bool Core::Initialize()
 
             if(l_initError == vr::VRInitError_None)
             {
-                // Find devices
-                m_deviceIndex[VRDeviceIndex::VDI_Hmd] = 0U; // Always has been
-                m_deviceIndex[VRDeviceIndex::VDI_LeftController] = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);
-                m_deviceIndex[VRDeviceIndex::VDI_RightController] = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
+                // Load settings
+                m_configManager = new ConfigManager();
+                m_configManager->Load();
+                m_threadDelay = std::chrono::milliseconds(ConfigManager::GetUpdateDelay());
 
-                for(vr::TrackedDeviceIndex_t i = 1U; i < vr::k_unMaxTrackedDeviceCount; i++)
+                // Init context
+                const sf::ContextSettings l_contextSettings(0U, 0U, 0U, 3U, 0U, sf::ContextSettings::Core, false);
+                m_context = new sf::Context(l_contextSettings, 2U, 2U);
+                if(m_context->setActive(true))
                 {
-                    if(m_vrSystem->IsTrackedDeviceConnected(i))
+                    // Find devices
+                    m_deviceIndex[VRDeviceIndex::VDI_Hmd] = 0U; // Always has been
+                    m_deviceIndex[VRDeviceIndex::VDI_LeftController] = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);
+                    m_deviceIndex[VRDeviceIndex::VDI_RightController] = m_vrSystem->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
+
+                    for(vr::TrackedDeviceIndex_t i = 1U; i < vr::k_unMaxTrackedDeviceCount; i++)
                     {
-                        if(m_vrSystem->GetTrackedDeviceClass(i) == vr::TrackedDeviceClass_GenericTracker)
+                        if(m_vrSystem->IsTrackedDeviceConnected(i))
                         {
-                            for(size_t j = VRDeviceIndex::VDI_FirstTracker; j <= VRDeviceIndex::VDI_ThirdTracker; j++)
+                            if(m_vrSystem->GetTrackedDeviceClass(i) == vr::TrackedDeviceClass_GenericTracker)
                             {
-                                if(m_deviceIndex[j] == vr::k_unTrackedDeviceIndexInvalid)
+                                for(size_t j = VRDeviceIndex::VDI_FirstTracker; j <= VRDeviceIndex::VDI_ThirdTracker; j++)
                                 {
-                                    m_deviceIndex[j] = i;
-                                    break;
+                                    if(m_deviceIndex[j] == vr::k_unTrackedDeviceIndexInvalid)
+                                    {
+                                        m_deviceIndex[j] = i;
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                const sf::ContextSettings l_contextSettings(0U, 0U, 0U, 3U, 0U, sf::ContextSettings::Core, false);
-                m_context = new sf::Context(l_contextSettings, 2U, 2U);
-
-                if(m_context->setActive(true))
-                {
-                    m_configManager = new ConfigManager(this);
-                    m_configManager->Load();
-                    m_threadDelay = std::chrono::milliseconds(m_configManager->GetUpdateDelay());
-
+                    // Init widgets
                     m_widgetManager = new WidgetManager(this);
                     if(m_deviceIndex[VRDeviceIndex::VDI_LeftController] != vr::k_unTrackedDeviceIndexInvalid) m_widgetManager->OnHandActivated(VRDeviceIndex::VDI_LeftController);
                     if(m_deviceIndex[VRDeviceIndex::VDI_RightController] != vr::k_unTrackedDeviceIndexInvalid) m_widgetManager->OnHandActivated(VRDeviceIndex::VDI_RightController);
@@ -126,8 +109,20 @@ bool Core::Initialize()
 
 void Core::Terminate()
 {
-    m_configManager->Save();
-    Cleanup();
+    delete m_widgetManager;
+    m_widgetManager = nullptr;
+
+    delete m_configManager;
+    m_configManager = nullptr;
+
+    delete m_context;
+    m_context = nullptr;
+
+    if(m_vrSystem)
+    {
+        vr::VR_Shutdown();
+        m_vrSystem = nullptr;
+    }
 }
 
 bool Core::DoPulse()
@@ -150,7 +145,7 @@ bool Core::DoPulse()
         }
 
         // Get battery levels
-        if((m_systemTick - m_powerTick) >= g_PowerUpdateInterval) // Check every 30 seconds
+        if((m_systemTick - m_powerTick) >= g_powerUpdateInterval) // Check every 30 seconds
         {
             m_powerTick = m_systemTick;
             for(size_t i = 0U; i < VRDeviceIndex::VDI_Max; i++)
@@ -204,7 +199,7 @@ bool Core::DoPulse()
                                 if(m_deviceIndex[i] == vr::k_unTrackedDeviceIndexInvalid)
                                 {
                                     m_deviceIndex[i] = m_event.trackedDeviceIndex;
-                                    m_powerTick -= g_PowerUpdateInterval;
+                                    m_powerTick -= g_powerUpdateInterval;
                                     break;
                                 }
                             }
@@ -244,7 +239,7 @@ bool Core::DoPulse()
                             {
                                 m_deviceIndex[i] = l_controllerIndex;
                                 m_widgetManager->OnHandActivated(i);
-                                m_powerTick -= g_PowerUpdateInterval;
+                                m_powerTick -= g_powerUpdateInterval;
                                 break;
                             }
                         }

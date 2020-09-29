@@ -64,6 +64,8 @@ class WidgetWindowCapture final : public Widget
 
     void StartCapture();
 
+    void OnGuiElementMouseClick(GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state);
+
     // Widget
     bool Create();
     void Destroy() override;
@@ -73,12 +75,9 @@ class WidgetWindowCapture final : public Widget
     void OnDashboardOpen() override;
     void OnDashboardClose() override;
 public:
-    void OnGuiElementMouseClick(GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state);
-protected:
     WidgetWindowCapture();
     ~WidgetWindowCapture();
 
+    static void InitStaticResources();
     static void RemoveStaticResources();
-
-    friend class WidgetManager;
 };

@@ -32,6 +32,8 @@ void Widget::Destroy()
         m_overlay = vr::k_ulOverlayHandleInvalid;
     }
 
+    m_texture.handle = nullptr;
+
     m_valid = false;
     m_visible = false;
     m_closed = false;

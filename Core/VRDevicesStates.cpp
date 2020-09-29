@@ -3,14 +3,14 @@
 #include "Core/VRDevicesStates.h"
 #include "Utils/Utils.h"
 
-extern const glm::mat4 g_IdentityMatrix;
-extern const glm::vec3 g_EmptyVector;
-extern const glm::quat g_EmptyQuat;
-extern const glm::vec4 g_ZeroPoint;
+extern const glm::mat4 g_identityMatrix;
+extern const glm::vec3 g_emptyVector;
+extern const glm::quat g_emptyQuat;
+extern const glm::vec4 g_zeroPoint;
 
-glm::vec3 VRDevicesStates::ms_devicePos[] = { g_EmptyVector };
-glm::quat VRDevicesStates::ms_deviceRot[] = { g_EmptyQuat };
-glm::mat4 VRDevicesStates::ms_deviceMat[] = { g_IdentityMatrix };
+glm::vec3 VRDevicesStates::ms_devicePos[] = { g_emptyVector };
+glm::quat VRDevicesStates::ms_deviceRot[] = { g_emptyQuat };
+glm::mat4 VRDevicesStates::ms_deviceMat[] = { g_identityMatrix };
 float VRDevicesStates::ms_devicePower[] = { 0.f };
 
 void VRDevicesStates::SetDeviceTransformation(const size_t f_device, const vr::HmdMatrix34_t &f_mat)
@@ -18,7 +18,7 @@ void VRDevicesStates::SetDeviceTransformation(const size_t f_device, const vr::H
     if(f_device < VRDeviceIndex::VDI_Max)
     {
         ConvertMatrix(f_mat, ms_deviceMat[f_device]);
-        ms_devicePos[f_device] = ms_deviceMat[f_device] * g_ZeroPoint;
+        ms_devicePos[f_device] = ms_deviceMat[f_device] * g_zeroPoint;
         ms_deviceRot[f_device] = glm::quat_cast(ms_deviceMat[f_device]);
     }
 }

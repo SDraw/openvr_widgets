@@ -2,15 +2,12 @@
 
 #include "Gui/GuiButton.h"
 
-const sf::Vector2f g_DefaultButtonSize(64.f, 64.f);
-const sf::Color g_DefaultButtonBackgroundColor(127U, 127U, 127U, 255U);
-
 GuiButton::GuiButton(const sf::Font *f_font)
 {
     m_fontText = new sf::Text("", *f_font, 14U);
     m_background = new sf::RectangleShape();
-    m_size = g_DefaultButtonSize;
-    m_backgroundColor = g_DefaultButtonBackgroundColor;
+    m_size = { 64.f, 64.f };
+    m_backgroundColor = { 127U, 127U, 127U, 255U };
 
     m_drawables.push_back(m_background);
     m_drawables.push_back(m_fontText);

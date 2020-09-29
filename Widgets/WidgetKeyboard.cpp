@@ -5,21 +5,21 @@
 #include "Gui/GuiButton.h"
 #include "Utils/Transformation.h"
 
-#include "Core/GlobalSettings.h"
 #include "Core/VRDevicesStates.h"
+#include "Managers/ConfigManager.h"
 #include "Gui/GuiStructures.h"
 #include "Utils/Utils.h"
 
-extern const float g_PiHalf;
-extern const glm::vec3 g_AxisX;
-extern const glm::vec3 g_AxisZN;
-extern const unsigned char g_DummyTextureData[];
+extern const float g_piHalf;
+extern const glm::vec3 g_axisX;
+extern const glm::vec3 g_axisZN;
+extern const unsigned char g_dummyTextureData[];
 
-const sf::Vector2u g_TargetSize(1024U, 512U);
-const sf::Color g_HoverColor(142U, 205U, 246U);
-const sf::Vector2f g_ButtonSize(64.f, 64.f);
+const sf::Vector2u g_targetSize(1024U, 512U);
+const sf::Color g_hoverColor(142U, 205U, 246U);
+const sf::Vector2f g_buttonSize(64.f, 64.f);
 
-const unsigned short g_KeyReferences[]
+const unsigned short g_keyCodes[]
 {
 #ifdef _WIN32
     VK_ESCAPE, VK_PRINT, VK_PAUSE,
@@ -104,27 +104,14 @@ bool WidgetKeyboard::Create()
 {
     if(!m_valid)
     {
-        m_guiSystem = new GuiSystem(g_TargetSize);
+        m_guiSystem = new GuiSystem(g_targetSize);
         if(m_guiSystem->IsValid())
         {
-            m_guiSystem->SetFont(GlobalSettings::GetGuiFont());
-
-            if(!ms_textureAtlas)
-            {
-                ms_textureAtlas = new sf::Texture();
-                if(!ms_textureAtlas->loadFromFile("icons/atlas_keyboard.png")) ms_textureAtlas->loadFromMemory(g_DummyTextureData, 16U);
-
-                ms_textureControls.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(ms_textureAtlas->getNativeHandle()));
-                ms_textureControls.eType = vr::TextureType_OpenGL;
-                ms_textureControls.eColorSpace = vr::ColorSpace_Gamma;
-            }
+            m_guiSystem->SetFont(ConfigManager::GetGuiFont());
 
             for(size_t i = 0U; i < CI_Count; i++) m_transformControls[i] = new Transformation();
 
-            const std::function<void(GuiElement*, unsigned char, unsigned char, unsigned int, unsigned int)> l_clickCallback([this](GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state, unsigned int, unsigned int)
-            {
-                this->OnGuiElementClick(f_guiElement, f_button, f_state);
-            });
+            const auto l_clickCallback = std::bind(&WidgetKeyboard::OnGuiElementClick, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
             // 7 lines, 16 keys per line
             for(size_t i = 0U; i < KKI_Count; i++)
@@ -135,83 +122,83 @@ bool WidgetKeyboard::Create()
                 const size_t l_line = (i - l_field) / 16U;
                 const sf::Vector2f l_buttonPosition(l_field*64.f, l_line*64.f);
                 m_guiButtons[i]->SetPosition(l_buttonPosition);
-                m_guiButtons[i]->SetSize(g_ButtonSize);
-                m_guiButtons[i]->SetSelectionColor(g_HoverColor);
+                m_guiButtons[i]->SetSize(g_buttonSize);
+                m_guiButtons[i]->SetSelectionColor(g_hoverColor);
                 m_guiButtons[i]->SetText(g_KeyNames[i]);
                 m_guiButtons[i]->SetTextSize(24U);
                 m_guiButtons[i]->SetVisibility(true);
                 m_guiButtons[i]->SetClickCallback(l_clickCallback);
                 m_guiButtons[i]->SetUserPointer(reinterpret_cast<void*>(i));
             }
-
-            std::string l_overlayKeyPart("ovrw.keyboard_");
-            l_overlayKeyPart.append(std::to_string(reinterpret_cast<size_t>(this)));
-
-            std::string l_overlayKeyFull(l_overlayKeyPart);
-            l_overlayKeyFull.append(".main");
-            vr::VROverlay()->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Main", &m_overlay);
-            if(m_overlay != vr::k_ulOverlayHandleInvalid)
-            {
-                // Create overlay in front of user
-                glm::vec3 l_hmdPos;
-                glm::quat l_hmdRot;
-                VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_Hmd,l_hmdPos);
-                VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_Hmd, l_hmdRot);
-                glm::vec3 l_pos = l_hmdPos + (l_hmdRot*g_AxisZN)*0.5f;
-                m_transform->SetPosition(l_pos);
-
-                glm::quat l_rot;
-                GetRotationToPoint(l_hmdPos, l_pos, l_hmdRot, l_rot);
-                m_transform->SetRotation(l_rot);
-
-                vr::VROverlay()->SetOverlayInputMethod(m_overlay, vr::VROverlayInputMethod_Mouse);
-                vr::VROverlay()->SetOverlayWidthInMeters(m_overlay, 1.0f);
-
-                const vr::HmdVector2_t l_mouseScale = { 1024.f, 512.f };
-                vr::VROverlay()->SetOverlayMouseScale(m_overlay, &l_mouseScale);
-                vr::VROverlay()->SetOverlayWidthInMeters(m_overlay, 0.5f);
-
-                m_texture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_guiSystem->GetRenderTextureHandle()));
-                vr::VROverlay()->ShowOverlay(m_overlay);
-            }
-
-            l_overlayKeyFull.assign(l_overlayKeyPart);
-            l_overlayKeyFull.append(".pin");
-            vr::VROverlay()->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Pin", &m_overlayControls[CI_Pin]);
-            if(m_overlayControls[CI_Pin] != vr::k_ulOverlayHandleInvalid)
-            {
-                m_transformControls[CI_Pin]->SetPosition(glm::vec3(0.285f, 0.03f, 0.f));
-                vr::VRTextureBounds_t l_bounds = { 0.f, 1.f, 0.5f, 0.5f };
-                vr::VROverlay()->SetOverlayTextureBounds(m_overlayControls[CI_Pin], &l_bounds);
-            }
-
-            l_overlayKeyFull.assign(l_overlayKeyPart);
-            l_overlayKeyFull.append(".close");
-            vr::VROverlay()->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Close", &m_overlayControls[CI_Close]);
-            if(m_overlayControls[CI_Close] != vr::k_ulOverlayHandleInvalid)
-            {
-                m_transformControls[CI_Close]->SetPosition(glm::vec3(0.285f, -0.03f, 0.f));
-                vr::VRTextureBounds_t l_bounds = { 0.f, 0.5f, 0.5f, 0.f };
-                vr::VROverlay()->SetOverlayTextureBounds(m_overlayControls[CI_Close], &l_bounds);
-            }
-
-            m_valid = (m_overlay != vr::k_ulOverlayHandleInvalid);
-            for(size_t i = 0U; i < CI_Count; i++)
-            {
-                if(m_overlayControls[i] != vr::k_ulOverlayHandleInvalid)
-                {
-                    vr::VROverlay()->SetOverlayWidthInMeters(m_overlayControls[i], 0.05f);
-                    vr::VROverlay()->SetOverlayInputMethod(m_overlayControls[i], vr::VROverlayInputMethod::VROverlayInputMethod_Mouse);
-                }
-                else
-                {
-                    m_valid = false;
-                    break;
-                }
-            }
-
-            m_visible = m_valid;
         }
+
+        std::string l_overlayKeyPart("ovrw.keyboard_");
+        l_overlayKeyPart.append(std::to_string(reinterpret_cast<size_t>(this)));
+
+        std::string l_overlayKeyFull(l_overlayKeyPart);
+        l_overlayKeyFull.append(".main");
+        vr::VROverlay()->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Main", &m_overlay);
+        if(m_overlay != vr::k_ulOverlayHandleInvalid)
+        {
+            // Create overlay in front of user
+            glm::vec3 l_hmdPos;
+            glm::quat l_hmdRot;
+            VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_Hmd, l_hmdPos);
+            VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_Hmd, l_hmdRot);
+            glm::vec3 l_pos = l_hmdPos + (l_hmdRot*g_axisZN)*0.5f;
+            m_transform->SetPosition(l_pos);
+
+            glm::quat l_rot;
+            GetRotationToPoint(l_hmdPos, l_pos, l_hmdRot, l_rot);
+            m_transform->SetRotation(l_rot);
+
+            vr::VROverlay()->SetOverlayInputMethod(m_overlay, vr::VROverlayInputMethod_Mouse);
+            vr::VROverlay()->SetOverlayWidthInMeters(m_overlay, 1.0f);
+
+            const vr::HmdVector2_t l_mouseScale = { 1024.f, 512.f };
+            vr::VROverlay()->SetOverlayMouseScale(m_overlay, &l_mouseScale);
+            vr::VROverlay()->SetOverlayWidthInMeters(m_overlay, 0.5f);
+
+            m_texture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_guiSystem->GetRenderTextureHandle()));
+            vr::VROverlay()->ShowOverlay(m_overlay);
+        }
+
+        l_overlayKeyFull.assign(l_overlayKeyPart);
+        l_overlayKeyFull.append(".pin");
+        vr::VROverlay()->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Pin", &m_overlayControls[CI_Pin]);
+        if(m_overlayControls[CI_Pin] != vr::k_ulOverlayHandleInvalid)
+        {
+            m_transformControls[CI_Pin]->SetPosition(glm::vec3(0.285f, 0.03f, 0.f));
+            vr::VRTextureBounds_t l_bounds = { 0.f, 1.f, 0.5f, 0.5f };
+            vr::VROverlay()->SetOverlayTextureBounds(m_overlayControls[CI_Pin], &l_bounds);
+        }
+
+        l_overlayKeyFull.assign(l_overlayKeyPart);
+        l_overlayKeyFull.append(".close");
+        vr::VROverlay()->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Keyboard - Close", &m_overlayControls[CI_Close]);
+        if(m_overlayControls[CI_Close] != vr::k_ulOverlayHandleInvalid)
+        {
+            m_transformControls[CI_Close]->SetPosition(glm::vec3(0.285f, -0.03f, 0.f));
+            vr::VRTextureBounds_t l_bounds = { 0.f, 0.5f, 0.5f, 0.f };
+            vr::VROverlay()->SetOverlayTextureBounds(m_overlayControls[CI_Close], &l_bounds);
+        }
+
+        m_valid = (m_overlay != vr::k_ulOverlayHandleInvalid && m_guiSystem->IsValid());
+        for(size_t i = 0U; i < CI_Count; i++)
+        {
+            if(m_overlayControls[i] != vr::k_ulOverlayHandleInvalid)
+            {
+                vr::VROverlay()->SetOverlayWidthInMeters(m_overlayControls[i], 0.05f);
+                vr::VROverlay()->SetOverlayInputMethod(m_overlayControls[i], vr::VROverlayInputMethod::VROverlayInputMethod_Mouse);
+            }
+            else
+            {
+                m_valid = false;
+                break;
+            }
+        }
+
+        m_visible = m_valid;
     }
 
     return m_valid;
@@ -315,7 +302,7 @@ void WidgetKeyboard::Update()
         {
             glm::quat l_handRot;
             VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_LeftController, l_handRot);
-            const glm::quat l_rot = glm::rotate(l_handRot, -g_PiHalf, g_AxisX);
+            const glm::quat l_rot = glm::rotate(l_handRot, -g_piHalf, g_axisX);
             m_transform->SetRotation(l_rot);
 
             glm::vec3 l_handPos;
@@ -380,8 +367,6 @@ void WidgetKeyboard::OnDashboardOpen()
 
     if(m_valid)
     {
-        m_activeDashboard = true;
-
         for(size_t i = 0U; i < CI_Count; i++) vr::VROverlay()->ShowOverlay(m_overlayControls[i]);
         if(!m_activePin) vr::VROverlay()->ShowOverlay(m_overlay);
     }
@@ -392,7 +377,6 @@ void WidgetKeyboard::OnDashboardClose()
 
     if(m_valid)
     {
-        m_activeDashboard = false;
         for(size_t i = 0U; i < CI_Count; i++) vr::VROverlay()->HideOverlay(m_overlayControls[i]);
         if(!m_activePin) vr::VROverlay()->HideOverlay(m_overlay);
     }
@@ -408,7 +392,7 @@ void WidgetKeyboard::OnGuiElementClick(GuiElement *f_guiElement, unsigned char f
         l_input.ki.wScan = 0;
         l_input.ki.time = 0;
         l_input.ki.dwExtraInfo = 0;
-        l_input.ki.wVk = g_KeyReferences[reinterpret_cast<size_t>(f_guiElement->GetUserPointer())];
+        l_input.ki.wVk = g_keyCodes[reinterpret_cast<size_t>(f_guiElement->GetUserPointer())];
         l_input.ki.dwFlags = 0;
         SendInput(1U, &l_input, sizeof(INPUT));
 
@@ -417,6 +401,19 @@ void WidgetKeyboard::OnGuiElementClick(GuiElement *f_guiElement, unsigned char f
 #elif __linux__
         // Implement in Linux way
 #endif
+    }
+}
+
+void WidgetKeyboard::InitStaticResources()
+{
+    if(!ms_textureAtlas)
+    {
+        ms_textureAtlas = new sf::Texture();
+        if(!ms_textureAtlas->loadFromFile("icons/atlas_keyboard.png")) ms_textureAtlas->loadFromMemory(g_dummyTextureData, 16U);
+
+        ms_textureControls.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(ms_textureAtlas->getNativeHandle()));
+        ms_textureControls.eType = vr::TextureType_OpenGL;
+        ms_textureControls.eColorSpace = vr::ColorSpace_Gamma;
     }
 }
 

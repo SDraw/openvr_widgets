@@ -76,6 +76,8 @@ class WidgetKeyboard : public Widget
 
     unsigned long long m_lastTriggerTick;
 
+    void OnGuiElementClick(GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state);
+
     // Widget
     bool Create();
     void Destroy() override;
@@ -84,13 +86,10 @@ class WidgetKeyboard : public Widget
     void OnButtonPress(size_t f_hand, uint32_t f_button) override;
     void OnDashboardOpen() override;
     void OnDashboardClose() override;
-protected:
+public:
     WidgetKeyboard();
     ~WidgetKeyboard();
 
-    void OnGuiElementClick(GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state);
-
+    static void InitStaticResources();
     static void RemoveStaticResources();
-
-    friend class WidgetManager;
 };

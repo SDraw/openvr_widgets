@@ -3,20 +3,20 @@
 #include "Widgets/WidgetStats.h"
 #include "Utils/Transformation.h"
 
-#include "Core/GlobalSettings.h"
 #include "Core/VRDevicesStates.h"
+#include "Managers/ConfigManager.h"
 #include "Utils/Utils.h"
 
-extern const float g_Pi;
-extern const glm::vec3 g_AxisX;
-extern const glm::vec3 g_AxisY;
-extern const glm::vec3 g_AxisZN;
-extern const sf::Color g_ClearColor;
-extern const unsigned char g_DummyTextureData[];
+extern const float g_pi;
+extern const glm::vec3 g_axisX;
+extern const glm::vec3 g_axisY;
+extern const glm::vec3 g_axisZN;
+extern const sf::Color g_clearColor;
+extern const unsigned char g_dummyTextureData[];
 
 const sf::Vector2f g_RenderTargetSize(512.f, 128.f);
 const glm::vec3 g_OverlayOffset(0.f, 0.05f, 0.f);
-const glm::vec2 g_ViewAngleRange(g_Pi / 6.f, g_Pi / 12.f);
+const glm::vec2 g_ViewAngleRange(g_pi / 6.f, g_pi / 12.f);
 const float g_ViewAngleRangeDiff = (g_ViewAngleRange.x - g_ViewAngleRange.y);
 
 const char* g_WeekDays[]
@@ -70,6 +70,7 @@ bool WidgetStats::Create()
         if(PdhOpenQuery(NULL, NULL, &m_winHandles.m_query) == ERROR_SUCCESS)
         {
             PdhAddEnglishCounter(m_winHandles.m_query, L"\\Processor(_Total)\\% Processor Time", NULL, &m_winHandles.m_counter);
+        }
 #elif __linux__
         std::ifstream l_memInfo("/proc/meminfo",std::ios_base::in);
         std::string l_line;
@@ -83,44 +84,45 @@ bool WidgetStats::Create()
         }
         l_memInfo.close();
 #endif
-        if(vr::VROverlay()->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlay) == vr::VROverlayError_None)
+        vr::VROverlay()->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlay);
+        if(m_overlay != vr::k_ulOverlayHandleInvalid)
         {
             vr::VROverlay()->SetOverlayWidthInMeters(m_overlay, 0.125f);
             vr::VROverlay()->SetOverlayFlag(m_overlay, vr::VROverlayFlags_SortWithNonSceneOverlays, true);
+        }
 
-            m_renderTexture = new sf::RenderTexture();
-            if(m_renderTexture->create(static_cast<unsigned int>(g_RenderTargetSize.x), static_cast<unsigned int>(g_RenderTargetSize.y)))
+        m_renderTexture = new sf::RenderTexture();
+        if(m_renderTexture->create(static_cast<unsigned int>(g_RenderTargetSize.x), static_cast<unsigned int>(g_RenderTargetSize.y)))
+        {
+            m_texture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
+
+            m_font = new sf::Font();
+            if(m_font->loadFromFile(ConfigManager::GetGuiFont()))
             {
-                m_font = new sf::Font();
-                if(m_font->loadFromFile(GlobalSettings::GetGuiFont()))
-                {
-                    m_fontText[ST_Time] = new sf::Text("00:00:00", *m_font, 72U);
-                    m_fontText[ST_Date] = new sf::Text("Sun 0/0/0", *m_font, 36U);
-                    m_fontText[ST_Cpu] = new sf::Text("0.00 %", *m_font, 64U);
-                    m_fontText[ST_Ram] = new sf::Text("0/0", *m_font, 40U);
-                    m_fontText[ST_Frame] = new sf::Text("0 | 0 FPS", *m_font, 42U);
-                    m_fontText[ST_ControllerPower] = new sf::Text("0.00 % | 0.00 %", *m_font, 42U);
-                    m_fontText[ST_TrackerPower] = new sf::Text(" 0.00% | 0.00 % | 0.00 %", *m_font, 24U);
+                m_fontText[ST_Time] = new sf::Text("00:00:00", *m_font, 72U);
+                m_fontText[ST_Date] = new sf::Text("Sun 0/0/0", *m_font, 36U);
+                m_fontText[ST_Cpu] = new sf::Text("0.00 %", *m_font, 64U);
+                m_fontText[ST_Ram] = new sf::Text("0/0", *m_font, 40U);
+                m_fontText[ST_Frame] = new sf::Text("0 | 0 FPS", *m_font, 42U);
+                m_fontText[ST_ControllerPower] = new sf::Text("0.00 % | 0.00 %", *m_font, 42U);
+                m_fontText[ST_TrackerPower] = new sf::Text(" 0.00% | 0.00 % | 0.00 %", *m_font, 24U);
 
-                    m_textureAtlas = new sf::Texture;
-                    if(!m_textureAtlas->loadFromFile("icons/atlas_stats.png")) m_textureAtlas->loadFromMemory(g_DummyTextureData, 16U);
+                m_textureAtlas = new sf::Texture;
+                if(!m_textureAtlas->loadFromFile("icons/atlas_stats.png")) m_textureAtlas->loadFromMemory(g_dummyTextureData, 16U);
 
-                    m_spriteIcon = new sf::Sprite(*m_textureAtlas);
-                    m_spriteIcon->setScale(0.75f, 0.75f);
-                    m_spriteIcon->setPosition(16.f, 16.f);
-                    m_spriteIcon->setTextureRect(g_SpritesBounds[SM_Watch]);
+                m_spriteIcon = new sf::Sprite(*m_textureAtlas);
+                m_spriteIcon->setScale(0.75f, 0.75f);
+                m_spriteIcon->setPosition(16.f, 16.f);
+                m_spriteIcon->setTextureRect(g_SpritesBounds[SM_Watch]);
 
-                    m_texture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
-                    m_valid = true;
-                }
+                m_valid = true;
             }
         }
-#ifdef _WIN32
-        }
-#endif
+
+        m_valid = (m_valid && (m_overlay != vr::k_ulOverlayHandleInvalid));
     }
 
-return m_valid;
+    return m_valid;
 }
 
 void WidgetStats::Destroy()
@@ -165,7 +167,7 @@ void WidgetStats::Update()
         if((m_lastSecond != l_time->tm_sec) || m_forceUpdate)
         {
             m_renderTexture->setActive(true);
-            m_renderTexture->clear(g_ClearColor);
+            m_renderTexture->clear(g_clearColor);
             m_renderTexture->draw(*m_spriteIcon);
 
             switch(m_statsMode)
@@ -422,7 +424,7 @@ void WidgetStats::Update()
         glm::vec3 l_toHandDir = (m_transform->GetPosition() - l_hmdPos);
         l_toHandDir = glm::normalize(l_toHandDir);
 
-        const glm::vec3 l_viewDir = l_hmdRot*g_AxisZN;
+        const glm::vec3 l_viewDir = l_hmdRot*g_axisZN;
         float l_opacity = glm::dot(l_toHandDir, l_viewDir);
         l_opacity = glm::acos(l_opacity);
         l_opacity = glm::clamp(l_opacity, g_ViewAngleRange.y, g_ViewAngleRange.x);

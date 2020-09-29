@@ -39,13 +39,7 @@ void GuiImage::ProcessBlurInternal(unsigned int f_mouseX, unsigned int f_mouseY)
 
 void GuiImage::Update()
 {
-    if(m_update)
-    {
-        m_sprite->setPosition(m_position);
-
-        //const sf::Vector2u l_textureSize = m_sprite->getTexture()->getSize();
-        //m_sprite->setScale(m_size.x / static_cast<float>(l_textureSize.x), m_size.y / static_cast<float>(l_textureSize.y));
-    }
+    if(m_update) m_sprite->setPosition(m_position);
 
     GuiElement::Update();
 }

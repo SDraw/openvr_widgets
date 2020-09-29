@@ -3,16 +3,16 @@
 #include "Utils/Transformation.h"
 #include "Utils/Utils.h"
 
-extern const glm::mat4 g_IdentityMatrix;
-extern const glm::vec3 g_EmptyVector;
-extern const glm::quat g_EmptyQuat;
+extern const glm::mat4 g_identityMatrix;
+extern const glm::vec3 g_emptyVector;
+extern const glm::quat g_emptyQuat;
 
 Transformation::Transformation()
 {
-    m_position = g_EmptyVector;
-    m_rotation = g_EmptyQuat;
+    m_position = g_emptyVector;
+    m_rotation = g_emptyQuat;
 
-    m_matrix = g_IdentityMatrix;
+    m_matrix = g_identityMatrix;
     m_vrMatrix = { { { 0.f } } };
 
     m_update = false;
@@ -52,7 +52,7 @@ void Transformation::Update(const Transformation *f_parent)
     {
         if(m_update || f_parent->m_updated)
         {
-            m_matrix = glm::translate(g_IdentityMatrix, m_position)*glm::mat4_cast(m_rotation);
+            m_matrix = glm::translate(g_identityMatrix, m_position)*glm::mat4_cast(m_rotation);
             m_matrix = f_parent->m_matrix*m_matrix;
 
             m_update = false;
@@ -63,7 +63,7 @@ void Transformation::Update(const Transformation *f_parent)
     {
         if(m_update)
         {
-            m_matrix = glm::translate(g_IdentityMatrix, m_position)*glm::mat4_cast(m_rotation);
+            m_matrix = glm::translate(g_identityMatrix, m_position)*glm::mat4_cast(m_rotation);
             m_update = false;
             m_updated = true;
         }

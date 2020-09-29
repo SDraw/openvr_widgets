@@ -20,8 +20,6 @@ class Core final
 
     Core(const Core &that) = delete;
     Core& operator=(const Core &that) = delete;
-
-    void Cleanup();
 public:
     Core();
     ~Core();
@@ -32,7 +30,6 @@ public:
 
     inline vr::IVRSystem* GetVRSystem() const { return m_vrSystem; }
     inline WidgetManager* GetWidgetManager() const { return m_widgetManager; }
-    inline ConfigManager* GetConfigManager() const { return m_configManager; }
 
     void ForceHandSearch();
     void SendMessageToDeviceWithProperty(uint64_t f_value, const char *f_message);
