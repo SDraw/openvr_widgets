@@ -340,7 +340,7 @@ void WidgetWindowCapture::Update()
 #ifdef _WIN32
                     m_guiSystem->ProcessMove(static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(m_event.data.mouse.y));
 #elif __linux__
-                    m_guiSystem->ProcessMove(static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(g_GuiSystemDefaultSize.y - m_event.data.mouse.y));
+                    m_guiSystem->ProcessMove(static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(g_guiSystemDefaultSize.y - m_event.data.mouse.y));
 #endif
                     break;
 
@@ -351,7 +351,7 @@ void WidgetWindowCapture::Update()
 #ifdef _WIN32
                         m_guiSystem->ProcessClick(GuiClick::GC_Left, GuiClickState::GCS_Press, static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(m_event.data.mouse.y));
 #elif __linux__
-                        m_guiSystem->ProcessClick(GuiClick::GC_Left, GuiClickState::GCS_Press, static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(g_GuiSystemDefaultSize.y - m_event.data.mouse.y));
+                        m_guiSystem->ProcessClick(GuiClick::GC_Left, GuiClickState::GCS_Press, static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(g_guiSystemDefaultSize.y - m_event.data.mouse.y));
 #endif
                     }
                 } break;
