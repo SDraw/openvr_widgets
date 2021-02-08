@@ -20,6 +20,7 @@
 #include <limits.h>
 #endif
 #include <string>
+#include <sstream>
 #include <vector>
 #include <set>
 #include <chrono>
@@ -37,6 +38,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/quaternion.hpp"
+#include "glm/gtx/intersect.hpp"
 
 #include "pugixml.hpp"
 
