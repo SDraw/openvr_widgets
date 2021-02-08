@@ -50,7 +50,7 @@ public:
     const SL::Screen_Capture::Window* GetWindowInfo(size_t f_window) const;
     void UpdateWindows();
 
-    void* GetTextureHandle() const;
+    unsigned int GetTextureHandle() const;
 
     static void InitStaticResources();
     static void RemoveStaticResources();

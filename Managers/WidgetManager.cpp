@@ -2,6 +2,7 @@
 
 #include "Managers/WidgetManager.h"
 #include "Core/Core.h"
+#include "Core/VRDevicesStates.h"
 #include "Gui/GuiSystem.h"
 #include "Gui/GuiElement.h"
 #include "Widgets/Widget.h"
@@ -12,16 +13,7 @@
 #include "Widgets/WidgetKeyboard.h"
 #include "Widgets/WidgetStats.h"
 #include "Widgets/WidgetWindowCapture.h"
-
-const char *g_buttonTexts[]
-{
-    "Add window capture widget",
-        "Add keyboard widget",
-        "Reassign hands",
-        "Switch KinectV2 tracking",
-        "Switch Leap left hand",
-        "Switch Leap right hand"
-};
+#include "Utils/VRDashOverlay.h"
 
 enum ConstantWidgetIndex : size_t
 {
@@ -36,50 +28,99 @@ WidgetManager::WidgetManager(Core *f_core)
     m_core = f_core;
 
     // Init with empty fields
-    m_overlayDashboardThumbnail = vr::k_ulOverlayHandleInvalid;
-    m_overlayDashboard = vr::k_ulOverlayHandleInvalid;
-    m_textureDashboard = { 0 };
-    m_overlayEvent = { 0 };
+    m_dashOverlay = new VRDashOverlay();
+    m_event = { 0 };
     m_activeDashboard = false;
     m_guiSystem = nullptr;
-    for(size_t i = 0U; i < GEI_Max; i++) m_guiElements[i] = nullptr;
+    for(size_t i = 0U; i < GEI_Count; i++) m_guiButtons[i] = nullptr;
 
     // Create settings dashboard overlay
+    if(m_dashOverlay->Create("ovrw.settings", "OpenVR Widgets"))
+    {
+        std::string l_iconPath(ConfigManager::GetDirectory());
+        l_iconPath.append("\\icons\\dashboard_icon.png");
+        m_dashOverlay->SetThumbTexture(l_iconPath);
+
+        m_dashOverlay->SetInputMethod(vr::VROverlayInputMethod_Mouse);
+        m_dashOverlay->SetWidth(1.0f);
+        m_dashOverlay->SetMouseScale(512.f, 512.f);
+    }
+
     m_guiSystem = new GuiSystem(g_guiSize);
     if(m_guiSystem->IsValid())
     {
         m_guiSystem->SetFont(ConfigManager::GetGuiFont());
 
         const auto l_clickCallback = std::bind(&WidgetManager::OnGuiElementMouseClick, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-        for(size_t i = 0U; i < GEI_Max; i++)
+        for(size_t i = 0U; i < GEI_Count; i++)
         {
-            m_guiElements[i] = m_guiSystem->CreateButton();
-            m_guiElements[i]->SetPosition(sf::Vector2f(96.f, 16.f + 80.f * static_cast<float>(i)));
-            m_guiElements[i]->SetSize(g_buttonSize);
-            m_guiElements[i]->SetTextSize(20U);
-            m_guiElements[i]->SetText(g_buttonTexts[i]);
-            m_guiElements[i]->SetClickCallback(l_clickCallback);
-            m_guiElements[i]->SetUserPointer(reinterpret_cast<void*>(i));
+            m_guiButtons[i] = m_guiSystem->CreateButton();
+            m_guiButtons[i]->SetTextSize(20U);
+            m_guiButtons[i]->SetSize(g_buttonSize);
+            m_guiButtons[i]->SetClickCallback(l_clickCallback);
+            m_guiButtons[i]->SetUserPointer(reinterpret_cast<void*>(i));
+            m_guiButtons[i]->SetVisibility(false);
         }
-    }
 
-    vr::VROverlay()->CreateDashboardOverlay("ovrw.settings", "OpenVR Widgets Settings", &m_overlayDashboard, &m_overlayDashboardThumbnail);
-    if((m_overlayDashboard != vr::k_ulOverlayHandleInvalid) && (m_overlayDashboardThumbnail != vr::k_ulOverlayHandleInvalid))
-    {
-        std::string l_iconPath(ConfigManager::GetDirectory());
-        l_iconPath.append("\\icons\\dashboard_icon.png");
-        vr::VROverlay()->SetOverlayFromFile(m_overlayDashboardThumbnail, l_iconPath.c_str());
+        // Main menu
+        m_guiButtons[GEI_Widgets]->SetPosition(sf::Vector2f(96.f, 16.f));
+        m_guiButtons[GEI_Widgets]->SetText("Widgets >");
+        m_guiButtons[GEI_Widgets]->SetVisibility(true);
+        m_guiButtons[GEI_Devices]->SetPosition(sf::Vector2f(96.f, 96.f));
+        m_guiButtons[GEI_Devices]->SetText("Devices >");
+        m_guiButtons[GEI_Devices]->SetVisibility(true);
+        m_guiButtons[GEI_Settings]->SetPosition(sf::Vector2f(96.f, 176.f));
+        m_guiButtons[GEI_Settings]->SetText("Settings >");
+        m_guiButtons[GEI_Settings]->SetVisibility(true);
+        m_guiButtons[GEI_Close]->SetPosition(sf::Vector2f(96.f, 256.f));
+        m_guiButtons[GEI_Close]->SetText("Close OVR Widgets");
+        m_guiButtons[GEI_Close]->SetVisibility(true);
 
-        vr::VROverlay()->SetOverlayInputMethod(m_overlayDashboard, vr::VROverlayInputMethod_Mouse);
-        vr::VROverlay()->SetOverlayWidthInMeters(m_overlayDashboard, 1.0f);
+        // Widgets menu
+        m_guiButtons[GEI_Widgets_WindowCapture]->SetPosition(sf::Vector2f(96.f, 16.f));
+        m_guiButtons[GEI_Widgets_WindowCapture]->SetText("Window capture widget");
+        m_guiButtons[GEI_Widgets_Keyboard]->SetPosition(sf::Vector2f(96.f, 96.f));
+        m_guiButtons[GEI_Widgets_Keyboard]->SetText("Keyboard widget");
+        m_guiButtons[GEI_Widgets_Remove]->SetPosition(sf::Vector2f(96.f, 176.f));
+        m_guiButtons[GEI_Widgets_Remove]->SetText("Remove widgets");
+        m_guiButtons[GEI_Widgets_Back]->SetPosition(sf::Vector2f(96.f, 256.f));
+        m_guiButtons[GEI_Widgets_Back]->SetText("< Back");
 
-        const vr::HmdVector2_t l_mouseScale = { 512.f, 512.f };
-        vr::VROverlay()->SetOverlayMouseScale(m_overlayDashboard, &l_mouseScale);
+        // Devices menu
+        m_guiButtons[GEI_Devices_KinectV1]->SetPosition(sf::Vector2f(96.f, 16.f));
+        m_guiButtons[GEI_Devices_KinectV1]->SetText("Switch KinectV1");
+        m_guiButtons[GEI_Devices_KinectV2]->SetPosition(sf::Vector2f(96.f, 96.f));
+        m_guiButtons[GEI_Devices_KinectV2]->SetText("Switch KinectV2");
+        m_guiButtons[GEI_Devices_LMotionLeft]->SetPosition(sf::Vector2f(96.f, 176.f));
+        m_guiButtons[GEI_Devices_LMotionLeft]->SetText("Switch LMotion left hand");
+        m_guiButtons[GEI_Devices_LMotionRight]->SetPosition(sf::Vector2f(96.f, 256.f));
+        m_guiButtons[GEI_Devices_LMotionRight]->SetText("Switch LMotion right hand");
+        m_guiButtons[GEI_Devices_Back]->SetPosition(sf::Vector2f(96.f, 336.f));
+        m_guiButtons[GEI_Devices_Back]->SetText("< Back");
 
-        m_textureDashboard.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_guiSystem->GetRenderTextureHandle()));
-        m_textureDashboard.eType = vr::TextureType_OpenGL;
-        m_textureDashboard.eColorSpace = vr::ColorSpace_Gamma;
-        vr::VROverlay()->SetOverlayTexture(m_overlayDashboard, &m_textureDashboard);
+        // Settings menu
+        m_guiButtons[GEI_Settings_FPS]->SetPosition(sf::Vector2f(96.f, 16.f));
+        switch(m_core->GetConfigManager()->GetTargetRate())
+        {
+            case ConfigManager::TF_60:
+                m_guiButtons[GEI_Settings_FPS]->SetText("Target FPS: 60");
+                break;
+            case ConfigManager::TF_90:
+                m_guiButtons[GEI_Settings_FPS]->SetText("Target FPS: 90");
+                break;
+            case ConfigManager::TF_120:
+                m_guiButtons[GEI_Settings_FPS]->SetText("Target FPS: 120");
+                break;
+            case ConfigManager::TF_144:
+                m_guiButtons[GEI_Settings_FPS]->SetText("Target FPS: 144");
+                break;
+        }
+        m_guiButtons[GEI_Settings_ReassignHands]->SetPosition(sf::Vector2f(96.f, 96.f));
+        m_guiButtons[GEI_Settings_ReassignHands]->SetText("Reassign hands");
+        m_guiButtons[GEI_Settings_Back]->SetPosition(sf::Vector2f(96.f, 176.f));
+        m_guiButtons[GEI_Settings_Back]->SetText("< Back");
+
+        m_dashOverlay->SetTexture(m_guiSystem->GetRenderTextureHandle());
     }
 
     // Init static widget resources
@@ -95,6 +136,9 @@ WidgetManager::WidgetManager(Core *f_core)
 }
 WidgetManager::~WidgetManager()
 {
+    m_dashOverlay->Destroy();
+    delete m_dashOverlay;
+
     delete m_guiSystem;
 
     // Destroy active widgets
@@ -118,50 +162,46 @@ WidgetManager::~WidgetManager()
 
 void WidgetManager::DoPulse()
 {
-    if(m_overlayDashboard != vr::k_ulOverlayHandleInvalid)
+    if(m_activeDashboard && m_dashOverlay->IsVisible())
     {
-        if(m_activeDashboard && vr::VROverlay()->IsOverlayVisible(m_overlayDashboard))
+        while(m_dashOverlay->Poll(m_event))
         {
-            while(vr::VROverlay()->PollNextOverlayEvent(m_overlayDashboard, &m_overlayEvent, sizeof(vr::VREvent_t)))
+            switch(m_event.eventType)
             {
-                switch(m_overlayEvent.eventType)
+                case vr::VREvent_MouseButtonDown: case vr::VREvent_MouseButtonUp:
                 {
-                    case vr::VREvent_MouseButtonDown: case vr::VREvent_MouseButtonUp:
+                    unsigned char l_button = 0U;
+                    switch(m_event.data.mouse.button)
                     {
-                        unsigned char l_button = 0U;
-                        switch(m_overlayEvent.data.mouse.button)
-                        {
-                            case vr::VRMouseButton_Left:
-                                l_button = GuiClick::GC_Left;
-                                break;
-                            case vr::VRMouseButton_Right:
-                                l_button = GuiClick::GC_Right;
-                                break;
-                            case vr::VRMouseButton_Middle:
-                                l_button = GuiClick::GC_Middle;
-                                break;
-                        }
-                        const unsigned char l_state = ((m_overlayEvent.eventType == vr::VREvent_MouseButtonDown) ? GuiClickState::GCS_Press : GuiClickState::GCS_Release);
+                        case vr::VRMouseButton_Left:
+                            l_button = GuiClick::GC_Left;
+                            break;
+                        case vr::VRMouseButton_Right:
+                            l_button = GuiClick::GC_Right;
+                            break;
+                        case vr::VRMouseButton_Middle:
+                            l_button = GuiClick::GC_Middle;
+                            break;
+                    }
+                    const unsigned char l_state = ((m_event.eventType == vr::VREvent_MouseButtonDown) ? GuiClickState::GCS_Press : GuiClickState::GCS_Release);
 #ifdef _WIN32
-                        m_guiSystem->ProcessClick(l_button, l_state, static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(m_overlayEvent.data.mouse.y));
+                    m_guiSystem->ProcessClick(l_button, l_state, static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(m_event.data.mouse.y));
 #elif __linux__
-                        m_guiSystem->ProcessClick(l_button, l_state, static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(g_guiSize.y - m_overlayEvent.data.mouse.y));
+                    m_guiSystem->ProcessClick(l_button, l_state, static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(g_guiSize.y - m_event.data.mouse.y));
 #endif
-                    } break;
-                    case vr::VREvent_MouseMove:
+                } break;
+                case vr::VREvent_MouseMove:
 #ifdef _WIN32
-                        m_guiSystem->ProcessMove(static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(m_overlayEvent.data.mouse.y));
+                    m_guiSystem->ProcessMove(static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(m_event.data.mouse.y));
 #elif __linux__
-                        m_guiSystem->ProcessMove(static_cast<unsigned int>(m_overlayEvent.data.mouse.x), static_cast<unsigned int>(g_guiSize.y - m_overlayEvent.data.mouse.y));
+                    m_guiSystem->ProcessMove(static_cast<unsigned int>(m_event.data.mouse.x), static_cast<unsigned int>(g_guiSize.y - m_event.data.mouse.y));
 #endif
-
-                        break;
-                }
+                    break;
             }
-
-            m_guiSystem->Update();
-            vr::VROverlay()->SetOverlayTexture(m_overlayDashboard, &m_textureDashboard);
         }
+
+        m_guiSystem->Update();
+        m_dashOverlay->Update();
     }
 
     for(auto l_iter : m_constantWidgets) l_iter.second->Update();
@@ -229,7 +269,37 @@ void WidgetManager::OnGuiElementMouseClick(GuiElement *f_guiElement, unsigned ch
     {
         switch(reinterpret_cast<size_t>(f_guiElement->GetUserPointer())) // Bold move for someone within stabbing range
         {
-            case GuiElementIndex::GEI_AddWindowCapture:
+            // Main menu
+            case GEI_Widgets:
+            {
+                m_guiButtons[GEI_Widgets]->SetVisibility(false);
+                m_guiButtons[GEI_Devices]->SetVisibility(false);
+                m_guiButtons[GEI_Settings]->SetVisibility(false);
+                m_guiButtons[GEI_Close]->SetVisibility(false);
+                for(size_t i = GEI_Widgets_WindowCapture; i <= GEI_Widgets_Back; i++) m_guiButtons[i]->SetVisibility(true);
+            } break;
+            case GEI_Devices:
+            {
+                m_guiButtons[GEI_Widgets]->SetVisibility(false);
+                m_guiButtons[GEI_Devices]->SetVisibility(false);
+                m_guiButtons[GEI_Settings]->SetVisibility(false);
+                m_guiButtons[GEI_Close]->SetVisibility(false);
+                for(size_t i = GEI_Devices_KinectV1; i <= GEI_Devices_Back; i++) m_guiButtons[i]->SetVisibility(true);
+            } break;
+            case GEI_Settings:
+            {
+                m_guiButtons[GEI_Widgets]->SetVisibility(false);
+                m_guiButtons[GEI_Devices]->SetVisibility(false);
+                m_guiButtons[GEI_Settings]->SetVisibility(false);
+                m_guiButtons[GEI_Close]->SetVisibility(false);
+                for(size_t i = GEI_Settings_FPS; i <= GEI_Settings_Back; i++) m_guiButtons[i]->SetVisibility(true);
+            } break;
+            case GEI_Close:
+                m_core->RequestExit();
+                break;
+
+            // Widgets menu
+            case GEI_Widgets_WindowCapture:
             {
                 Widget *l_widget = new WidgetWindowCapture();
                 if(l_widget->Create())
@@ -243,7 +313,7 @@ void WidgetManager::OnGuiElementMouseClick(GuiElement *f_guiElement, unsigned ch
                     delete l_widget;
                 }
             } break;
-            case GEI_AddKeyboard:
+            case GEI_Widgets_Keyboard:
             {
                 Widget *l_widget = new WidgetKeyboard();
                 if(l_widget->Create())
@@ -257,18 +327,77 @@ void WidgetManager::OnGuiElementMouseClick(GuiElement *f_guiElement, unsigned ch
                     delete l_widget;
                 }
             } break;
-            case GEI_ReassignHands:
-                m_core->ForceHandSearch();
+            case GEI_Widgets_Remove:
+            {
+                for(auto l_widget : m_widgets)
+                {
+                    l_widget->Destroy();
+                    delete l_widget;
+                }
+                m_widgets.clear();
+            } break;
+            case GEI_Widgets_Back:
+            {
+                for(size_t i = GEI_Widgets_WindowCapture; i <= GEI_Widgets_Back; i++) m_guiButtons[i]->SetVisibility(false);
+                m_guiButtons[GEI_Widgets]->SetVisibility(true);
+                m_guiButtons[GEI_Devices]->SetVisibility(true);
+                m_guiButtons[GEI_Settings]->SetVisibility(true);
+                m_guiButtons[GEI_Close]->SetVisibility(true);
+            } break;
+
+            case GEI_Devices_KinectV1:
+                m_core->SendMessageToDeviceWithProperty(0x4B696E6563745631, "switch"); // Refer to driver_kinectV1
                 break;
-            case GEI_SwitchKinectTracking:
+            case GEI_Devices_KinectV2:
                 m_core->SendMessageToDeviceWithProperty(0x4B696E6563745632, "switch"); // Refer to driver_kinectV2
                 break;
-            case GEI_SwitchLeapLeftHand:
-                m_core->SendMessageToDeviceWithProperty(0x4C4D6F74696F6E, "setting left_hand"); // Refer to driver_leap - leap_monitor
+            case GEI_Devices_LMotionLeft:
+                m_core->SendMessageToDeviceWithProperty(0x4C4D6F74696F6E, "setting left_hand"); // Refer to driver_leap
                 break;
-            case GEI_SwitchLeapRightHand:
-                m_core->SendMessageToDeviceWithProperty(0x4C4D6F74696F6E, "setting right_hand"); // Refer to driver_leap - leap_monitor
+            case GEI_Devices_LMotionRight:
+                m_core->SendMessageToDeviceWithProperty(0x4C4D6F74696F6E, "setting left_hand"); // Refer to driver_leap
                 break;
+            case GEI_Devices_Back:
+            {
+                for(size_t i = GEI_Devices_KinectV1; i <= GEI_Devices_Back; i++) m_guiButtons[i]->SetVisibility(false);
+                m_guiButtons[GEI_Widgets]->SetVisibility(true);
+                m_guiButtons[GEI_Devices]->SetVisibility(true);
+                m_guiButtons[GEI_Settings]->SetVisibility(true);
+                m_guiButtons[GEI_Close]->SetVisibility(true);
+            } break;
+
+            // Settings menu
+            case GEI_Settings_FPS:
+            {
+                m_core->GetConfigManager()->SetTargetRate(m_core->GetConfigManager()->GetTargetRate() + 1U);
+                switch(m_core->GetConfigManager()->GetTargetRate())
+                {
+                    case ConfigManager::TF_60:
+                        m_guiButtons[GEI_Settings_FPS]->SetText("Target FPS: 60");
+                        break;
+                    case ConfigManager::TF_90:
+                        m_guiButtons[GEI_Settings_FPS]->SetText("Target FPS: 90");
+                        break;
+                    case ConfigManager::TF_120:
+                        m_guiButtons[GEI_Settings_FPS]->SetText("Target FPS: 120");
+                        break;
+                    case ConfigManager::TF_144:
+                        m_guiButtons[GEI_Settings_FPS]->SetText("Target FPS: 144");
+                        break;
+                }
+                m_core->UpdateTargetRate();
+            } break;
+            case GEI_Settings_ReassignHands:
+                m_core->ForceHandSearch();
+                break;
+            case GEI_Settings_Back:
+            {
+                for(size_t i = GEI_Settings_FPS; i <= GEI_Settings_Back; i++) m_guiButtons[i]->SetVisibility(false);
+                m_guiButtons[GEI_Widgets]->SetVisibility(true);
+                m_guiButtons[GEI_Devices]->SetVisibility(true);
+                m_guiButtons[GEI_Settings]->SetVisibility(true);
+                m_guiButtons[GEI_Close]->SetVisibility(true);
+            } break;
         }
     }
 }

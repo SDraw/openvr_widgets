@@ -1,38 +1,30 @@
 #include "stdafx.h"
 
 #include "Widgets/Widget.h"
+#include "Utils/VROverlay.h"
+
 #include "Utils/Transformation.h"
 
 Widget::Widget()
 {
-    m_overlay = vr::k_ulOverlayHandleInvalid;
-    m_texture = { 0 };
-    m_texture.eType = vr::TextureType_OpenGL;
-    m_texture.eColorSpace = vr::ColorSpace_Gamma;
+    m_overlayMain = new VROverlay();
     m_event = { 0 };
+    m_size.x = 0.f;
+    m_size.y = 0.f;
 
     m_valid = false;
     m_visible = false;
     m_closed = false;
     m_activeDashboard = false;
-    m_transform = new Transformation();
 }
 Widget::~Widget()
 {
-    delete m_transform;
+    delete m_overlayMain;
 }
 
 void Widget::Destroy()
 {
-    if(m_overlay != vr::k_ulOverlayHandleInvalid)
-    {
-        vr::VROverlay()->HideOverlay(m_overlay);
-        vr::VROverlay()->ClearOverlayTexture(m_overlay);
-        vr::VROverlay()->DestroyOverlay(m_overlay);
-        m_overlay = vr::k_ulOverlayHandleInvalid;
-    }
-
-    m_texture.handle = nullptr;
+    m_overlayMain->Destroy();
 
     m_valid = false;
     m_visible = false;

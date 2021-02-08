@@ -171,6 +171,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Utils\VRDashOverlay.cpp" />
+    <ClCompile Include="Utils\VROverlay.cpp" />
     <ClCompile Include="Utils\GlobalConstants.cpp" />
     <ClCompile Include="Utils\TexturePooler.cpp" />
     <ClCompile Include="Utils\Transformation.cpp" />
@@ -182,7 +184,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Widgets\WidgetKeyboard.cpp" />
+    <ClCompile Include="Widgets\WidgetKeyboard.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Widgets\WidgetWindowCapture.cpp" />
     <ClCompile Include="Widgets\WidgetStats.cpp" />
     <ClCompile Include="Widgets\Widget.cpp" />
@@ -200,11 +207,18 @@
     <ClInclude Include="Managers\WidgetManager.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Utils\VRDashOverlay.h" />
+    <ClInclude Include="Utils\VROverlay.h" />
     <ClInclude Include="Utils\TexturePooler.h" />
     <ClInclude Include="Utils\Transformation.h" />
     <ClInclude Include="Utils\Utils.h" />
     <ClInclude Include="Utils\WindowCapturer.h" />
-    <ClInclude Include="Widgets\WidgetKeyboard.h" />
+    <ClInclude Include="Widgets\WidgetKeyboard.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Widgets\WidgetWindowCapture.h" />
     <ClInclude Include="Widgets\WidgetStats.h" />
     <ClInclude Include="Widgets\Widget.h" />

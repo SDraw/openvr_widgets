@@ -29,8 +29,11 @@ public:
     bool DoPulse();
 
     inline vr::IVRSystem* GetVRSystem() const { return m_vrSystem; }
+    inline ConfigManager* GetConfigManager() const { return m_configManager; }
     inline WidgetManager* GetWidgetManager() const { return m_widgetManager; }
 
+    void UpdateTargetRate();
     void ForceHandSearch();
     void SendMessageToDeviceWithProperty(uint64_t f_value, const char *f_message);
+    void RequestExit();
 };

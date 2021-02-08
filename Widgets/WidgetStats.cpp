@@ -1,10 +1,11 @@
 #include "stdafx.h"
 
 #include "Widgets/WidgetStats.h"
-#include "Utils/Transformation.h"
 
 #include "Core/VRDevicesStates.h"
 #include "Managers/ConfigManager.h"
+#include "Utils/VROverlay.h"
+#include "Utils/Transformation.h"
 #include "Utils/Utils.h"
 
 extern const float g_pi;
@@ -35,6 +36,9 @@ const sf::IntRect g_SpritesBounds[] = {
 
 WidgetStats::WidgetStats()
 {
+    m_size.x = 0.125f;
+    m_size.y = 0.03125f;
+
     m_renderTexture = nullptr;
     m_font = nullptr;
     for(size_t i = 0U; i < ST_Count; i++) m_fontText[i] = nullptr;
@@ -84,17 +88,16 @@ bool WidgetStats::Create()
         }
         l_memInfo.close();
 #endif
-        vr::VROverlay()->CreateOverlay("ovrw.stats.main", "OpenVR Widget - Stats - Main", &m_overlay);
-        if(m_overlay != vr::k_ulOverlayHandleInvalid)
+        if(m_overlayMain->Create("ovrw.stats.main", "OpenVR Widget - Stats - Main"))
         {
-            vr::VROverlay()->SetOverlayWidthInMeters(m_overlay, 0.125f);
-            vr::VROverlay()->SetOverlayFlag(m_overlay, vr::VROverlayFlags_SortWithNonSceneOverlays, true);
+            m_overlayMain->SetWidth(0.125f);
+            m_overlayMain->SetFlag(vr::VROverlayFlags_SortWithNonSceneOverlays, true);
         }
 
         m_renderTexture = new sf::RenderTexture();
         if(m_renderTexture->create(static_cast<unsigned int>(g_renderTargetSize.x), static_cast<unsigned int>(g_renderTargetSize.y)))
         {
-            m_texture.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
+            m_overlayMain->SetTexture(m_renderTexture->getTexture().getNativeHandle());
 
             m_font = new sf::Font();
             if(m_font->loadFromFile(ConfigManager::GetGuiFont()))
@@ -119,7 +122,7 @@ bool WidgetStats::Create()
             }
         }
 
-        m_valid = (m_valid && (m_overlay != vr::k_ulOverlayHandleInvalid));
+        m_valid = (m_valid && m_overlayMain->IsValid());
     }
 
     return m_valid;
@@ -417,11 +420,11 @@ void WidgetStats::Update()
         glm::quat l_handRot;
         VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_RightController, l_handPos);
         VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_RightController, l_handRot);
-        m_transform->SetPosition(l_handPos);
-        m_transform->Move(l_handRot*g_overlayOffset);
+        m_overlayMain->GetTransform()->SetPosition(l_handPos);
+        m_overlayMain->GetTransform()->Move(l_handRot*g_overlayOffset);
 
         // Set opacity based on angle between view direction and hmd to hand direction
-        glm::vec3 l_toHandDir = (m_transform->GetPosition() - l_hmdPos);
+        glm::vec3 l_toHandDir = (l_handPos - l_hmdPos);
         l_toHandDir = glm::normalize(l_toHandDir);
 
         const glm::vec3 l_viewDir = l_hmdRot*g_axisZN;
@@ -429,16 +432,14 @@ void WidgetStats::Update()
         l_opacity = glm::acos(l_opacity);
         l_opacity = glm::clamp(l_opacity, g_viewAngleRange.y, g_viewAngleRange.x);
         l_opacity = 1.f - ((l_opacity - g_viewAngleRange.y) / g_viewAngleRangeDiff);
-        vr::VROverlay()->SetOverlayAlpha(m_overlay, l_opacity);
+        m_overlayMain->SetAlpha(l_opacity);
 
         // Set rotation based on direction to HMD
         glm::quat l_rot;
-        GetRotationToPoint(l_hmdPos, m_transform->GetPosition(), l_hmdRot, l_rot);
-        m_transform->SetRotation(l_rot);
+        GetRotationToPoint(l_hmdPos, l_handPos, l_hmdRot, l_rot);
+        m_overlayMain->GetTransform()->SetRotation(l_rot);
 
-        m_transform->Update();
-        vr::VROverlay()->SetOverlayTransformAbsolute(m_overlay, vr::TrackingUniverseRawAndUncalibrated, &m_transform->GetMatrixVR());
-        vr::VROverlay()->SetOverlayTexture(m_overlay, &m_texture);
+        m_overlayMain->Update();
     }
 }
 
@@ -451,7 +452,7 @@ void WidgetStats::OnHandDeactivated(size_t f_hand)
         if(f_hand == VRDeviceIndex::VDI_RightController)
         {
             m_visible = false;
-            vr::VROverlay()->HideOverlay(m_overlay);
+            m_overlayMain->Hide();
         }
     }
 }
@@ -473,7 +474,7 @@ void  WidgetStats::OnButtonPress(size_t f_hand, uint32_t f_button)
                     {
                         m_visible = true;
                         m_forceUpdate = true;
-                        vr::VROverlay()->ShowOverlay(m_overlay);
+                        m_overlayMain->Show();
                     }
                     m_lastPressTick = l_tick;
                 } break;
@@ -500,7 +501,7 @@ void WidgetStats::OnButtonRelease(size_t f_hand, uint32_t f_button)
         if((f_hand == VRDeviceIndex::VDI_RightController) && (f_button == vr::k_EButton_Grip))
         {
             m_visible = false;
-            vr::VROverlay()->HideOverlay(m_overlay);
+            m_overlayMain->Hide();
         }
     }
 }

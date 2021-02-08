@@ -60,6 +60,12 @@
     <ClCompile Include="Core\VRDevicesStates.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\VROverlay.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\VRDashOverlay.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -117,6 +123,12 @@
     </ClInclude>
     <ClInclude Include="Core\VRDevicesStates.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\VROverlay.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\VRDashOverlay.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -123,6 +123,10 @@
 		<Unit filename="Utils/Transformation.h" />
 		<Unit filename="Utils/Utils.cpp" />
 		<Unit filename="Utils/Utils.h" />
+    <Unit filename="Utils/VRDashOverlay.h" />
+    <Unit filename="Utils/VRDashOverlay.cpp" />
+    <Unit filename="Utils/VROverlay.h" />
+    <Unit filename="Utils/VROverlay.cpp" />
 		<Unit filename="Utils/WindowCapturer.cpp" />
 		<Unit filename="Utils/WindowCapturer.h" />
 		<Unit filename="Widgets/Widget.cpp" />

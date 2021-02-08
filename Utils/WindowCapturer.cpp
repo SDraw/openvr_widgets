@@ -117,10 +117,10 @@ void WindowCapturer::SetDelay(size_t f_delay)
     }
 }
 
-void* WindowCapturer::GetTextureHandle() const
+unsigned int WindowCapturer::GetTextureHandle() const
 {
-    void *l_result = nullptr;
-    if(m_texture) l_result = reinterpret_cast<void*>(static_cast<uintptr_t>(m_renderTexture->getTexture().getNativeHandle()));
+    unsigned int l_result = 0U;
+    if(m_texture) l_result = m_renderTexture->getTexture().getNativeHandle();
     return l_result;
 }
 

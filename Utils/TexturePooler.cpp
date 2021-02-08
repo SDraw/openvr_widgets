@@ -1,4 +1,5 @@
 #include "stdafx.h"
+
 #include "Utils/TexturePooler.h"
 
 sf::Texture *TexturePooler::ms_lastTexture = nullptr;

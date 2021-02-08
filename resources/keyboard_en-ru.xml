@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<layout name="English - Русский">
+   <!--Row 1-->
+  <key text="Esc" altText="" code="27" transform="10 10 64 64"/>
+  <key text="F1" altText="" code="112" transform="150 10 64 64"/>
+  <key text="F2" altText="" code="113" transform="220 10 64 64"/>
+  <key text="F3" altText="" code="114" transform="290 10 64 64"/>
+  <key text="F4" altText="" code="115" transform="360 10 64 64"/>
+  <key text="F5" altText="" code="116" transform="466 10 64 64"/>
+  <key text="F6" altText="" code="117" transform="536 10 64 64"/>
+  <key text="F7" altText="" code="118" transform="606 10 64 64"/>
+  
+  <key text="F8" altText="" code="119" transform="676 10 64 64"/>
+  <key text="F9" altText="" code="120" transform="780 10 64 64"/>
+  <key text="F10" altText="" code="121" transform="850 10 64 64"/>
+  <key text="F11" altText="" code="122" transform="920 10 64 64"/>
+  <key text="F12" altText="" code="123" transform="990 10 64 64"/>
+  <key text="PrtScr" altText="" code="42" transform="1080 10 64 64"/>
+  <key text="ScrLck" altText="" code="145" transform="1150 10 64 64"/>
+  <key text="Pause" altText="" code="19" transform="1220 10 64 64"/>
+  <!--Row 2-->
+  <key text="~" altText="Ё" code="192" transform="10 96 64 64"/>
+  <key text="1" altText="" code="49" transform="80 96 64 64"/>
+  <key text="2" altText="" code="50" transform="150 96 64 64"/>
+  <key text="3" altText="" code="51" transform="220 96 64 64"/>
+  <key text="4" altText="" code="52" transform="290 96 64 64"/>
+  <key text="5" altText="" code="53" transform="360 96 64 64"/>
+  <key text="6" altText="" code="54" transform="430 96 64 64"/>
+  <key text="7" altText="" code="55" transform="500 96 64 64"/>
+  <key text="8" altText="" code="56" transform="570 96 64 64"/>
+  <key text="9" altText="" code="57" transform="640 96 64 64"/>
+  <key text="0" altText="" code="58" transform="710 96 64 64"/>
+  <key text="-" altText="" code="189" transform="780 96 64 64"/>
+  <key text="=" altText="" code="187" transform="850 96 64 64"/>
+  <key text="Backspace" altText="" code="8" transform="920 96 134 64"/>
+  <key text="Insert" altText="" code="45" transform="1080 96 64 64"/>
+  <key text="Home" altText="" code="36" transform="1150 96 64 64"/>
+  <key text="PageUp" altText="" code="33" transform="1220 96 64 64"/>
+  <key text="NumLock" altText="" code="144" transform="1310 96 64 64"/>
+  <key text="Num/" altText="" code="111" transform="1380 96 64 64"/>
+  <key text="Num*" altText="" code="106" transform="1450 96 64 64"/>
+  <key text="Num-" altText="" code="109" transform="1520 96 64 64"/>
+  <!--Row 3-->
+  <key text="Tab" altText="" code="9" transform="10 166 94 64"/>
+  <key text="Q" altText="Й" code="81" transform="110 166 64 64"/>
+  <key text="W" altText="Ц" code="87" transform="180 166 64 64"/>
+  <key text="E" altText="У" code="69" transform="250 166 64 64"/>
+  <key text="R" altText="К" code="82" transform="320 166 64 64"/>
+  <key text="T" altText="Е" code="84" transform="390 166 64 64"/>
+  <key text="Y" altText="Н" code="89" transform="460 166 64 64"/>
+  <key text="U" altText="Г" code="85" transform="530 166 64 64"/>
+  <key text="I" altText="Ш" code="73" transform="600 166 64 64"/>
+  <key text="O" altText="Ш" code="79" transform="670 166 64 64"/>
+  <key text="P" altText="З" code="80" transform="740 166 64 64"/>
+  <key text="[" altText="Х" code="219" transform="810 166 64 64"/>
+  <key text="]" altText="Ъ" code="221" transform="880 166 64 64"/>
+  <key text="Enter" altText="" code="13" transform="974 166 80 134"/>
+  <key text="Delete" altText="" code="46" transform="1080 166 64 64"/>
+  <key text="End" altText="" code="35" transform="1150 166 64 64"/>
+  <key text="PageDown" altText="" code="34" transform="1220 166 64 64"/>
+  <key text="Num7" altText="" code="103" transform="1310 166 64 64"/>
+  <key text="Num8" altText="" code="104" transform="1380 166 64 64"/>
+  <key text="Num9" altText="" code="105" transform="1450 166 64 64"/>
+  <key text="Num+" altText="" code="107" transform="1520 166 64 134"/>
+  <!--Row 4-->
+  <key text="CapsLock" altText="" code="20" transform="10 236 110 64"/>
+  <key text="A" altText="Ф" code="65" transform="130 236 64 64"/>
+  <key text="S" altText="Ы" code="83" transform="200 236 64 64"/>
+  <key text="D" altText="В" code="68" transform="270 236 64 64"/>
+  <key text="F" altText="А" code="70" transform="340 236 64 64"/>
+  <key text="G" altText="П" code="71" transform="410 236 64 64"/>
+  <key text="H" altText="Р" code="72" transform="480 236 64 64"/>
+  <key text="J" altText="О" code="74" transform="550 236 64 64"/>
+  <key text="K" altText="Л" code="75" transform="620 236 64 64"/>
+  <key text="L" altText="Д" code="76" transform="690 236 64 64"/>
+  <key text=";" altText="Ж" code="186" transform="760 236 64 64"/>
+  <key text="'" altText="Э" code="222" transform="830 236 64 64"/>
+  <key text="#" altText="" code="223" transform="900 236 64 64"/>
+  <key text="Num4" altText="" code="" transform="1310 236 64 64"/>
+  <key text="Num5" altText="" code="" transform="1380 236 64 64"/>
+  <key text="Num6" altText="" code="" transform="1450 236 64 64"/>
+  <!--Row 5-->
+  <key text="LShift" altText="" code="160" transform="10 306 80 64"/>
+  <key text="\" altText="\" code="220" transform="100 306 64 64"/>
+  <key text="Z" altText="Я" code="90" transform="170 306 64 64"/>
+  <key text="X" altText="Ч" code="88" transform="240 306 64 64"/>
+  <key text="C" altText="С" code="67" transform="310 306 64 64"/>
+  <key text="V" altText="М" code="86" transform="380 306 64 64"/>
+  <key text="B" altText="И" code="66" transform="450 306 64 64"/>
+  <key text="N" altText="Т" code="78" transform="520 306 64 64"/>
+  <key text="M" altText="Ь" code="77" transform="590 306 64 64"/>
+  <key text="," altText="Б" code="188" transform="660 306 64 64"/>
+  <key text="." altText="Ю" code="190" transform="730 306 64 64"/>
+  <key text="/" altText="." code="191" transform="800 306 64 64"/>
+  <key text="RShift" altText="" code="161" transform="870 306 184 64"/>
+  <key text="Up" altText="" code="38" transform="1150 306 64 64"/>
+  <key text="Num1" altText="" code="97" transform="1310 306 64 64"/>
+  <key text="Num2" altText="" code="98" transform="1380 306 64 64"/>
+  <key text="Num3" altText="" code="99" transform="1450 306 64 64"/>
+  <key text="Enter" altText="" code="13" transform="1520 306 64 134"/>
+  <!--Row 6-->
+  <key text="LCtrl" altText="" code="162" transform="10 376 80 64"/>
+  <key text="LWin" altText="" code="91" transform="100 376 80 64"/>
+  <key text="LAlt" altText="" code="18" transform="190 376 80 64"/>
+  <key text="Space" altText="" code="32" transform="280 376 430 64"/>
+  <key text="RAlt" altText="" code="18" transform="720 376 80 64"/>
+  <key text="RWin" altText="" code="92" transform="810 376 80 64"/>
+  <key text="RCtrl" altText="" code="163" transform="974 376 80 64"/>
+  <key text="Left" altText="" code="37" transform="1080 376 64 64"/>
+  <key text="Down" altText="" code="40" transform="1150 376 64 64"/>
+  <key text="Right" altText="" code="39" transform="1220 376 64 64"/>
+  <key text="Num0" altText="" code="96" transform="1310 376 134 64"/>
+  <key text="Num." altText="" code="110" transform="1450 376 64 64"/>
+</layout>

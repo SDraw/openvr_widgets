@@ -1,6 +1,6 @@
 #pragma once
 
-class Transformation;
+class VROverlay;
 
 class Widget
 {
@@ -22,15 +22,14 @@ public:
     virtual void OnDashboardOpen();
     virtual void OnDashboardClose();
 protected:
-    vr::VROverlayHandle_t m_overlay;
-    vr::Texture_t m_texture;
+    VROverlay *m_overlayMain;
     vr::VREvent_t m_event;
+    glm::vec2 m_size;
 
     bool m_valid;
     bool m_visible; // Used for constant widgets in general
     bool m_closed;
     bool m_activeDashboard;
-    Transformation *m_transform;
 
     Widget();
 };

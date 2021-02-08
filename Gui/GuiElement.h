@@ -3,6 +3,7 @@
 class GuiElement
 {
     bool m_visible;
+    bool m_interactable;
 
     void *m_userPointer;
 

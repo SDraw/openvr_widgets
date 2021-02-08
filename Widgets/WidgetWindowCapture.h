@@ -5,7 +5,6 @@ class GuiSystem;
 class GuiElement;
 class GuiImage;
 class GuiText;
-class Transformation;
 class WindowCapturer;
 
 class WidgetWindowCapture final : public Widget
@@ -29,15 +28,15 @@ class WidgetWindowCapture final : public Widget
 
         FM_Count
     };
-
-    vr::VROverlayHandle_t m_overlayControl;
+    
+    VROverlay *m_overlayBackground;
+    VROverlay *m_overlayControls;
 
     GuiSystem *m_guiSystem;
     GuiImage *m_guiImages[CEI_Count];
     GuiText *m_guiTextWindow;
 
     static sf::Texture *ms_textureAtlas;
-    vr::Texture_t m_textureControls;
 
     WindowCapturer *m_windowCapturer;
     size_t m_windowIndex;
@@ -52,10 +51,8 @@ class WidgetWindowCapture final : public Widget
     bool m_activeResize;
     bool m_activePin;
 
-    float m_overlayWidth;
-    glm::ivec2 m_windowSize;
+    float m_windowRatio;
     glm::ivec2 m_mousePosition;
-    Transformation *m_transformControl;
 
     size_t m_fpsMode;
 

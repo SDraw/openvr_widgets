@@ -13,6 +13,7 @@ GuiElement::GuiElement()
     m_selectionColor = { 142U, 205U, 246U };
     m_activeHover = false;
     m_visible = true;
+    m_interactable = false;
     m_update = false;
 
     m_mouseClickCallback = nullptr;
@@ -56,6 +57,7 @@ void GuiElement::SetVisibility(bool f_state)
     if(m_visible != f_state)
     {
         m_visible = f_state;
+        m_interactable = false;
         m_update = true;
     }
 }
@@ -117,7 +119,7 @@ void GuiElement::RemoveMoveCallback()
 
 void GuiElement::ProcessClick(unsigned char f_button, unsigned char f_state, unsigned int f_mouseX, unsigned f_mouseY)
 {
-    if(m_visible)
+    if(m_visible && m_interactable)
     {
         const sf::FloatRect l_rectangle(m_position.x, m_position.y, m_size.x, m_size.y);
         if(l_rectangle.contains(static_cast<float>(f_mouseX), static_cast<float>(f_mouseY)))
@@ -133,7 +135,7 @@ void GuiElement::ProcessClickInternal(unsigned char f_button, unsigned char f_st
 
 void GuiElement::ProcessMove(unsigned int f_mouseX, unsigned f_mouseY)
 {
-    if(m_visible)
+    if(m_visible && m_interactable)
     {
         const sf::FloatRect l_rectangle(m_position.x, m_position.y, m_size.x, m_size.y);
         if(l_rectangle.contains(static_cast<float>(f_mouseX), static_cast<float>(f_mouseY)))
@@ -169,5 +171,6 @@ void GuiElement::ProcessBlurInternal(unsigned int f_mouseX, unsigned int f_mouse
 
 void GuiElement::Update()
 {
+    if(m_visible && !m_interactable) m_interactable = true;
     m_update = false;
 }

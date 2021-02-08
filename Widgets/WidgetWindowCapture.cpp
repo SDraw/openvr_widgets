@@ -5,6 +5,7 @@
 #include "Gui/GuiImage.h"
 #include "Gui/GuiText.h"
 #include "Utils/Transformation.h"
+#include "Utils/VROverlay.h"
 #include "Utils/WindowCapturer.h"
 
 #include "Core/VRDevicesStates.h"
@@ -50,10 +51,14 @@ const sf::Vector2i g_guiButtonPinUV[2U]
 };
 const sf::Vector2i g_guiButtonFpsUV[3U]
 {
-    {256, 128},
+    {256, 128 },
     { 384, 128 },
     { 0, 256 }
 };
+
+const glm::vec3 g_tintColorFar(0.f);
+const glm::vec3 g_tintColorNear(0.f, 0.658823f, 0.917647f);
+const float g_backgroundScale = 1.025f;
 
 sf::Texture *WidgetWindowCapture::ms_textureAtlas = nullptr;
 #ifdef __linux__
@@ -62,7 +67,8 @@ Display *WidgetWindowCapture::ms_display = nullptr;
 
 WidgetWindowCapture::WidgetWindowCapture()
 {
-    m_overlayControl = vr::k_ulOverlayHandleInvalid;
+    m_overlayBackground = new VROverlay();
+    m_overlayControls = new VROverlay();
 
     m_windowCapturer = nullptr;
     m_windowIndex = std::numeric_limits<size_t>::max();
@@ -71,8 +77,6 @@ WidgetWindowCapture::WidgetWindowCapture()
     for(size_t i = 0U; i < CEI_Count; i++) m_guiImages[i] = nullptr;
     m_guiTextWindow = nullptr;
 
-    m_textureControls = { 0 };
-
     m_lastLeftTriggerTick = 0U;
     m_lastRightTriggerTick = 0U;
 
@@ -80,30 +84,29 @@ WidgetWindowCapture::WidgetWindowCapture()
     m_activeResize = false;
     m_activePin = false;
 
-    m_overlayWidth = 0.f;
-    m_windowSize = g_emptyIVector2;
+    m_windowRatio = 0.f;
     m_mousePosition = g_emptyIVector2;
-    m_transformControl = nullptr;
 
     m_fpsMode = FM_15;
 }
 WidgetWindowCapture::~WidgetWindowCapture()
 {
+    delete m_overlayBackground;
+    delete m_overlayControls;
 }
 
 bool WidgetWindowCapture::Create()
 {
     if(!m_valid)
     {
-        m_overlayWidth = 0.5f;
+        m_size.x = 0.5f;
 
         std::string l_overlayKeyPart("ovrw.capture_");
         l_overlayKeyPart.append(std::to_string(reinterpret_cast<size_t>(this)));
         std::string l_overlayKeyFull(l_overlayKeyPart);
 
         l_overlayKeyFull.append(".main");
-        vr::VROverlay()->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Capture - Main", &m_overlay);
-        if(m_overlay != vr::k_ulOverlayHandleInvalid)
+        if(m_overlayMain->Create(l_overlayKeyFull, "OpenVR Widgets - Capture - Main"))
         {
             // Create overlay in front of user
             glm::vec3 l_hmdPos;
@@ -112,26 +115,31 @@ bool WidgetWindowCapture::Create()
             VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_Hmd, l_hmdRot);
 
             glm::vec3 l_pos = l_hmdPos + (l_hmdRot*g_axisZN)*0.5f;
-            m_transform->SetPosition(l_pos);
+            m_overlayMain->GetTransform()->SetPosition(l_pos);
 
             glm::quat l_rot;
             GetRotationToPoint(l_hmdPos, l_pos, l_hmdRot, l_rot);
-            m_transform->SetRotation(l_rot);
-            m_texture.handle = nullptr;
+            m_overlayMain->GetTransform()->SetRotation(l_rot);
 
-            vr::VROverlay()->SetOverlayWidthInMeters(m_overlay, m_overlayWidth);
-            vr::VROverlay()->SetOverlayFlag(m_overlay, vr::VROverlayFlags_SortWithNonSceneOverlays, true);
-            vr::VROverlay()->SetOverlayFlag(m_overlay, vr::VROverlayFlags_ProtectedContent, true);
-            vr::VROverlay()->SetOverlayInputMethod(m_overlay, vr::VROverlayInputMethod_Mouse);
-            vr::VROverlay()->SetOverlayFlag(m_overlay, vr::VROverlayFlags_ShowTouchPadScrollWheel, true);
-            vr::VROverlay()->SetOverlayFlag(m_overlay, vr::VROverlayFlags_SendVRDiscreteScrollEvents, true);
-            vr::VROverlay()->ShowOverlay(m_overlay);
+            m_overlayMain->SetWidth(m_size.x);
+            m_overlayMain->SetFlag(vr::VROverlayFlags_SortWithNonSceneOverlays, true);
+            m_overlayMain->SetFlag(vr::VROverlayFlags_ProtectedContent, true);
+            m_overlayMain->SetInputMethod(vr::VROverlayInputMethod_Mouse);
+            m_overlayMain->SetFlag(vr::VROverlayFlags_ShowTouchPadScrollWheel, true);
+            m_overlayMain->SetFlag(vr::VROverlayFlags_SendVRDiscreteScrollEvents, true);
+        }
+
+        l_overlayKeyFull.assign(l_overlayKeyPart);
+        l_overlayKeyFull.append(".background");
+        if(m_overlayBackground->Create(l_overlayKeyFull, "OpenVR Widgets - Capture - Background"))
+        {
+            m_overlayBackground->GetTransform()->SetPosition(glm::vec3(0.f, 0.f, -0.005f));
+            m_overlayBackground->SetWidth(m_size.x*g_backgroundScale);
         }
 
         l_overlayKeyFull.assign(l_overlayKeyPart);
         l_overlayKeyFull.append(".control");
-        vr::VROverlay()->CreateOverlay(l_overlayKeyFull.c_str(), "OpenVR Widgets - Capture - Control", &m_overlayControl);
-        if(m_overlayControl != vr::k_ulOverlayHandleInvalid)
+        if(m_overlayControls->Create(l_overlayKeyFull, "OpenVR Widgets - Capture - Control"))
         {
             m_guiSystem = new GuiSystem(g_guiSystemDefaultSize);
             m_guiSystem->SetFont(ConfigManager::GetGuiFont());
@@ -152,25 +160,16 @@ bool WidgetWindowCapture::Create()
             m_guiTextWindow->SetAlignment(GuiText::GTA_Center);
             m_guiTextWindow->SetPosition(sf::Vector2f(128.f, 32.f));
 
-            m_textureControls.eType = vr::TextureType_OpenGL;
-            m_textureControls.eColorSpace = vr::ColorSpace_Gamma;
-            m_textureControls.handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_guiSystem->GetRenderTextureHandle()));
+            m_overlayControls->SetTexture(m_guiSystem->GetRenderTextureHandle());
+            m_overlayControls->GetTransform()->SetPosition(glm::vec3(m_size.x * 0.5f + 0.072f, 0.f, 0.f));
 
-            m_transformControl = new Transformation();
-            m_transformControl->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.072f, 0.f, 0.f));
-
-            vr::HmdVector2_t l_mouseScale;
-            l_mouseScale.v[0U] = static_cast<float>(g_guiSystemDefaultSize.x);
-            l_mouseScale.v[1U] = static_cast<float>(g_guiSystemDefaultSize.y);
-            vr::VROverlay()->SetOverlayMouseScale(m_overlayControl, &l_mouseScale);
-            vr::VROverlay()->SetOverlayFlag(m_overlayControl, vr::VROverlayFlags_SortWithNonSceneOverlays, true);
-            vr::VROverlay()->SetOverlayInputMethod(m_overlayControl, vr::VROverlayInputMethod_Mouse);
-            vr::VROverlay()->SetOverlayWidthInMeters(m_overlayControl, 0.128f);
-
-            vr::VROverlay()->ShowOverlay(m_overlayControl);
+            m_overlayControls->SetMouseScale(static_cast<float>(g_guiSystemDefaultSize.x), static_cast<float>(g_guiSystemDefaultSize.y));
+            m_overlayControls->SetFlag(vr::VROverlayFlags_SortWithNonSceneOverlays, true);
+            m_overlayControls->SetInputMethod(vr::VROverlayInputMethod_Mouse);
+            m_overlayControls->SetWidth(0.128f);
         }
 
-        m_valid = ((m_overlay != vr::k_ulOverlayHandleInvalid) && (m_overlayControl != vr::k_ulOverlayHandleInvalid));
+        m_valid = (m_overlayMain->IsValid() && m_overlayBackground->IsValid() && m_overlayControls->IsValid() && m_guiSystem->IsValid());
         if(m_valid)
         {
             // Create window grabber and start capture
@@ -178,6 +177,10 @@ bool WidgetWindowCapture::Create()
             m_windowCapturer->UpdateWindows();
             m_windowIndex = 0U;
             StartCapture();
+
+            m_overlayMain->Show();
+            m_overlayBackground->Show();
+            m_overlayControls->Show();
 
             m_visible = true;
         }
@@ -188,23 +191,13 @@ bool WidgetWindowCapture::Create()
 
 void WidgetWindowCapture::Destroy()
 {
-    if(m_overlayControl != vr::k_ulOverlayHandleInvalid)
-    {
-        vr::VROverlay()->HideOverlay(m_overlayControl);
-        vr::VROverlay()->ClearOverlayTexture(m_overlayControl);
-        vr::VROverlay()->DestroyOverlay(m_overlayControl);
-        m_overlayControl = vr::k_ulOverlayHandleInvalid;
-    }
+    m_overlayBackground->Destroy();
+    m_overlayControls->Destroy();
 
     delete m_guiSystem;
     m_guiSystem = nullptr;
     for(size_t i = 0U; i < CEI_Count; i++) m_guiImages[i] = nullptr;
     m_guiTextWindow = nullptr;
-
-    m_textureControls = { 0 };
-
-    delete m_transformControl;
-    m_transformControl = nullptr;
 
     delete m_windowCapturer;
     m_windowCapturer = nullptr;
@@ -217,7 +210,7 @@ void WidgetWindowCapture::Update()
     if(m_valid && m_visible)
     {
         // Poll overlays interaction
-        while(vr::VROverlay()->PollNextOverlayEvent(m_overlay, &m_event, sizeof(vr::VREvent_t)))
+        while(m_overlayMain->Poll(m_event))
         {
             switch(m_event.eventType)
             {
@@ -332,7 +325,7 @@ void WidgetWindowCapture::Update()
             }
         }
 
-        while(vr::VROverlay()->PollNextOverlayEvent(m_overlayControl, &m_event, sizeof(vr::VREvent_t)))
+        while(m_overlayControls->Poll(m_event))
         {
             switch(m_event.eventType)
             {
@@ -363,30 +356,35 @@ void WidgetWindowCapture::Update()
             glm::quat l_handRot;
             VRDevicesStates::GetDeviceRotation(VRDeviceIndex::VDI_LeftController, l_handRot);
             const glm::quat l_rot = glm::rotate(l_handRot, -g_piHalf, g_axisX);
-            m_transform->SetRotation(l_rot);
+            m_overlayMain->GetTransform()->SetRotation(l_rot);
 
             glm::vec3 l_handPos;
             VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_LeftController, l_handPos);
-            m_transform->SetPosition(l_handPos);
+            m_overlayMain->GetTransform()->SetPosition(l_handPos);
         }
+
         if(m_activeResize)
         {
             glm::vec3 l_handPos;
             VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_RightController, l_handPos);
-            m_overlayWidth = (glm::distance(l_handPos, m_transform->GetPosition()) * 2.f);
-            m_transformControl->SetPosition(glm::vec3(m_overlayWidth * 0.5f + 0.072f, 0.f, 0.f));
-            vr::VROverlay()->SetOverlayWidthInMeters(m_overlay, m_overlayWidth);
+            m_size.x = (glm::distance(l_handPos, m_overlayMain->GetTransform()->GetPosition()) * 2.f);
+            m_size.y = m_size.x / m_windowRatio;
+            m_overlayControls->GetTransform()->SetPosition(glm::vec3(m_size.x * 0.5f + 0.072f, 0.f, 0.f));
+            m_overlayMain->SetWidth(m_size.x);
+            m_overlayBackground->SetWidth(m_size.x*g_backgroundScale);
         }
-        m_transform->Update();
-        vr::VROverlay()->SetOverlayTransformAbsolute(m_overlay, vr::TrackingUniverseRawAndUncalibrated, &m_transform->GetMatrixVR());
 
-        m_transformControl->Update(m_transform);
-        if(m_activeDashboard)
+        // Set background based on distance to left hand if not pinned
+        if(!m_activePin)
         {
-            m_guiSystem->Update();
-
-            vr::VROverlay()->SetOverlayTransformAbsolute(m_overlayControl, vr::TrackingUniverseRawAndUncalibrated, &m_transformControl->GetMatrixVR());
-            vr::VROverlay()->SetOverlayTexture(m_overlayControl, &m_textureControls);
+            glm::vec3 l_handPos;
+            VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_LeftController, l_handPos);
+            float l_distance = glm::distance(l_handPos, m_overlayMain->GetTransform()->GetPosition());
+            const float l_limit = m_size.x * 0.2f;
+            l_distance = glm::clamp(l_distance, l_limit, l_limit + 0.1f);
+            const glm::vec3 l_newTint = glm::mix(g_tintColorNear, g_tintColorFar, (l_distance - l_limit)*10.f);
+            m_overlayBackground->SetColor(l_newTint.r, l_newTint.g, l_newTint.b);
+            m_overlayBackground->SetAlpha(1.f - (l_distance - l_limit)*2.5f);
         }
 
         if(m_windowCapturer->IsStale())
@@ -398,7 +396,11 @@ void WidgetWindowCapture::Update()
             StartCapture();
         }
         m_windowCapturer->Update();
-        if(m_texture.handle) vr::VROverlay()->SetOverlayTexture(m_overlay, &m_texture);
+
+        m_overlayMain->Update();
+        m_overlayBackground->Update(m_overlayMain);
+        if(m_activeDashboard) m_guiSystem->Update();
+        m_overlayControls->Update(m_overlayMain);
     }
 }
 
@@ -425,7 +427,7 @@ void WidgetWindowCapture::OnButtonPress(size_t f_hand, uint32_t f_button)
                                 {
                                     glm::vec3 l_pos;
                                     VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_LeftController, l_pos);
-                                    m_activeMove = (glm::distance(l_pos, m_transform->GetPosition()) < (m_overlayWidth * 0.2f));
+                                    m_activeMove = (glm::distance(l_pos, m_overlayMain->GetTransform()->GetPosition()) < (m_size.x * 0.2f));
                                 }
                                 else m_activeMove = false;
                             }
@@ -444,7 +446,7 @@ void WidgetWindowCapture::OnButtonPress(size_t f_hand, uint32_t f_button)
                     {
                         glm::vec3 l_pos;
                         VRDevicesStates::GetDevicePosition(VRDeviceIndex::VDI_RightController, l_pos);
-                        m_activeResize = (glm::distance(l_pos, m_transform->GetPosition()) <= (m_overlayWidth * 0.5f));
+                        m_activeResize = (glm::distance(l_pos, m_overlayMain->GetTransform()->GetPosition()) <= (m_size.x * 0.5f));
                     }
                     m_lastRightTriggerTick = l_tick;
                 }
@@ -475,27 +477,28 @@ void WidgetWindowCapture::OnDashboardOpen()
         m_activeMove = false;
         m_activeResize = false;
 
-        vr::VROverlay()->ShowOverlay(m_overlayControl);
+        m_overlayControls->Show();
     }
 }
 void WidgetWindowCapture::OnDashboardClose()
 {
     Widget::OnDashboardClose();
 
-    if(m_valid && m_visible) vr::VROverlay()->HideOverlay(m_overlayControl);
+    if(m_valid && m_visible) m_overlayControls->Hide();
 }
 
 void WidgetWindowCapture::StartCapture()
 {
     if(m_windowCapturer->StartCapture(m_windowIndex))
     {
-        m_texture.handle = m_windowCapturer->GetTextureHandle();
+        m_overlayMain->SetTexture(m_windowCapturer->GetTextureHandle());
         const auto *l_window = m_windowCapturer->GetWindowInfo(m_windowIndex);
         if(l_window)
         {
-            const vr::HmdVector2_t l_scale = { static_cast<float>(l_window->Size.x), static_cast<float>(l_window->Size.y) };
-            vr::VROverlay()->SetOverlayMouseScale(m_overlay, &l_scale);
-
+            m_overlayBackground->SetTexture(l_window->Size.x, l_window->Size.y);
+            m_overlayMain->SetMouseScale(static_cast<float>(l_window->Size.x), static_cast<float>(l_window->Size.y));
+            m_windowRatio = static_cast<float>(l_window->Size.x) / static_cast<float>(l_window->Size.y);
+            m_size.y = m_size.x / m_windowRatio;
 #ifdef _WIN32
             wchar_t l_windowName[256U];
             if(GetWindowTextW(reinterpret_cast<HWND>(l_window->Handle), l_windowName, 256) != 0) m_guiTextWindow->Set(l_windowName);
@@ -505,7 +508,7 @@ void WidgetWindowCapture::StartCapture()
 #endif
         }
     }
-    else m_texture.handle = nullptr;
+    else m_overlayMain->SetTexture(0U);
 }
 
 void WidgetWindowCapture::OnGuiElementMouseClick(GuiElement *f_guiElement, unsigned char f_button, unsigned char f_state)
@@ -517,6 +520,11 @@ void WidgetWindowCapture::OnGuiElementMouseClick(GuiElement *f_guiElement, unsig
             case CEI_Pin:
             {
                 m_activePin = !m_activePin;
+                if(m_activePin)
+                {
+                    m_overlayBackground->SetColor(g_tintColorFar.r, g_tintColorFar.g, g_tintColorFar.b);
+                    m_overlayBackground->SetAlpha(0.8f);
+                }
                 m_guiImages[CEI_Pin]->SetUV(g_guiButtonPinUV[m_activePin ? 1U : 0U], g_guiButtonsDefaultSize);
             } break;
 
@@ -542,8 +550,7 @@ void WidgetWindowCapture::OnGuiElementMouseClick(GuiElement *f_guiElement, unsig
                 const size_t l_windowsCount = m_windowCapturer->GetWindowsCount();
                 if(l_windowsCount > 0U)
                 {
-                    m_windowIndex += 1U;
-                    m_windowIndex %= l_windowsCount;
+                    ++m_windowIndex %= l_windowsCount; // Don't be afraid
 
                     m_windowCapturer->StopCapture();
                     StartCapture();
@@ -557,10 +564,10 @@ void WidgetWindowCapture::OnGuiElementMouseClick(GuiElement *f_guiElement, unsig
                 m_windowIndex = 0U;
                 StartCapture();
             } break;
+
             case CEI_FPS:
             {
-                m_fpsMode += 1U;
-                m_fpsMode %= FM_Count;
+                ++m_fpsMode %= FM_Count; // Don't be afraid
 
                 m_guiImages[CEI_FPS]->SetUV(g_guiButtonFpsUV[m_fpsMode], g_guiButtonsDefaultSize);
                 m_windowCapturer->SetDelay(g_captureDelays[m_fpsMode]);

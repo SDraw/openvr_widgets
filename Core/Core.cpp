@@ -43,7 +43,24 @@ bool Core::Initialize()
                 // Load settings
                 m_configManager = new ConfigManager();
                 m_configManager->Load();
-                m_threadDelay = std::chrono::milliseconds(ConfigManager::GetUpdateDelay());
+                switch(m_configManager->GetTargetRate())
+                {
+                    case ConfigManager::TF_60:
+                        m_threadDelay = std::chrono::milliseconds(16U);
+                        break;
+                    case ConfigManager::TF_90:
+                        m_threadDelay = std::chrono::milliseconds(11U);
+                        break;
+                    case ConfigManager::TF_120:
+                        m_threadDelay = std::chrono::milliseconds(8U);
+                        break;
+                    case ConfigManager::TF_144:
+                        m_threadDelay = std::chrono::milliseconds(7U);
+                        break;
+                    default:
+                        m_threadDelay = std::chrono::milliseconds(16U);
+                        break;
+                }
 
                 // Init context
                 const sf::ContextSettings l_contextSettings(0U, 0U, 0U, 3U, 0U, sf::ContextSettings::Core, false);
@@ -112,6 +129,7 @@ void Core::Terminate()
     delete m_widgetManager;
     m_widgetManager = nullptr;
 
+    if(m_configManager) m_configManager->Save();
     delete m_configManager;
     m_configManager = nullptr;
 
@@ -289,6 +307,31 @@ bool Core::DoPulse()
     return m_active;
 }
 
+void Core::UpdateTargetRate()
+{
+    if(m_active)
+    {
+        switch(m_configManager->GetTargetRate())
+        {
+            case ConfigManager::TF_60:
+                m_threadDelay = std::chrono::milliseconds(16U);
+                break;
+            case ConfigManager::TF_90:
+                m_threadDelay = std::chrono::milliseconds(11U);
+                break;
+            case ConfigManager::TF_120:
+                m_threadDelay = std::chrono::milliseconds(8U);
+                break;
+            case ConfigManager::TF_144:
+                m_threadDelay = std::chrono::milliseconds(7U);
+                break;
+            default:
+                m_threadDelay = std::chrono::milliseconds(16U);
+                break;
+        }
+    }
+}
+
 void Core::ForceHandSearch()
 {
     if(m_active)
@@ -316,3 +359,10 @@ void Core::SendMessageToDeviceWithProperty(uint64_t f_value, const char *f_messa
         }
     }
 }
+
+void Core::RequestExit()
+{
+    if(m_active) m_active = false;
+}
+
+
