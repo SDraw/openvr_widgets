@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <settings>
-	<setting name="update_rate" value="11" />
-	<setting name="gui_font" value="fonts/Hack-Regular.ttf" />
+    <setting name="target_rate" value="90" />
+    <setting name="gui_font" value="fonts/Hack-Regular.ttf" />
+    <setting name="keyboard_layout" value="keyboard_en-ru.xml" />
 </settings>
