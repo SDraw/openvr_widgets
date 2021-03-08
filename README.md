@@ -6,7 +6,6 @@ Application supports Windows 7, 8, 8.1, 10 and Linux (in experimental stage).
 * Grab latest [release](../../releases/latest) for your platform.
 * Extract archive to your preferable folder.
 * Launch `openvr_widgets` binary.
-* Optional: Enable auto-launch in SteamVR settings.
 
 # Settings
 Editing `settings.xml` allows to make few own changes to widgets.  
