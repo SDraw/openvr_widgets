@@ -1,4 +1,4 @@
-# OpenVR Widgets [![Build status](https://ci.appveyor.com/api/projects/status/ctb2t0bawyus9x90?svg=true)](https://ci.appveyor.com/project/SDraw/openvr-widgets) [![Build status](https://ci.appveyor.com/api/projects/status/x308bi2tnillpyjt?svg=true)](https://ci.appveyor.com/project/SDraw/openvr-widgets-linux) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
+# OpenVR Widgets [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 Set of simple overlay widgets for usage in SteamVR environment.  
 Application supports Windows 7, 8, 8.1, 10 and Linux (in experimental stage).
 
